@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<Product>Utilities</Product>
+	<Description>Various utility actions to parse or convert data</Description>
+	<Version>1.0.2</Version>
+	<AssemblyName>Apps.Utilities</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="image\icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.2.0-alpha4" />
+  </ItemGroup>
+
+</Project>
