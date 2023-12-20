@@ -29,5 +29,18 @@ namespace Apps.Utilities.Actions
             file.File.Name = input.Name + extension;
             return new FileResponse { File = file.File };
         }
+
+        [Action("Sanitize file name", Description = "Remove any defined characters from a file name (without extension).")]
+        public FileResponse SanitizeFileName([ActionParameter] FileRequest file, [ActionParameter] SanitizeRequest input)
+        {
+            var extension = Path.GetExtension(file.File.Name);
+            var newName = file.File.Name;
+            foreach (string filteredCharacter in input.FilterCharacters)
+            {
+                newName = newName.Replace(filteredCharacter, string.Empty);
+            }
+            file.File.Name = newName + extension;
+            return new FileResponse { File = file.File };
+        }
     }
 }
