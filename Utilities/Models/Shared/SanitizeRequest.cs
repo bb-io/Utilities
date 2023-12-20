@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Apps.Utilities.Models.Files
+namespace Apps.Utilities.Models.Shared
 {
     public class SanitizeRequest
     {
