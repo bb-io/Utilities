@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Blackbird.Applications.Sdk.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +8,9 @@ using File = Blackbird.Applications.Sdk.Common.Files.File;
 
 namespace Apps.Utilities.Models.Files
 {
-    public class FileResponse
+    public class FileDto
     {
         public File File { get; set; }
+
     }
 }

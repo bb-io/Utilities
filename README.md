@@ -30,6 +30,9 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Change file name** takes a file and a text input. The filename (without extension) is renamed and the file is returned as output.
 - **Sanitize file name** removes any defined characters from a file name (without extension).
 
+### Texts
+- **Sanitize text** removes any defined characters from a text.
+
 ## Feedback
 
 Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.

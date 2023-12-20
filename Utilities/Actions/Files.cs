@@ -1,5 +1,6 @@
 ﻿using Apps.Utilities.Models.Dates;
 using Apps.Utilities.Models.Files;
+using Apps.Utilities.Models.Shared;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
@@ -17,21 +18,21 @@ namespace Apps.Utilities.Actions
         public Files(InvocationContext context) : base(context) { }
 
         [Action("Get file name", Description = "Returns the name of a file (without extension).")]
-        public NameResponse GetFileName([ActionParameter] FileRequest file)
+        public NameResponse GetFileName([ActionParameter] FileDto file)
         {
             return new NameResponse { Name = Path.GetFileNameWithoutExtension(file.File.Name) };
         }
 
         [Action("Change file name", Description = "Rename a file (without extension).")]
-        public FileResponse ChangeFileName([ActionParameter] FileRequest file, [ActionParameter] RenameRequest input)
+        public FileDto ChangeFileName([ActionParameter] FileDto file, [ActionParameter] RenameRequest input)
         {
             var extension = Path.GetExtension(file.File.Name);
             file.File.Name = input.Name + extension;
-            return new FileResponse { File = file.File };
+            return new FileDto { File = file.File };
         }
 
         [Action("Sanitize file name", Description = "Remove any defined characters from a file name (without extension).")]
-        public FileResponse SanitizeFileName([ActionParameter] FileRequest file, [ActionParameter] SanitizeRequest input)
+        public FileDto SanitizeFileName([ActionParameter] FileDto file, [ActionParameter] SanitizeRequest input)
         {
             var extension = Path.GetExtension(file.File.Name);
             var newName = file.File.Name;
@@ -40,7 +41,7 @@ namespace Apps.Utilities.Actions
                 newName = newName.Replace(filteredCharacter, string.Empty);
             }
             file.File.Name = newName + extension;
-            return new FileResponse { File = file.File };
+            return new FileDto { File = file.File };
         }
     }
 }
