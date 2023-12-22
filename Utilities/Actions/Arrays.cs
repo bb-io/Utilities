@@ -6,6 +6,7 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.Utilities.Actions;
 
+[ActionList]
 public class Arrays : BaseInvocable
 {
     public Arrays(InvocationContext invocationContext) : base(invocationContext)
