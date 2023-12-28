@@ -1,9 +1,8 @@
-﻿using File = Blackbird.Applications.Sdk.Common.Files.File;
+﻿using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.Utilities.Models.Files;
 
 public class FileDto
 {
-    public File File { get; set; }
-
+    public FileReference File { get; set; }
 }
