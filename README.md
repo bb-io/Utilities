@@ -21,7 +21,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 
 ### Dates
 
-- **Generate date** generates the date and time at the moment of _execution_. Optionally, you can add or subtract days, hours and minutes. Useful for setting deadlines in the future or for generating time intervals for querying data.
+- **Generate date** generates the date and time at the moment of _execution_. Optionally, you can add or subtract days, hours and minutes. Useful for setting deadlines in the future or for generating time intervals for querying data. Optionally, you can also add your own value for date. The new generated date will be relative to this date.
 - **Format date** takes a date and formats it into a human readable string. The selectable format documentation can be found [here](https://ss64.com/ps/syntax-dateformats.html). Optionally a culture (locale) can be added as well.
 
 ### Files
@@ -31,7 +31,12 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Sanitize file name** removes any defined characters from a file name (without extension).
 
 ### Texts
+
 - **Sanitize text** removes any defined characters from a text.
+
+### Arrays
+
+- **Array contains** checks if an array contains a certain entry.
 
 ## Feedback
 

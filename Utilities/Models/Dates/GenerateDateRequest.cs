@@ -12,4 +12,7 @@ public class GenerateDateRequest
 
     [Display("Add minutes")]
     public double? AddMinutes { get; set; }
+
+    [Display("Date")]
+    public DateTime? Date { get; set; }
 }
