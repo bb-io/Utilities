@@ -11,10 +11,11 @@ public class Dates : BaseInvocable
 {
     public Dates(InvocationContext context) : base(context) { }
 
-    [Action("Generate date", Description = "Generate a date relative to the moment this action is called.")]
+    [Action("Generate date", Description = "Generate a date relative to the moment this action is called or relative to a custom date.")]
     public DateResponse GenerateDate([ActionParameter] GenerateDateRequest input)
     {
-        return new DateResponse { Date = DateTime.Now.AddDays(input.AddDays ?? 0).AddHours(input.AddHours ?? 0).AddMinutes(input.AddMinutes ?? 0) };
+        var referenceDate = input.Date ?? DateTime.Now;
+        return new DateResponse { Date = referenceDate.AddDays(input.AddDays ?? 0).AddHours(input.AddHours ?? 0).AddMinutes(input.AddMinutes ?? 0) };
     }
 
     [Action("Format date", Description = "Format a date to text according to pre-defined formatting rules and culture")]
