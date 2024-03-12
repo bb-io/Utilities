@@ -3,12 +3,17 @@ using Apps.Utilities.Models.Shared;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using DocumentFormat.OpenXml.Packaging;
+using System.Text;
+using UglyToad.PdfPig;
 
 namespace Apps.Utilities.Actions;
 
 [ActionList]
 public class Files : BaseInvocable
 {
+    private readonly IFileManagementClient _fileManagementClient;
     public Files(InvocationContext context) : base(context) { }
 
     [Action("Get file name", Description = "Returns the name of a file (without extension).")]
@@ -37,4 +42,90 @@ public class Files : BaseInvocable
         file.File.Name = newName + extension;
         return new FileDto { File = file.File };
     }
+
+    [Action("Get File Character count", Description = "Returns number of characters in the file")]
+
+    public async Task<int> GetCharCountInFile([ActionParameter] FileDto file)
+    {
+        
+        var _file = await _fileManagementClient.DownloadAsync(file.File);
+
+        var extension = Path.GetExtension(file.File.Name).ToLower();
+
+        var filecontent = await ReadDocument(_file, extension);
+
+        return filecontent.Length;
+    }
+
+    [Action("Get File Word Count", Description = "Returns number of words in the file")]
+
+    public async Task<int> GetWordCountInFile([ActionParameter] FileDto file)
+    {
+
+        var _file = await _fileManagementClient.DownloadAsync(file.File);
+
+        var extension = Path.GetExtension(file.File.Name).ToLower();
+
+        var filecontent = await ReadDocument(_file, extension);
+
+        return CountWords(filecontent);
+    }
+
+    public static async Task<string> ReadDocument(Stream file, string fileExtension)
+    {
+        string text;
+        if (fileExtension == "txt")
+            text = await ReadTxtFile(file);
+        else if (fileExtension == "pdf")
+            text = await ReadPdfFile(file);
+        else if (fileExtension == "docx" || fileExtension == "doc")
+            text = await ReadDocxFile(file);
+        else
+            throw new ArgumentException("Unsupported document format. Please provide docx, pdf or txt file.");
+
+        return text;
+    }
+
+    private static async Task<string> ReadTxtFile(Stream file)
+    {
+        var stringBuilder = new StringBuilder();
+        using (var reader = new StreamReader(file))
+        {
+            while (!reader.EndOfStream)
+            {
+                var line = await reader.ReadLineAsync();
+                stringBuilder.Append(line);
+            }
+        }
+
+        var document = stringBuilder.ToString();
+        return document;
+    }
+
+    private static async Task<string> ReadPdfFile(Stream file)
+    {
+       
+        var document = PdfDocument.Open(file);
+        var text = string.Join(" ", document.GetPages().Select(p => p.Text));
+        return text;
+        
+    }
+
+    private static async Task<string> ReadDocxFile(Stream file)
+    {
+      
+        var document = WordprocessingDocument.Open(file, false);
+        var text = document.MainDocumentPart.Document.Body.InnerText;
+        return text;
+       
+    }
+
+    private static int CountWords( string text)
+    {
+        char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
+        var words = text.Split().Select(x => x.Trim(punctuationCharacters));
+        return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
+    }
 }
+
+
