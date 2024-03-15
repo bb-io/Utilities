@@ -14,7 +14,11 @@ namespace Apps.Utilities.Actions;
 public class Files : BaseInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;
-    public Files(InvocationContext context) : base(context) { }
+    public Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(
+       invocationContext)
+    {
+        _fileManagementClient = fileManagementClient;
+    }
 
     [Action("Get file name", Description = "Returns the name of a file (without extension).")]
     public NameResponse GetFileName([ActionParameter] FileDto file)
@@ -65,7 +69,7 @@ public class Files : BaseInvocable
         var _file = await _fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
-
+        
         var filecontent = await ReadDocument(_file, extension);
 
         return CountWords(filecontent);

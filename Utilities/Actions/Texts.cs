@@ -22,13 +22,13 @@ public class Texts : BaseInvocable
         return new TextDto { Text = newText };
     }
 
-    [Action("Count Characters in text", Description = "Returns number of chracters in text.")]
+    [Action("Count characters in text", Description = "Returns number of chracters in text.")]
     public int CountCharsInText([ActionParameter] TextDto input)
     {
         return input.Text.Length;
     }
 
-    [Action("Count Words in text", Description = "Returns number of words in text.")]
+    [Action("Count words in text", Description = "Returns number of words in text.")]
     public int CountWordsInText([ActionParameter] TextDto input)
     {
         char[] punctuationCharacters = input.Text.Where(char.IsPunctuation).Distinct().ToArray();
