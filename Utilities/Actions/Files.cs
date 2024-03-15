@@ -20,10 +20,16 @@ public class Files : BaseInvocable
         _fileManagementClient = fileManagementClient;
     }
 
-    [Action("Get file name", Description = "Returns the name of a file (without extension).")]
+    [Action("Get file name information", Description = "Returns the name of a file, with or without extension, and the extension.")]
     public NameResponse GetFileName([ActionParameter] FileDto file)
     {
-        return new NameResponse { Name = Path.GetFileNameWithoutExtension(file.File.Name) };
+        return new NameResponse 
+        { 
+            NameWithoutExtension = Path.GetFileNameWithoutExtension(file.File.Name),
+            NameWithExtension = Path.GetFileName(file.File.Name),
+            Extension = Path.GetExtension(file.File.Name)
+
+        };
     }
 
     [Action("Change file name", Description = "Rename a file (without extension).")]
