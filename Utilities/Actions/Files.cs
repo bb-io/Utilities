@@ -47,7 +47,7 @@ public class Files : BaseInvocable
         return new FileDto { File = file.File };
     }
 
-    [Action("Get File Character count", Description = "Returns number of characters in the file")]
+    [Action("Get file character count", Description = "Returns number of characters in the file")]
 
     public async Task<int> GetCharCountInFile([ActionParameter] FileDto file)
     {
@@ -61,7 +61,7 @@ public class Files : BaseInvocable
         return filecontent.Length;
     }
 
-    [Action("Get File Word Count", Description = "Returns number of words in the file")]
+    [Action("Get file word count", Description = "Returns number of words in the file")]
 
     public async Task<int> GetWordCountInFile([ActionParameter] FileDto file)
     {
@@ -78,11 +78,11 @@ public class Files : BaseInvocable
     public static async Task<string> ReadDocument(Stream file, string fileExtension)
     {
         string text;
-        if (fileExtension == "txt")
+        if (fileExtension == ".txt")
             text = await ReadTxtFile(file);
-        else if (fileExtension == "pdf")
+        else if (fileExtension == ".pdf")
             text = await ReadPdfFile(file);
-        else if (fileExtension == "docx" || fileExtension == "doc")
+        else if (fileExtension == ".docx" || fileExtension == ".doc")
             text = await ReadDocxFile(file);
         else
             throw new ArgumentException("Unsupported document format. Please provide docx, pdf or txt file.");
