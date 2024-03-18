@@ -26,12 +26,18 @@ This app provides generic utility actions that can come in useful in any bird. I
 
 ### Files
 
+- **Get file character count** returns number of characters in the file
+- **Get file word count** returns number of words in the file
 - **Get file name** returns the name of a file without extension.
+- **Get file name information** returns the name of a file, with or without extension, and the extension.
 - **Change file name** takes a file and a text input. The filename (without extension) is renamed and the file is returned as output.
 - **Sanitize file name** removes any defined characters from a file name (without extension).
 
+
 ### Texts
 
+- **Count characters in text** returns number of chracters in text.
+- **Count words in text** returns number of words in text.
 - **Sanitize text** removes any defined characters from a text.
 
 ### Arrays
