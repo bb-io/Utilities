@@ -7,6 +7,9 @@ public class GenerateDateRequest
     [Display("Add days")]
     public double? AddDays { get; set; }
 
+    [Display("Add business days")]
+    public double? BusinessDays { get; set; }
+
     [Display("Add hours")]
     public double? AddHours { get; set; }
 
