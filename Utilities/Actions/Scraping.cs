@@ -15,6 +15,7 @@ namespace Apps.Utilities.Actions
         public async Task<ContentDto> ExtractWebContent([ActionParameter][Display("URL")] string url, [ActionParameter][Display("XPath")] string? xpath)
         {
             HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0");
 
             using (var response = await client.GetAsync(url))
             {
@@ -22,11 +23,13 @@ namespace Apps.Utilities.Actions
                 {
                     var result = await content.ReadAsStringAsync();
                     var document = new HtmlDocument();
-                    document.LoadHtml(result); 
+                    document.LoadHtml(result);
+
+                    var nodes = document.DocumentNode.SelectNodes(xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']");
 
                     return new ContentDto
                     {
-                        Content = string.Join('\n', document.DocumentNode.SelectNodes(xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']").Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
+                        Content = nodes == null ? "" : string.Join('\n', nodes.Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
                     };
                 }
             }
