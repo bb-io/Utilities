@@ -15,7 +15,7 @@ namespace Apps.Utilities.Actions
     public class Numbers
     {
         [Action("Generate range", Description = "Generate a range by providing start and end numbers")]
-        public List<int> CreateRange([ActionParameter] int Start, int End)
+        public List<int> CreateRange([ActionParameter] int Start, [ActionParameter] int End)
         {
             var myList = new List<int>();
             if (Start < End)
