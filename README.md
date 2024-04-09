@@ -40,6 +40,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Sanitize text** removes any defined characters from a text.
 - **Extract using Regex** returns the first match from the provided text using a Regular Expression as input.
 - **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
+- **Replace using Regex** use Regular Expressions to search and replace within text
 
 ### Arrays
 
