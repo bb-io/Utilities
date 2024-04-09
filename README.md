@@ -38,10 +38,20 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Count characters in text** returns number of chracters in text.
 - **Count words in text** returns number of words in text.
 - **Sanitize text** removes any defined characters from a text.
+- **Extract using Regex** returns the first match from the provided text using a Regular Expression as input.
+- **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
 
 ### Arrays
 
 - **Array contains** checks if an array contains a certain entry.
+
+### Numbers
+
+- **Generate Range** Generate a range by providing start and end numbers.
+
+### Scraping
+
+- **Extract web page content** Get raw and unformatted content from a URL as text.
 
 ## Feedback
 
