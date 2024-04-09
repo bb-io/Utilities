@@ -39,7 +39,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Count words in text** returns number of words in text.
 - **Sanitize text** removes any defined characters from a text.
 - **Extract using Regex** returns the first match from the provided text using a Regular Expression as input.
-- **Extract using Regex** returns all matches from the provided text using a Regular Expression as input.
+- **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
 
 ### Arrays
 
