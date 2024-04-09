@@ -52,5 +52,10 @@ public class Texts : BaseInvocable
             .ToList();
     }
 
+    [Action("Replace using Regex", Description = "Use Regular Expressions to search and replace within text")]
+    public string ReplaceRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceInput regex)
+    {
+        return Regex.Replace(input.Text, Regex.Unescape(regex.Regex), Regex.Unescape(regex.Replace));
+    }
 
 }
