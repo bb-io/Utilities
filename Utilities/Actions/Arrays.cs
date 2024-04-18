@@ -22,31 +22,31 @@ public class Arrays : BaseInvocable
         };
     }
 
-    [Action("Create/add many to array", Description = "Check if array contains a ceratin entry")]
+    [Action("Create/add many to array", Description = "Creates an array or uses the one provided as original. Adds content to array if \"ArayToBeAded\" is provided")]
     public ArrayAddCreateResponse AddToArray([ActionParameter] ArrayAddCreateRequest input)
     {
-        var myList = new List<string>();
-        if (input.Array != null)
+        List<string> myList = input.OriginalArray?.ToList() ?? new List<string>();
+        if (input.ArrayToBeAdded != null)
         {
-            myList.AddRange(input.Array);
+            myList.AddRange(input.ArrayToBeAdded.ToList());
         }
-        return new ArrayAddCreateResponse {MyGroup = myList };
+        return new ArrayAddCreateResponse {MyArray = myList };
     }
 
-    [Action("Create/add single element to array", Description = "Check if array contains a ceratin entry")]
+    [Action("Create/add single element to array", Description = "Creates an array or uses the one provided as original. Adds element to array if \"Item\" is provided")]
     public ArrayAddCreateResponse AddSingleToArray([ActionParameter] ArrayAddCreateSingleRequest input)
     {
-        var myList = new List<string>();
-        if (String.IsNullOrEmpty(input.Item))
+        List<string> myList = input.Array?.ToList() ?? new List<string>();
+        if (!String.IsNullOrEmpty(input.Item))
         {
             myList.Add(input.Item);
         }
-        return new ArrayAddCreateResponse { MyGroup = myList };
+        return new ArrayAddCreateResponse { MyArray = myList };
     }
 
-    [Action("Deduplicate Array", Description = "Return only unique elements")]
-    public IEnumerable<string> DeduplicateArray([ActionParameter] IEnumerable<string> input)
+    [Action("Deduplicate Array", Description = "Returns only unique elements")]
+    public ArrayAddCreateResponse DeduplicateArray([ActionParameter] IEnumerable<string> input)
     {
-        return input.Distinct();
+        return new ArrayAddCreateResponse { MyArray = input.Distinct() };
     }
 }
