@@ -2,5 +2,5 @@ namespace Apps.Utilities.Models.Arrays.Response;
 
 public class ArrayAddCreateResponse
 {
-    public IEnumerable<string> MyGroup { get; set; }
+    public IEnumerable<string> MyArray { get; set; }
 }
