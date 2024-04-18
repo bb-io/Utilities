@@ -2,11 +2,10 @@
 
 namespace Apps.Utilities.Models.Texts
 {
-    public class RegexInput
+    public class RegexManyInput
     {
+        [Display("Regular Expression")]
         public string Regex { get; set; }
 
-        [Display("Group Number")]
-        public string Group { get; set; }
     }
 }

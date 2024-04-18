@@ -40,11 +40,19 @@ public class Texts : BaseInvocable
     [Action("Extract using Regex", Description = "Returns first match from text using input Regex")]
     public string ExtractRegex([ActionParameter] TextDto input, [ActionParameter] RegexInput regex)
     {
-        return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Value;
+        if (String.IsNullOrEmpty(regex.Group))
+        {
+            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Value;
+        }
+        else
+        {
+            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Groups[regex.Group].Value;
+        }
+
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
-    public List<string> ExtractManyRegex([ActionParameter] TextDto input, [ActionParameter] RegexInput regex)
+    public List<string> ExtractManyRegex([ActionParameter] TextDto input, [ActionParameter] RegexManyInput regex)
     {
         return Regex.Matches(input.Text, Regex.Unescape(regex.Regex))
             .OfType<Match>()
