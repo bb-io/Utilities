@@ -8,6 +8,6 @@ namespace Apps.Utilities.Models.Texts
         public string Regex { get; set; }
 
         [Display("Group Number")]
-        public string Group { get; set; }
+        public string? Group { get; set; }
     }
 }
