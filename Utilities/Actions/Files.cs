@@ -5,6 +5,8 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System.Net.Mime;
 using System.Text;
 using UglyToad.PdfPig;
 
@@ -30,6 +32,15 @@ public class Files : BaseInvocable
             Extension = Path.GetExtension(file.File.Name)
 
         };
+    }
+
+    [Action("Load document", Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
+    public async Task<LoadDocumentResponse> LoadDocument([ActionParameter] LoadDocumentRequest request)
+    {
+        var file = await _fileManagementClient.DownloadAsync(request.File);
+        var extension = Path.GetExtension(request.File.Name).ToLower();
+        var filecontent = await ReadDocument(file, extension);
+        return new() { Text = filecontent };
     }
 
     [Action("Change file name", Description = "Rename a file (without extension).")]
@@ -79,6 +90,51 @@ public class Files : BaseInvocable
         var filecontent = await ReadDocument(_file, extension);
 
         return CountWords(filecontent);
+    }
+
+    [Action("Convert text to document", Description = "Convert text to txt, doc or docx document.")]
+    public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
+         [ActionParameter] ConvertTextToDocumentRequest request)
+    {        
+        var filename = request.Filename + request.FileExtension;
+
+        switch (request.FileExtension)
+        {
+            case ".txt":
+                var bytes = Encoding.UTF8.GetBytes(request.Text);
+                var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), MediaTypeNames.Application.Octet,
+                filename);
+                return new ConvertTextToDocumentResponse
+                {
+                    File = file
+                };
+            case ".doc":
+            case ".docx":
+                var stream = new MemoryStream();
+                using (WordprocessingDocument doc = WordprocessingDocument.Create(stream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
+                {
+                    MainDocumentPart mainPart = doc.AddMainDocumentPart();
+
+                    new Document(new Body()).Save(mainPart);
+
+                    Body body = mainPart.Document.Body;
+                    body.Append(new Paragraph(
+                                new Run(
+                                    new Text(request.Text))));
+
+                    mainPart.Document.Save();
+
+                }
+                stream.Seek(0, SeekOrigin.Begin);
+                var _file = await _fileManagementClient.UploadAsync(stream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                filename);
+                return new ConvertTextToDocumentResponse
+                {
+                    File = _file
+                };
+            default:
+                throw new Exception("Can convert to txt, doc or docx file only.");
+        }
     }
 
     public static async Task<string> ReadDocument(Stream file, string fileExtension)
