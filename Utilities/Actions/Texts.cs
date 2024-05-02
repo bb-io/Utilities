@@ -10,7 +10,9 @@ namespace Apps.Utilities.Actions;
 [ActionList]
 public class Texts : BaseInvocable
 {
-    public Texts(InvocationContext context) : base(context) { }
+    public Texts(InvocationContext context) : base(context)
+    {
+    }
 
     [Action("Sanitize text", Description = "Remove any defined characters from a text.")]
     public TextDto SanitizeText([ActionParameter] TextDto text, [ActionParameter] SanitizeRequest input)
@@ -20,6 +22,7 @@ public class Texts : BaseInvocable
         {
             newText = newText.Replace(filteredCharacter, string.Empty);
         }
+
         return new TextDto { Text = newText };
     }
 
@@ -48,7 +51,6 @@ public class Texts : BaseInvocable
         {
             return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Groups[regex.Group].Value;
         }
-
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
@@ -66,4 +68,20 @@ public class Texts : BaseInvocable
         return Regex.Replace(input.Text, Regex.Unescape(regex.Regex), Regex.Unescape(regex.Replace));
     }
 
+    [Action("Trim text", Description = "Trim specified text")]
+    public string TrimText([ActionParameter] TextDto text, [ActionParameter] TrimTextInput input)
+    {
+        var result = text.Text;
+
+        if (input.CharactersFromBeginning is not null)
+            result = result.TrimStart(input.CharactersFromBeginning.ToArray());
+
+        if (input.CharactersFromEnd is not null)
+            result = result.TrimEnd(input.CharactersFromEnd.ToArray());
+
+        if (input.TrimSpaces is true)
+            result = result.Trim();
+
+        return result;
+    }
 }
