@@ -74,10 +74,10 @@ public class Texts : BaseInvocable
         var result = text.Text;
 
         if (input.CharactersFromBeginning is not null)
-            result = result.TrimStart(input.CharactersFromBeginning.ToArray());
+            result = result.Remove(0, input.CharactersFromBeginning.Value);
 
         if (input.CharactersFromEnd is not null)
-            result = result.TrimEnd(input.CharactersFromEnd.ToArray());
+            result = result.Remove(result.Length - input.CharactersFromEnd.Value - 1, input.CharactersFromEnd.Value);
 
         if (input.TrimSpaces is true)
             result = result.Trim();
