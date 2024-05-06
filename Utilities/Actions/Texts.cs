@@ -62,6 +62,28 @@ public class Texts : BaseInvocable
             .ToList();
     }
 
+    [Action("Extract occurences from text", Description = "Returns all matches from text of a predefined list of possible options")]
+    public List<string> ExtractOccurences([ActionParameter] TextDto input, [ActionParameter] OccurencesDto occurences)
+    {
+        var res = new List<string>();
+        foreach (var c in occurences.Options)
+        {
+            if (input.Text.Contains(c)) res.Add(c);
+        }
+        return res;
+    }
+
+    [Action("Extract first occurence from text", Description = "Returns the first option that matches in a text of a predefined list of possible options")]
+    public string? ExtractFirstOccurence([ActionParameter] TextDto input, [ActionParameter] OccurencesDto occurences)
+    {
+        foreach (var c in occurences.Options)
+        {
+            if (input.Text.Contains(c)) return c;
+            
+        }
+        return null;
+    }
+
     [Action("Replace using Regex", Description = "Use Regular Expressions to search and replace within text")]
     public string ReplaceRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceInput regex)
     {

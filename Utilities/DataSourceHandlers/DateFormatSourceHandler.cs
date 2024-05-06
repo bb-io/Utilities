@@ -1,8 +1,9 @@
-﻿using Blackbird.Applications.Sdk.Common.Dynamic;
+﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Utilities.DataSourceHandlers;
 
-public class DateFormatSourceHandler : IDataSourceHandler
+public class DateFormatSourceHandler : IStaticDataSourceHandler
 {
     private Dictionary<string, string> EnumValues => new()
     {
@@ -20,12 +21,8 @@ public class DateFormatSourceHandler : IDataSourceHandler
         {"Y", "Year month" }
     };
 
-    public Dictionary<string, string> GetData(DataSourceContext context)
+    public Dictionary<string, string> GetData()
     {
-        return EnumValues
-            // Applying user search query to the response
-            .Where(x => context.SearchString == null ||
-                        x.Value.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
-            .ToDictionary(x => x.Key, x => x.Value);
+        return EnumValues;
     }
 }

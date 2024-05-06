@@ -1,17 +1,14 @@
-﻿using Blackbird.Applications.Sdk.Common.Dynamic;
+﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 using System.Globalization;
 
 namespace Apps.Utilities.DataSourceHandlers;
 
-public class CultureSourceHandler : IDataSourceHandler
+public class CultureSourceHandler : IStaticDataSourceHandler
 {
-    public Dictionary<string, string> GetData(DataSourceContext context)
+    public Dictionary<string, string> GetData()
     {
         var cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
-        return cultures
-            // Applying user search query to the response
-            .Where(x => context.SearchString == null ||
-                        x.EnglishName.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
-            .ToDictionary(x => x.Name, x => x.EnglishName);
+        return cultures.ToDictionary(x => x.Name, x => x.EnglishName);
     }
 }
