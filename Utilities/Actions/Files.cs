@@ -34,7 +34,7 @@ public class Files : BaseInvocable
         };
     }
 
-    [Action("Load document", Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
+    [Action("Convert document to text", Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
     public async Task<LoadDocumentResponse> LoadDocument([ActionParameter] LoadDocumentRequest request)
     {
         var file = await _fileManagementClient.DownloadAsync(request.File);

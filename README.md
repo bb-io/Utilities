@@ -34,9 +34,9 @@ This app provides generic utility actions that can come in useful in any bird. I
 
 ### XML Files
 
-- **Bump version string**  Bump version string.
-- **Get XML file property**  Get XML file property.
-- **Change XML file property**  Change XML file property.
+- **Bump version string** Bump version string.
+- **Get XML file property** Get XML file property.
+- **Change XML file property** Change XML file property.
 
 ### Texts
 
@@ -46,13 +46,13 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Extract using Regex** returns the first match from the provided text using a Regular Expression as input.
 - **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
 - **Replace using Regex** use Regular Expressions to search and replace within text
-- **Convert text to document**  Converts text to txt, doc or docx document.
-- **Load document**  Extracts document's text. Document must be in docx/doc, pdf or txt format.
+- **Convert text to document** Converts text to txt, doc or docx document.
+- **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 
 ### Arrays
 
 - **Array contains** checks if an array contains a certain entry.
-- **Deduplicate Array**  Returns only unique elements.
+- **Deduplicate Array** Returns only unique elements.
 
 ### Numbers
 
@@ -61,6 +61,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 ### Scraping
 
 - **Extract web page content** Get raw and unformatted content from a URL as text.
+- **Extract HTML content** Get raw and unformatted content from an HTML file.
 
 ## Feedback
 
