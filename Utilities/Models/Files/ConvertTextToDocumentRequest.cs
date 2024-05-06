@@ -1,5 +1,6 @@
 ﻿using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Utilities.Models.Files;
@@ -10,6 +11,6 @@ public class ConvertTextToDocumentRequest
     [Display("File Name")]
     public string Filename { get; set; }
     [Display("File Extension")]
-    [DataSource(typeof(ExtensionSourceHandler))]
+    [StaticDataSource(typeof(ExtensionSourceHandler))]
     public string FileExtension { get; set; }
 }

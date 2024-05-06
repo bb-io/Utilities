@@ -6,28 +6,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.Utilities.DataSourceHandlers
 {
-    public class ExtensionSourceHandler : BaseInvocable, IDataSourceHandler
+    public class ExtensionSourceHandler : IStaticDataSourceHandler
     {
-        public ExtensionSourceHandler(InvocationContext invocationContext) : base(invocationContext)
-        {
-        }
-
-        public Dictionary<string, string> GetData(DataSourceContext context)
+        public Dictionary<string, string> GetData()
         {
             var extension = new List<string>
-        {
-            ".txt",
-            ".doc",
-            ".docx"
-        };
+            {
+                ".txt",
+                ".doc",
+                ".docx"
+            };
 
-            return extension
-                .Where(ext => context.SearchString == null || ext.Contains(context.SearchString,
-                    StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(ext => ext, ext => ext);
+            return extension.ToDictionary(ext => ext, ext => ext);
         }
     }
 }
