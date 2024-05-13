@@ -99,7 +99,7 @@ public class Texts : BaseInvocable
             result = result.Remove(0, input.CharactersFromBeginning.Value);
 
         if (input.CharactersFromEnd is not null)
-            result = result.Remove(result.Length - input.CharactersFromEnd.Value - 1, input.CharactersFromEnd.Value);
+            result = result.Remove(result.Length - input.CharactersFromEnd.Value);
 
         if (input.TrimSpaces is true)
             result = result.Trim();
