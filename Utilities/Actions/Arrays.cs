@@ -14,12 +14,18 @@ public class Arrays : BaseInvocable
     }
     
     [Action("Array contains", Description = "Check if array contains a ceratin entry")]
-    public ArrayContainsResponse GenerateDate([ActionParameter] ArrayContainsRequest input)
+    public ArrayContainsResponse ArrayContains([ActionParameter] ArrayContainsRequest input)
     {
         return new()
         {
             Contains = input.Array.Contains(input.Entry)
         };
+    }
+
+    [Action("Array count", Description = "Counts the number of elements in an array")]
+    public int ArrayCount([ActionParameter] IEnumerable<object> input)
+    {
+        return input.Count();
     }
 
     //[Action("Create/add many to array", Description = "Creates an array or uses the one provided as original. Adds content to array if \"ArayToBeAded\" is provided")]
