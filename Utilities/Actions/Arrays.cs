@@ -23,7 +23,7 @@ public class Arrays : BaseInvocable
     }
 
     [Action("Array count", Description = "Counts the number of elements in an array")]
-    public int ArrayCount([ActionParameter] IEnumerable<object> input)
+    public int ArrayCount([ActionParameter] IEnumerable<string> input)
     {
         return input.Count();
     }
