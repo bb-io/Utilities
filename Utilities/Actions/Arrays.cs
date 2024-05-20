@@ -23,9 +23,9 @@ public class Arrays : BaseInvocable
     }
 
     [Action("Array count", Description = "Counts the number of elements in an array")]
-    public int ArrayCount([ActionParameter] IEnumerable<string> input)
+    public int ArrayCount([ActionParameter] ArrayCountRequest input)
     {
-        return input.Count();
+        return input.Array.Count();
     }
 
     //[Action("Create/add many to array", Description = "Creates an array or uses the one provided as original. Adds content to array if \"ArayToBeAded\" is provided")]
