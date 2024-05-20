@@ -114,20 +114,22 @@ public class Files : BaseInvocable
                 using (WordprocessingDocument doc = WordprocessingDocument.Create(stream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
                 {
                     MainDocumentPart mainPart = doc.AddMainDocumentPart();
-
                     new Document(new Body()).Save(mainPart);
+                    Body body = mainPart.Document.Body!;
 
-                    Body body = mainPart.Document.Body;
-                    body.Append(new Paragraph(
-                                new Run(
-                                    new Text(request.Text))));
+                    var paragraphs = request.Text.Split(new[] { "\n\n" }, StringSplitOptions.None);
+
+                    foreach (var para in paragraphs)
+                    {
+                        var paragraph = new Paragraph(new Run(new Text(para)));
+                        body.Append(paragraph);
+                    }
 
                     mainPart.Document.Save();
-
                 }
                 stream.Seek(0, SeekOrigin.Begin);
                 var _file = await _fileManagementClient.UploadAsync(stream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                filename);
+                    filename);
                 return new ConvertTextToDocumentResponse
                 {
                     File = _file
