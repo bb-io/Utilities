@@ -85,9 +85,7 @@ public class Files : BaseInvocable
         var _file = await _fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
-
         var filecontent = await ReadDocument(_file, extension);
-
         return CountWords(filecontent);
     }
 
@@ -95,51 +93,70 @@ public class Files : BaseInvocable
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
         [ActionParameter] ConvertTextToDocumentRequest request)
     {
-        var filename = request.Filename + request.FileExtension;
-        Stream fileStream;
+        var filename = $"{request.Filename}{request.FileExtension}";
+        ConvertTextToDocumentResponse response;
 
-        if (request.FileExtension == ".txt")
+        switch (request.FileExtension.ToLower())
         {
-            var bytes = Encoding.UTF8.GetBytes(request.Text);
-            fileStream = new MemoryStream(bytes);
-        }
-        else if (request.FileExtension == ".doc" || request.FileExtension == ".docx")
-        {
-            fileStream = new MemoryStream();
-            using (var doc = WordprocessingDocument.Create(fileStream,
-                       DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
-            {
-                var body = doc.AddMainDocumentPart().Document.Body;
-                var paragraphs = request.Text.Split(new[] { "\n\n" }, StringSplitOptions.None)
-                    .Select(para => new Paragraph(new Run(new Text(para))));
-                
-                body.Append(paragraphs);
-                doc.Save();
-            }
-
-            fileStream.Seek(0, SeekOrigin.Begin);
-        }
-        else
-        {
-            throw new Exception("Can convert to txt, doc or docx file only.");
+            case ".txt":
+                response = await ConvertToTextFile(request.Text, filename);
+                break;
+            case ".doc":
+            case ".docx":
+                response = await ConvertToWordDocument(request.Text, filename);
+                break;
+            default:
+                throw new ArgumentException("Can convert to txt, doc, or docx file only.");
         }
 
-        var file = await _fileManagementClient.UploadAsync(fileStream, GetMimeType(request.FileExtension), filename);
-        return new ConvertTextToDocumentResponse { File = file };
+        return response;
     }
 
-    private string GetMimeType(string fileExtension)
+    private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename)
     {
-        return fileExtension switch
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), MediaTypeNames.Application.Octet,
+            filename);
+
+        return new ConvertTextToDocumentResponse
         {
-            ".txt" => MediaTypeNames.Application.Octet,
-            ".doc" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            _ => throw new Exception("Unsupported file extension.")
+            File = file
         };
     }
 
-    private static async Task<string> ReadDocument(Stream file, string fileExtension)
+    private async Task<ConvertTextToDocumentResponse> ConvertToWordDocument(string text, string filename)
+    {
+        var stream = new MemoryStream();
+
+        using (var doc = WordprocessingDocument.Create(stream,
+                   DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
+        {
+            var mainPart = doc.AddMainDocumentPart();
+            new Document(new Body()).Save(mainPart);
+            var body = mainPart.Document.Body!;
+
+            var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
+
+            foreach (var para in paragraphs)
+            {
+                var paragraph = new Paragraph(new Run(new Text(para)));
+                body.Append(paragraph);
+            }
+
+            mainPart.Document.Save();
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+        var file = await _fileManagementClient.UploadAsync(stream,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename);
+
+        return new ConvertTextToDocumentResponse
+        {
+            File = file
+        };
+    }
+
+    public static async Task<string> ReadDocument(Stream file, string fileExtension)
     {
         string text;
         if (fileExtension == ".txt")
