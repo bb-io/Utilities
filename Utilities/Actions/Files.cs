@@ -16,25 +16,27 @@ namespace Apps.Utilities.Actions;
 public class Files : BaseInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;
+
     public Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(
-       invocationContext)
+        invocationContext)
     {
         _fileManagementClient = fileManagementClient;
     }
 
-    [Action("Get file name information", Description = "Returns the name of a file, with or without extension, and the extension.")]
+    [Action("Get file name information",
+        Description = "Returns the name of a file, with or without extension, and the extension.")]
     public NameResponse GetFileName([ActionParameter] FileDto file)
     {
-        return new NameResponse 
-        { 
+        return new NameResponse
+        {
             NameWithoutExtension = Path.GetFileNameWithoutExtension(file.File.Name),
             NameWithExtension = Path.GetFileName(file.File.Name),
             Extension = Path.GetExtension(file.File.Name)
-
         };
     }
 
-    [Action("Convert document to text", Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
+    [Action("Convert document to text",
+        Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
     public async Task<LoadDocumentResponse> LoadDocument([ActionParameter] LoadDocumentRequest request)
     {
         var file = await _fileManagementClient.DownloadAsync(request.File);
@@ -60,15 +62,14 @@ public class Files : BaseInvocable
         {
             newName = newName.Replace(filteredCharacter, string.Empty);
         }
+
         file.File.Name = newName + extension;
         return new FileDto { File = file.File };
     }
 
     [Action("Get file character count", Description = "Returns number of characters in the file")]
-
     public async Task<int> GetCharCountInFile([ActionParameter] FileDto file)
     {
-        
         var _file = await _fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
@@ -79,65 +80,83 @@ public class Files : BaseInvocable
     }
 
     [Action("Get file word count", Description = "Returns number of words in the file")]
-
     public async Task<int> GetWordCountInFile([ActionParameter] FileDto file)
     {
-
         var _file = await _fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
-        
         var filecontent = await ReadDocument(_file, extension);
-
         return CountWords(filecontent);
     }
 
     [Action("Convert text to document", Description = "Convert text to txt, doc or docx document.")]
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
-         [ActionParameter] ConvertTextToDocumentRequest request)
-    {        
-        var filename = request.Filename + request.FileExtension;
+        [ActionParameter] ConvertTextToDocumentRequest request)
+    {
+        var filename = $"{request.Filename}{request.FileExtension}";
+        ConvertTextToDocumentResponse response;
 
-        switch (request.FileExtension)
+        switch (request.FileExtension.ToLower())
         {
             case ".txt":
-                var bytes = Encoding.UTF8.GetBytes(request.Text);
-                var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), MediaTypeNames.Application.Octet,
-                filename);
-                return new ConvertTextToDocumentResponse
-                {
-                    File = file
-                };
+                response = await ConvertToTextFile(request.Text, filename);
+                break;
             case ".doc":
             case ".docx":
-                var stream = new MemoryStream();
-                using (WordprocessingDocument doc = WordprocessingDocument.Create(stream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
-                {
-                    MainDocumentPart mainPart = doc.AddMainDocumentPart();
-
-                    new Document(new Body()).Save(mainPart);
-
-                    Body body = mainPart.Document.Body;
-                    body.Append(new Paragraph(
-                                new Run(
-                                    new Text(request.Text))));
-
-                    mainPart.Document.Save();
-
-                }
-                stream.Seek(0, SeekOrigin.Begin);
-                var _file = await _fileManagementClient.UploadAsync(stream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                filename);
-                return new ConvertTextToDocumentResponse
-                {
-                    File = _file
-                };
+                response = await ConvertToWordDocument(request.Text, filename);
+                break;
             default:
-                throw new Exception("Can convert to txt, doc or docx file only.");
+                throw new ArgumentException("Can convert to txt, doc, or docx file only.");
         }
+
+        return response;
     }
 
-    public static async Task<string> ReadDocument(Stream file, string fileExtension)
+    private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename)
+    {
+        var bytes = Encoding.UTF8.GetBytes(text);
+        var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), MediaTypeNames.Application.Octet,
+            filename);
+
+        return new ConvertTextToDocumentResponse
+        {
+            File = file
+        };
+    }
+
+    private async Task<ConvertTextToDocumentResponse> ConvertToWordDocument(string text, string filename)
+    {
+        var stream = new MemoryStream();
+
+        using (var doc = WordprocessingDocument.Create(stream,
+                   DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
+        {
+            var mainPart = doc.AddMainDocumentPart();
+            new Document(new Body()).Save(mainPart);
+            var body = mainPart.Document.Body!;
+
+            var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
+
+            foreach (var para in paragraphs)
+            {
+                var paragraph = new Paragraph(new Run(new Text(para)));
+                body.Append(paragraph);
+            }
+
+            mainPart.Document.Save();
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+        var file = await _fileManagementClient.UploadAsync(stream,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename);
+
+        return new ConvertTextToDocumentResponse
+        {
+            File = file
+        };
+    }
+
+    private static async Task<string> ReadDocument(Stream file, string fileExtension)
     {
         string text;
         if (fileExtension == ".txt")
@@ -170,28 +189,22 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadPdfFile(Stream file)
     {
-       
         var document = PdfDocument.Open(file);
         var text = string.Join(" ", document.GetPages().Select(p => p.Text));
         return text;
-        
     }
 
     private static async Task<string> ReadDocxFile(Stream file)
     {
-      
         var document = WordprocessingDocument.Open(file, false);
         var text = document.MainDocumentPart.Document.Body.InnerText;
         return text;
-       
     }
 
-    private static int CountWords( string text)
+    private static int CountWords(string text)
     {
         char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
         var words = text.Split().Select(x => x.Trim(punctuationCharacters));
         return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
     }
 }
-
-
