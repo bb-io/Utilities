@@ -156,7 +156,7 @@ public class Files : BaseInvocable
         };
     }
 
-    public static async Task<string> ReadDocument(Stream file, string fileExtension)
+    private static async Task<string> ReadDocument(Stream file, string fileExtension)
     {
         string text;
         if (fileExtension == ".txt")
