@@ -138,8 +138,8 @@ public class Files : BaseInvocable
             var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
             
             var runProperties = new RunProperties();
-            var runFonts = new RunFonts { Ascii = "Arial" }; // Change "Arial" to your desired font
-            var fontSize = new FontSize { Val = "24" }; // Font size in half-points (24 = 12pt)
+            var runFonts = new RunFonts { Ascii = "Times New Roman" }; // Change "Arial" to your desired font
+            var fontSize = new FontSize { Val = "36" }; // Font size in half-points (24 = 12pt)
 
             runProperties.Append(runFonts);
             runProperties.Append(fontSize);
