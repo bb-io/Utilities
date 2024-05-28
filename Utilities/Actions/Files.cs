@@ -136,10 +136,20 @@ public class Files : BaseInvocable
             var body = mainPart.Document.Body!;
 
             var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
+            
+            var runProperties = new RunProperties();
+            var runFonts = new RunFonts { Ascii = "Arial" }; // Change "Arial" to your desired font
+            var fontSize = new FontSize { Val = "24" }; // Font size in half-points (24 = 12pt)
 
+            runProperties.Append(runFonts);
+            runProperties.Append(fontSize);
+            
             foreach (var para in paragraphs)
             {
-                var paragraph = new Paragraph(new Run(new Text(para)));
+                var run = new Run();
+                run.Append(runProperties.CloneNode(true)); // Apply font properties
+                run.Append(new Text(para));
+                var paragraph = new Paragraph(run);
                 body.Append(paragraph);
             }
 
