@@ -35,6 +35,13 @@ public class Files : BaseInvocable
         };
     }
 
+    [Action("Get file size", Description = "Returns the size of a file in bytes.")]
+    public async Task<long> GetFileSize([ActionParameter] FileDto file)
+    {
+        var fileStream = await _fileManagementClient.DownloadAsync(file.File);
+        return fileStream.Length;
+    }
+
     [Action("Convert document to text",
         Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
     public async Task<LoadDocumentResponse> LoadDocument([ActionParameter] LoadDocumentRequest request)
