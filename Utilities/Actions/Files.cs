@@ -36,7 +36,7 @@ public class Files : BaseInvocable
     }
 
     [Action("Get file size", Description = "Returns the size of a file in bytes.")]
-    public async Task<long> GetFileSize([ActionParameter] FileDto file)
+    public async Task<double> GetFileSize([ActionParameter] FileDto file)
     {
         var fileStream = await _fileManagementClient.DownloadAsync(file.File);
         var memoryStream = new MemoryStream();
