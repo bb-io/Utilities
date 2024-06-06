@@ -36,13 +36,13 @@ public class Files : BaseInvocable
     }
 
     [Action("Get file size", Description = "Returns the size of a file in bytes.")]
-    public async Task<int> GetFileSize([ActionParameter] FileDto file)
+    public async Task<double> GetFileSize([ActionParameter] FileDto file)
     {
         var fileStream = await _fileManagementClient.DownloadAsync(file.File);
         var memoryStream = new MemoryStream();
         await fileStream.CopyToAsync(memoryStream);
         memoryStream.Seek(0, SeekOrigin.Begin);
-        return (int)memoryStream.Length;
+        return memoryStream.Length;
     }
 
     [Action("Convert document to text",
