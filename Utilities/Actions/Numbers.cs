@@ -35,5 +35,12 @@ namespace Apps.Utilities.Actions
                 return myList;
             }
         }
+
+        [Action("Convert text to number", Description = "Change the type of data")]
+        public int ConvertTextToNumber([ActionParameter] string Text)
+        {
+            return int.Parse(Text);
+
+        }
     }
 }
