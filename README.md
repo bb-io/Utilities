@@ -64,6 +64,10 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Extract web page content** Get raw and unformatted content from a URL as text.
 - **Extract HTML content** Get raw and unformatted content from an HTML file.
 
+### Context
+
+- **Get flight context** allows you to get context data from the flight. This includes Flight ID and URL, Bird ID and name and Nest ID and name.
+
 ## Feedback
 
 Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.
