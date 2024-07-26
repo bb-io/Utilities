@@ -1,6 +1,6 @@
 namespace Apps.Utilities.Models.Arrays.Response;
 
-public class ArrayAddCreateResponse
+public class ArrayResponse
 {
-    public IEnumerable<string> MyArray { get; set; }
+    public IEnumerable<string> Array { get; set; }
 }
