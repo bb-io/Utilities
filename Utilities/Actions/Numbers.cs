@@ -1,4 +1,5 @@
-﻿using Apps.Utilities.Models.Shared;
+﻿using Apps.Utilities.Models.Numbers.Response;
+using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
@@ -37,9 +38,9 @@ namespace Apps.Utilities.Actions
         }
 
         [Action("Convert text to number", Description = "Change the type of data")]
-        public int ConvertTextToNumber([ActionParameter] string Text)
+        public ConvertTextToNumberResponse ConvertTextToNumber([ActionParameter] string Text)
         {
-            return int.Parse(Text);
+            return new ConvertTextToNumberResponse { Number = double.Parse(Text) };
 
         }
     }
