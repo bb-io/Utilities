@@ -47,7 +47,7 @@ public class Arrays : BaseInvocable
     [Action("Get first entry from array", Description = "Returns the first element in the array")]
     public string FirstArray([ActionParameter] IEnumerable<string> input)
     {
-        return input.First();
+        return input.ToList().FirstOrDefault();
     }
 
 }
