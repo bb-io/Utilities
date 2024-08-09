@@ -30,9 +30,9 @@ public class Arrays : BaseInvocable
 
 
     [Action("Deduplicate array", Description = "Returns only unique elements")]
-    public ArrayResponse DeduplicateArray([ActionParameter] IEnumerable<string> input)
+    public ArrayResponse DeduplicateArray([ActionParameter] ArrayCountRequest input)
     {
-        return new ArrayResponse { Array = input.Distinct() };
+        return new ArrayResponse { Array = input.Array.Distinct() };
     }
 
     [Action("Remove entry from array", Description = "Returns the array without the specified entry")]
@@ -45,9 +45,9 @@ public class Arrays : BaseInvocable
     }
 
     [Action("Get first entry from array", Description = "Returns the first element in the array")]
-    public string FirstArray([ActionParameter] IEnumerable<string> input)
+    public string FirstArray([ActionParameter] ArrayCountRequest input)
     {
-        return input.ToList().FirstOrDefault();
+        return input.Array.FirstOrDefault();
     }
 
 }
