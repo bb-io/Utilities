@@ -202,7 +202,7 @@ public class Files : BaseInvocable
             while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                stringBuilder.Append(line);
+                stringBuilder.AppendLine(line);
             }
         }
 
