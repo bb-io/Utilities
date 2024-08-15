@@ -71,6 +71,12 @@ This app provides generic utility actions that can come in useful in any bird. I
 
 - **Get flight context** allows you to get context data from the flight. This includes Flight ID and URL, Bird ID and name and Nest ID and name.
 
+## Events
+
+### Rss
+
+- **On RSS feed changed** triggers when specified RSS feed received new updates.
+
 ## Feedback
 
 Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.
