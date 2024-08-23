@@ -50,4 +50,10 @@ public class Arrays : BaseInvocable
         return input.Array.FirstOrDefault();
     }
 
+    [Action("Get last entry from array", Description = "Returns the last element in the array")]
+    public string LastArray([ActionParameter] ArrayCountRequest input)
+    {
+        return input.Array.LastOrDefault();
+    }
+
 }

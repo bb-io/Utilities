@@ -57,6 +57,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Array count** counts the number of elements in an array.
 - **Remove entry from array** returns the array without the specified entry.
 - **Get first entry from array** returns the first element in the array.
+- **Get last entry from array** returns the last element in the array.
 
 ### Numbers
 
