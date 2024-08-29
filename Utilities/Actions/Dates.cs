@@ -28,6 +28,18 @@ public class Dates : BaseInvocable
         return new FormattedDateResponse { FormattedDate = input.Date.ToString(input.Format, input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture) };
     }
 
+    [Action("Get date difference", Description = "Returns the difference between the two inputted days in total seconds, minutes, hours and days.")]
+    public DateDifferenceResponse DateDifference([ActionParameter][Display("Date 1")] DateTime date1, [ActionParameter][Display("Date 2")] DateTime date2)
+    {
+        return new DateDifferenceResponse
+        {
+            Seconds = Math.Abs((date2 - date1).TotalSeconds),
+            Minutes = Math.Abs((date2 - date1).TotalMinutes),
+            Hours = Math.Abs((date2 - date1).TotalHours),
+            Days = Math.Abs((date2 - date1).TotalDays),
+        };
+    }
+
     private static DateTime AddBusinessDays(DateTime date, int days)
     {
         if (days < 0)
