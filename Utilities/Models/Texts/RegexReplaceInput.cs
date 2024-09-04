@@ -4,10 +4,10 @@ namespace Apps.Utilities.Models.Texts
 {
     public class RegexReplaceInput
     {
-        [Display("Regular Expression")]
+        [Display("Regular expression")]
         public string Regex { get; set; }
 
-        [Display("Replace Pattern")]
+        [Display("Replace pattern")]
         public string Replace { get; set; }
     }
 }
