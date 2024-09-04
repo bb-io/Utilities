@@ -1,13 +1,12 @@
 ﻿using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Utilities.Models.Texts
-{
-    public class RegexReplaceInput
-    {
-        [Display("Regular Expression")]
-        public string Regex { get; set; }
+namespace Apps.Utilities.Models.Texts;
 
-        [Display("Replace Pattern")]
-        public string Replace { get; set; }
-    }
+public class RegexReplaceInput
+{
+    [Display("Regular expression")]
+    public string Regex { get; set; }
+
+    [Display("Replace pattern")]
+    public string Replace { get; set; }
 }
