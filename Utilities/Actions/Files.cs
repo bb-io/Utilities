@@ -129,7 +129,10 @@ public class Files : BaseInvocable
         switch (request.FileExtension.ToLower())
         {
             case ".txt":
-                response = await ConvertToTextFile(request.Text, filename);
+                response = await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain);
+                break;
+            case ".html":
+                response = await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html);
                 break;
             case ".doc":
             case ".docx":
@@ -144,10 +147,10 @@ public class Files : BaseInvocable
         return response;
     }
 
-    private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename)
+    private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType)
     {
         var bytes = Encoding.UTF8.GetBytes(text);
-        var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), MediaTypeNames.Application.Octet,
+        var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), contentType,
             filename);
 
         return new ConvertTextToDocumentResponse
