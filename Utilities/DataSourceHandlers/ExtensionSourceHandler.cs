@@ -10,7 +10,8 @@ namespace Apps.Utilities.DataSourceHandlers
             {
                 ".txt",
                 ".doc",
-                ".docx"
+                ".docx",
+                ".html",
             };
 
             return extension.ToDictionary(ext => ext, ext => ext);
