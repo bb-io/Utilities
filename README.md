@@ -60,6 +60,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Remove entry from array** returns the array without the specified entry.
 - **Get first entry from array** returns the first element in the array.
 - **Get last entry from array** returns the last element in the array.
+- **Get entry by position** returns the element in the specified position within the array. Initial position is 1.
 
 ### Numbers
 
