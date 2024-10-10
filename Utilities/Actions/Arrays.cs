@@ -58,9 +58,9 @@ public class Arrays : BaseInvocable
 
     [Action("Get entry by position", Description = "Returns the element in the specified position within the array")]
     public string GetEntryInPosition([ActionParameter] ArrayCountRequest input,
-        [ActionParameter] int position)
+        [ActionParameter] int Position)
     {
-        return input.Array.ToList()[position-1];
+        return input.Array.ToList()[Position-1];
     }
 
 }
