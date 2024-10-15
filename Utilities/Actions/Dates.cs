@@ -40,7 +40,7 @@ public class Dates : BaseInvocable
         };
     }
 
-    [Action("Convert text to date", Description = "Convert text input to date.")]
+    [Action("Convert text to date", Description = "Converts text input to date.")]
     public DateResponse ConvertTextToDate([ActionParameter] TextToDateRequest input)
     {
         var date = DateTime.Parse(input.Text, input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture);
