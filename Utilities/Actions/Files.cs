@@ -120,7 +120,7 @@ public class Files : BaseInvocable
     }
     
     [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
-    public async Task<string> ExtractTextFromDocument(
+    public async Task<ExtractTextFromDocumentResponse> ExtractTextFromDocument(
         [ActionParameter] ExtractTextFromDocumentRequest request)
     {
         var file = await _fileManagementClient.DownloadAsync(request.File);
@@ -134,8 +134,11 @@ public class Files : BaseInvocable
         text = String.IsNullOrEmpty(request.Group) 
             ? Regex.Match(text, Regex.Unescape(request.Regex)).Value 
             : Regex.Match(text, Regex.Unescape(request.Regex)).Groups[request.Group].Value;
-        
-        return text;
+
+        return new()
+        {
+            ExtractedText = text
+        };
     }
 
     [Action("Convert text to document", Description = "Convert text to txt, doc or docx document.")]
