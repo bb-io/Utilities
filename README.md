@@ -33,7 +33,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Change file name** takes a file and a text input. The filename (without extension) is renamed and the file is returned as output.
 - **Sanitize file name** removes any defined characters from a file name (without extension).
 - **Get file size** returns the size of a file in bytes.
-- **Replace text in document** works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files.
+- **Replace using Regex in document** works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files.
 
 ### XML Files
 

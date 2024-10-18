@@ -100,7 +100,7 @@ public class Files : BaseInvocable
         return CountWords(filecontent);
     }
     
-    [Action("Replace text in document", Description = "Replace text in a document. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files")]
+    [Action("Replace using Regex in document", Description = "Replace text in a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files")]
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
     {
