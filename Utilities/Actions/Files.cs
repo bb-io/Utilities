@@ -118,6 +118,29 @@ public class Files : BaseInvocable
                 request.File.ContentType, request.File.Name)
         };
     }
+    
+    [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
+    public async Task<ReplaceTextInDocumentResponse> ExtractTextFromDocument(
+        [ActionParameter] ExtractTextFromDocumentRequest request)
+    {
+        var file = await _fileManagementClient.DownloadAsync(request.File);
+        var fileMemoryStream = new MemoryStream();
+        await file.CopyToAsync(fileMemoryStream);
+        fileMemoryStream.Position = 0;
+        
+        var reader = new StreamReader(fileMemoryStream);
+        var text = await reader.ReadToEndAsync();
+        
+        text = String.IsNullOrEmpty(request.Group) 
+            ? Regex.Match(text, Regex.Unescape(request.Regex)).Value 
+            : Regex.Match(text, Regex.Unescape(request.Regex)).Groups[request.Group].Value;
+        
+        return new()
+        {
+            File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(text)),
+                request.File.ContentType, request.File.Name)
+        };
+    }
 
     [Action("Convert text to document", Description = "Convert text to txt, doc or docx document.")]
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
