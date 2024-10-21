@@ -49,8 +49,33 @@ namespace Apps.Utilities.Actions
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
 
             var doc = XDocument.Load(streamIn);
-            var items = doc.Root.Descendants(request.Property);
-            return new() { Value = items.First().Value };
+            try 
+            {
+                var items = doc.Root.Descendants(request.Property);
+                var text = String.IsNullOrEmpty(request.Attribute) ?
+                items.First().Value :
+                items.First().Attribute(request.Attribute)?.Value;
+                return new() { Value = text };
+            }
+            catch 
+            {
+                try 
+                {
+                    var element = doc.Element(request.Property);
+                    var text = String.IsNullOrEmpty(request.Attribute) ?
+                    element?.Value :
+                    element?.Attribute(request.Attribute)?.Value;
+                    return new() { Value = text ?? ""};
+                } 
+                catch (Exception x)
+                {
+                    if (x.Message.ToLower().Contains("sequence contains no elements"))
+                    {
+                        throw new Exception("The specified property or attribute are not present in the file");
+                    }
+                    throw x;
+                }
+            }
         }
 
         [Action("Bump version string", Description = "Bump version string")]
