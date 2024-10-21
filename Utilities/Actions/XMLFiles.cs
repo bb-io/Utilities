@@ -71,7 +71,7 @@ namespace Apps.Utilities.Actions
                 {
                     if (x.Message.ToLower().Contains("sequence contains no elements"))
                     {
-                        throw new Exception("The specified property or attribute are not present in the file");
+                        throw new Exception("The specified property or attribute is not present in the file");
                     }
                     throw x;
                 }
