@@ -4,8 +4,10 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.IO.Compression;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -167,6 +169,34 @@ public class Files : BaseInvocable
         }
 
         return response;
+    }
+
+    [Action("Unzip files", Description = "Take a .zip file and unzips it into multiple files")]
+    public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)
+    {
+        var file = await _fileManagementClient.DownloadAsync(request.File);
+        var files = new List<FileDto>();
+        using (var filestream = new MemoryStream())
+        {
+            await file.CopyToAsync(filestream);
+            filestream.Position = 0;
+            using (var zip = new ZipArchive(filestream, ZipArchiveMode.Read, false))
+            {
+                foreach (var entry in zip.Entries)
+                {
+                    using (var stream = entry.Open())
+                    {
+                        var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                        files.Add(new FileDto { File = uploadedFile });
+                    }
+                }
+            }
+        }
+
+        return new MultipleFilesResponse
+        {
+            Files = files
+        };
     }
 
     private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType)

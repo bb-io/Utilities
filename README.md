@@ -36,6 +36,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Get file size** returns the size of a file in bytes.
 - **Replace using Regex in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace using Regex' but works with files.
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
+- **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 
 ### XML Files
 
