@@ -7,5 +7,7 @@ namespace Apps.Utilities.Models.XMLFiles
         public FileReference File { get; set; }
 
         public string Property { get; set; }
+
+        public string? Attribute { get; set; }
     }
 }
