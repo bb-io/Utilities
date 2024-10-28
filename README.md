@@ -64,6 +64,7 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Get first entry from array** returns the first element in the array.
 - **Get last entry from array** returns the last element in the array.
 - **Get entry by position** returns the element in the specified position within the array. Initial position is 1.
+- **Retain specified entries in array** returns the original array without the entries that were not present in the provided control group (entries to keep).
 
 ### Numbers
 

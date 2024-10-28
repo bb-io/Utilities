@@ -3,6 +3,7 @@ using Apps.Utilities.Models.Arrays.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace Apps.Utilities.Actions;
 
@@ -12,7 +13,7 @@ public class Arrays : BaseInvocable
     public Arrays(InvocationContext invocationContext) : base(invocationContext)
     {
     }
-    
+
     [Action("Array contains", Description = "Check if array contains a ceratin entry")]
     public ArrayContainsResponse ArrayContains([ActionParameter] ArrayContainsRequest input)
     {
@@ -60,7 +61,16 @@ public class Arrays : BaseInvocable
     public string GetEntryInPosition([ActionParameter] ArrayCountRequest input,
         [ActionParameter] int Position)
     {
-        return input.Array.ToList()[Position-1];
+        return input.Array.ToList()[Position - 1];
     }
 
+    [Action("Retain specified entries in array", Description = "Returns the array without the entries that were not present in the provided control array")]
+    public ArrayResponse ArrayFilter([ActionParameter] ArrayFilterRequest input)
+    {
+        return new()
+        {
+            Array = input.Array.Where(x => input.Control.Contains(x))
+        };
+    }
 }
+
