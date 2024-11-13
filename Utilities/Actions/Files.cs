@@ -102,6 +102,29 @@ public class Files : BaseInvocable
         return CountWords(filecontent);
     }
     
+    [Action("Get files word count", Description = "Returns number of words in the files")]
+    public async Task<FilesWordCountResponse> GetWordCountInFiles([ActionParameter] FilesWordCountRequest request)
+    {
+        double totalWordCount = 0;
+        var files = new List<WordCountItem>();
+        foreach (var file in request.Files)
+        {
+            var wordCount = await GetWordCountInFile(new FileDto { File = file });
+            totalWordCount += wordCount;
+            files.Add(new WordCountItem
+            {
+                FileName = file.Name,
+                WordCount = wordCount
+            });
+        }
+
+        return new FilesWordCountResponse
+        {
+            WordCount = totalWordCount,
+            FilesWithWordCount = files
+        };
+    }
+    
     [Action("Replace using Regex in document", Description = "Replace text in a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files")]
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
