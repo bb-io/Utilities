@@ -49,7 +49,7 @@ public class Files : BaseInvocable
     }
 
     [Action("Convert document to text",
-        Description = "Load document's text. Document must be in docx/doc, pdf or txt format.")]
+        Description = "Load document's text. Document must be in docx/doc, pdf or any plaintext format.")]
     public async Task<LoadDocumentResponse> LoadDocument([ActionParameter] LoadDocumentRequest request)
     {
         var file = await _fileManagementClient.DownloadAsync(request.File);
@@ -280,19 +280,17 @@ public class Files : BaseInvocable
     private static async Task<string> ReadDocument(Stream file, string fileExtension)
     {
         string text;
-        if (fileExtension == ".txt")
-            text = await ReadTxtFile(file);
-        else if (fileExtension == ".pdf")
+        if (fileExtension == ".pdf")
             text = await ReadPdfFile(file);
         else if (fileExtension == ".docx" || fileExtension == ".doc")
             text = await ReadDocxFile(file);
         else
-            throw new ArgumentException("Unsupported document format. Please provide docx, pdf or txt file.");
+            text = await ReadPlaintextFile(file);
 
         return text;
     }
 
-    private static async Task<string> ReadTxtFile(Stream file)
+    private static async Task<string> ReadPlaintextFile(Stream file)
     {
         var stringBuilder = new StringBuilder();
         using (var reader = new StreamReader(file))
