@@ -4,6 +4,7 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using System.Text.RegularExpressions;
+using BleuNet;
 
 namespace Apps.Utilities.Actions;
 
@@ -13,6 +14,27 @@ public class Texts : BaseInvocable
     public Texts(InvocationContext context) : base(context)
     {
     }
+
+    [Action("Calculate BLEU score",Description = "Evaluation of the quality of text which has been machine-translated from one natural language to another")]
+    public double CalculateBleuScore(
+        [ActionParameter][Display("Reference text", Description = "Reference text (human translation)")] string referenceText, 
+        [ActionParameter][Display("Translated text", Description = "Translated part (machine translation)")] string translatedText)
+    {
+        if (string.IsNullOrWhiteSpace(referenceText) || string.IsNullOrWhiteSpace(translatedText))
+        {
+            throw new ArgumentException("Reference text and translated text cannot be null or empty.");
+        }
+
+        referenceText = referenceText.ToLower().Trim();
+        translatedText = translatedText.ToLower().Trim();
+
+        var referenceSentenceTokens = new string[][] {Utility.Tokenize( referenceText) };
+        var translatedSentenceTokens = new string[][] { Utility.Tokenize(translatedText) };
+
+        double score = Metrics.CorpusBleu(referenceSentenceTokens, translatedSentenceTokens);
+        return score;
+    }
+
 
     [Action("Sanitize text", Description = "Remove any defined characters from a text.")]
     public TextDto SanitizeText([ActionParameter] TextDto text, [ActionParameter] SanitizeRequest input)
