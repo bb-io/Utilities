@@ -55,8 +55,8 @@ This app provides generic utility actions that can come in useful in any bird. I
 - **Replace using Regex** use Regular Expressions to search and replace within text
 - **Convert text to document** Converts text to txt, doc or docx document.
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
-- **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a reference text. The score ranges from 0 to 1, where a higher score indicates a closer match to the reference.
-
+- **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
+- 
 ### Arrays
 
 - **Array contains** checks if an array contains a certain entry.
