@@ -1,49 +1,50 @@
 ﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Utilities.DataSourceHandlers;
 
-public class FontStaticDataSourceHandler : IStaticDataSourceHandler
+public class FontStaticDataSourceHandler : IStaticDataSourceItemHandler
 {
-    public Dictionary<string, string> GetData()
+    public IEnumerable<DataSourceItem> GetData()
     {
-        return new Dictionary<string, string>
+        return new List<DataSourceItem>
         {
-            { "Arial", "Arial" },
-            { "Calibri", "Calibri" },
-            { "Cambria", "Cambria" },
-            { "Courier New", "Courier New" },
-            { "Georgia", "Georgia" },
-            { "Times New Roman", "Times New Roman" },
-            { "Verdana", "Verdana" },
-            { "Tahoma", "Tahoma" },
-            { "Trebuchet MS", "Trebuchet MS" },
-            { "Arial Black", "Arial Black" },
-            { "Impact", "Impact" },
-            { "Comic Sans MS", "Comic Sans MS" },
-            { "Franklin Gothic Medium", "Franklin Gothic Medium" },
-            { "Garamond", "Garamond" },
-            { "Palatino Linotype", "Palatino Linotype" },
-            { "Book Antiqua", "Book Antiqua" },
-            { "Lucida Sans Unicode", "Lucida Sans Unicode" },
-            { "Segoe UI", "Segoe UI" },
-            { "Century Gothic", "Century Gothic" },
-            { "Gill Sans", "Gill Sans" },
-            { "Helvetica", "Helvetica" },
-            { "Lucida Console", "Lucida Console" },
-            { "Futura", "Futura" },
-            { "Optima", "Optima" },
-            { "Candara", "Candara" },
-            { "Geneva", "Geneva" },
-            { "Baskerville", "Baskerville" },
-            { "Avant Garde", "Avant Garde" },
-            { "Perpetua", "Perpetua" },
-            { "Rockwell", "Rockwell" },
-            { "Goudy Old Style", "Goudy Old Style" },
-            { "Bookman", "Bookman" },
-            { "Century Schoolbook", "Century Schoolbook" },
-            { "Bell MT", "Bell MT" },
-            { "Copperplate Gothic", "Copperplate Gothic" },
-            { "Brush Script MT", "Brush Script MT" }
+            new DataSourceItem("Arial", "Arial"),
+            new DataSourceItem("Calibri", "Calibri"),
+            new DataSourceItem("Cambria", "Cambria"),
+            new DataSourceItem("Courier New", "Courier New"),
+            new DataSourceItem("Georgia", "Georgia"),
+            new DataSourceItem("Times New Roman", "Times New Roman"),
+            new DataSourceItem("Verdana", "Verdana"),
+            new DataSourceItem("Tahoma", "Tahoma"),
+            new DataSourceItem("Trebuchet MS", "Trebuchet MS"),
+            new DataSourceItem("Arial Black", "Arial Black"),
+            new DataSourceItem("Impact", "Impact"),
+            new DataSourceItem("Comic Sans MS", "Comic Sans MS"),
+            new DataSourceItem("Franklin Gothic Medium", "Franklin Gothic Medium"),
+            new DataSourceItem("Garamond", "Garamond"),
+            new DataSourceItem("Palatino Linotype", "Palatino Linotype"),
+            new DataSourceItem("Book Antiqua", "Book Antiqua"),
+            new DataSourceItem("Lucida Sans Unicode", "Lucida Sans Unicode"),
+            new DataSourceItem("Segoe UI", "Segoe UI"),
+            new DataSourceItem("Century Gothic", "Century Gothic"),
+            new DataSourceItem("Gill Sans", "Gill Sans"),
+            new DataSourceItem("Helvetica", "Helvetica"),
+            new DataSourceItem("Lucida Console", "Lucida Console"),
+            new DataSourceItem("Futura", "Futura"),
+            new DataSourceItem("Optima", "Optima"),
+            new DataSourceItem("Candara", "Candara"),
+            new DataSourceItem("Geneva", "Geneva"),
+            new DataSourceItem("Baskerville", "Baskerville"),
+            new DataSourceItem("Avant Garde", "Avant Garde"),
+            new DataSourceItem("Perpetua", "Perpetua"),
+            new DataSourceItem("Rockwell", "Rockwell"),
+            new DataSourceItem("Goudy Old Style", "Goudy Old Style"),
+            new DataSourceItem("Bookman", "Bookman"),
+            new DataSourceItem("Century Schoolbook", "Century Schoolbook"),
+            new DataSourceItem("Bell MT", "Bell MT"),
+            new DataSourceItem("Copperplate Gothic", "Copperplate Gothic"),
+            new DataSourceItem("Brush Script MT", "Brush Script MT")
         };
     }
 }

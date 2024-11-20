@@ -1,17 +1,18 @@
 ﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Utilities.DataSourceHandlers
 {
-    public class VersionTypeSourceHandler : IStaticDataSourceHandler
+    public class VersionTypeSourceHandler : IStaticDataSourceItemHandler
     {
 
-        public Dictionary<string, string> GetData()
+        public IEnumerable<DataSourceItem> GetData()
         {
-            return new Dictionary<string, string>()
+            return new List<DataSourceItem>
             {
-                {"major", "Major" },
-                {"minor", "Minor" },
-                {"patch", "Patch" }
+                new DataSourceItem("major", "Major" ),
+                new DataSourceItem("minor", "Minor"),
+                new DataSourceItem("patch", "Patch")
             };
         }
     }
