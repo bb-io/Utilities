@@ -1,13 +1,14 @@
 ﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
 using System.Globalization;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Utilities.DataSourceHandlers;
 
-public class CultureSourceHandler : IStaticDataSourceHandler
+public class CultureSourceHandler : IStaticDataSourceItemHandler
 {
-    public Dictionary<string, string> GetData()
+    public IEnumerable<DataSourceItem> GetData()
     {
         var cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
-        return cultures.ToDictionary(x => x.Name, x => x.EnglishName);
+        return cultures.Select(x => new DataSourceItem(x.Name, x.EnglishName));
     }
 }

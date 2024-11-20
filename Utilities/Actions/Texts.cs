@@ -16,7 +16,7 @@ public class Texts : BaseInvocable
     }
 
     [Action("Calculate BLEU score",Description = "Evaluation of the quality of text which has been machine-translated from one natural language to another")]
-    public double CalculateBleuScore(
+    public BleuScore CalculateBleuScore(
         [ActionParameter][Display("Reference text", Description = "Reference text (human translation)")] string referenceText, 
         [ActionParameter][Display("Translated text", Description = "Translated part (machine translation)")] string translatedText)
     {
@@ -32,7 +32,10 @@ public class Texts : BaseInvocable
         var translatedSentenceTokens = new string[][] { Utility.Tokenize(translatedText) };
 
         double score = Metrics.CorpusBleu(referenceSentenceTokens, translatedSentenceTokens);
-        return score;
+        return new BleuScore
+        {
+            Score = score
+        };
     }
 
 

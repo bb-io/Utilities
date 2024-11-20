@@ -1,10 +1,11 @@
 ﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.Utilities.DataSourceHandlers
 {
-    public class ExtensionSourceHandler : IStaticDataSourceHandler
+    public class ExtensionSourceHandler : IStaticDataSourceItemHandler
     {
-        public Dictionary<string, string> GetData()
+        public IEnumerable<DataSourceItem> GetData()
         {
             var extension = new List<string>
             {
@@ -14,7 +15,11 @@ namespace Apps.Utilities.DataSourceHandlers
                 ".html",
             };
 
-            return extension.ToDictionary(ext => ext, ext => ext);
+            return extension.Select(x=> new DataSourceItem
+            {
+                Value= x,
+                DisplayName= x
+            });
         }
     }
 }
