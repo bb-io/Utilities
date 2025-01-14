@@ -9,5 +9,7 @@ namespace Apps.Utilities.Models.XMLFiles
         public string Property { get; set; }
 
         public string? Attribute { get; set; }
+
+        public string? Namespace { get; set; }
     }
 }

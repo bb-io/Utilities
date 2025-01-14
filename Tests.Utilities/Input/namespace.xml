@@ -1,0 +1,14 @@
+<root xmlns:ns="http://example.com/ns">
+  <ns:meta version="1.0" />
+  <ns:title>Foo</ns:title>
+  <ns:row>
+    <ns:field name="Id">1</ns:field>
+    <ns:field name="AreaId">1</ns:field>
+    <ns:field name="Name">Alice</ns:field>
+  </ns:row>
+  <ns:row>
+    <ns:field name="Id">2</ns:field>
+    <ns:field name="AreaId">4</ns:field>
+    <ns:field name="Name">Bob</ns:field>
+  </ns:row>
+</root>

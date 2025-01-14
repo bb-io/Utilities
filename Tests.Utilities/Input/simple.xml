@@ -1,0 +1,14 @@
+<root>
+  <meta version="1.0" />
+  <title>Foo</title>
+  <row>
+    <field name="Id">1</field>
+    <field name="AreaId">1</field>
+    <field name="Name">Alice</field>
+  </row>
+  <row>
+    <field name="Id">2</field>
+    <field name="AreaId">4</field>
+    <field name="Name">Bob</field>
+  </row>
+</root>
