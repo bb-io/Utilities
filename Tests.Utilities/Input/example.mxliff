@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:m="http://www.memsource.com/mxlf/2.0"
+  version="1.2" m:level="2" m:version="2.12">
+  <file datatype="x-undefined" original="Dogs.txt" source-language="en" target-language="es"
+    m:begin-group-id="0" m:end-group-id="2" m:file-format="PLAIN_TEXT"
+    m:job-uid="f0VFElnxYShNla1T2LhTaa" m:project-uid="975alagnhLqwdRLa3k4ly3"
+    m:task-id="fKRIyzNZosMWywTp_dc2" m:transmem-ignore-tag-metadata="yes">
+    <header>
+      <m:in-ctx-preview-skel bilingual="false">
+<![CDATA[<html>
+<head>
+<style>
+body, span {white-space: pre;}
+</style>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta charset="UTF-8">
+</head>
+<body>
+<span><span id="m-tgroup_0" class="m-tgroup"></span></span>
+<span><span id="m-tgroup_1" class="m-tgroup"></span></span>
+<span><span id="m-tgroup_2" class="m-tgroup"></span></span>
+</body>
+</html>]]>
+</m:in-ctx-preview-skel>
+    </header>
+    <body>
+
+      <group id="0" m:para-id="0">
+        <context-group>
+</context-group>
+        <trans-unit id="fKRIyzNZosMWywTp_dc2:0" m:confirmed="1" m:created-at="1735926665737"
+          m:created-by="20017787" m:gross-score="0.0" m:level-edited="false" m:locked="false"
+          m:modified-at="1735926726586" m:modified-by="Blackbird" m:para-id="0" m:score="0.0"
+          m:trans-origin="null" xml:space="preserve">
+<source>Dogs are loyal companions who bring joy and love into our lives.</source>
+<target>Los perros son compañeros fieles</target>
+<alt-trans origin="machine-trans"><target/></alt-trans>
+<alt-trans match-quality="0.0" origin="memsource-tm"><target/></alt-trans>
+</trans-unit>
+      </group>
+      <group id="1" m:para-id="1">
+        <context-group>
+</context-group>
+        <trans-unit id="fKRIyzNZosMWywTp_dc2:1" m:confirmed="1" m:created-at="1735926672453"
+          m:created-by="20017787" m:gross-score="0.0" m:level-edited="false" m:locked="false"
+          m:modified-at="1735926806726" m:modified-by="20017787" m:para-id="1" m:score="0.0"
+          m:trans-origin="null" xml:space="preserve">
+<source>Walking with your dog in the park is a wonderful way to bond and stay active.</source>
+<target>Sacar a pasear al perro</target>
+<alt-trans origin="machine-trans"><target/></alt-trans>
+<alt-trans match-quality="0.0" origin="memsource-tm"><target/></alt-trans>
+</trans-unit>
+      </group>
+      <group id="2" m:para-id="2">
+        <context-group>
+</context-group>
+        <trans-unit id="fKRIyzNZosMWywTp_dc2:2" m:confirmed="1" m:created-at="1735926721071"
+          m:created-by="20017787" m:gross-score="0.0" m:level-edited="false" m:locked="false"
+          m:modified-at="1735926807728" m:modified-by="20017787" m:para-id="2" m:score="0.0"
+          m:trans-origin="null" xml:space="preserve">
+<source>Training and socialization are essential for ensuring a well-behaved and happy dog.</source>
+<target>El entrenamiento y la socialización son esenciales</target>
+<alt-trans origin="machine-trans"><target/></alt-trans>
+<alt-trans match-quality="0.0" origin="memsource-tm"><target/></alt-trans>
+</trans-unit>
+      </group>
+    </body>
+  </file>
+  <m:extra>
+    <m:users>
+      <m:user fullname="Cecilia Nistal" id="20017787" uid="t0nKhGbdyKTadi3c1VCty9" username="ceci" />
+      <m:user id="Blackbird" />
+    </m:users>
+  </m:extra>
+</xliff>

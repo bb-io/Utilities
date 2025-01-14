@@ -18,28 +18,42 @@ namespace Apps.Utilities.Actions
         {
             _fileManagementClient = fileManagementClient;
         }
-        [Action("Change XML file property", Description = "Change XML file property")]
+        [Action("Change XML file property value", Description = "Change XML file property value or attribute value")]
         public async Task<ConvertTextToDocumentResponse> ChangeXML([ActionParameter] ChangeXMLRequest request)
         {
             if (request.Property.Contains(':'))
             {
-                throw new PluginMisconfigurationException("This action currently does not support namespaces. Please refrain from using a ':' in your property value.");
+                throw new PluginMisconfigurationException("You cannot use the ':' character in property names. Use the namespace optional input instead!");
             }
-
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+
+            XNamespace ns = request.Namespace ?? string.Empty;
             var doc = XDocument.Load(streamIn);
-            var items = doc.Root.Descendants(request.Property);
+            var items = doc.Root.Descendants(ns + request.Property);
 
             foreach (var itemElement in items)
-                itemElement.Value = request.Value;
+            {
+                if (request.Attribute != null && itemElement.Attribute(ns + request.Attribute) != null)
+                {
+                    var attribute = itemElement.Attribute(ns + request.Attribute);
+                    if (attribute != null)
+                    {
+                        attribute.Value = request.Value;
+                    }
+                } else
+                {
+                    itemElement.Value = request.Value;
+                }
+            }                
 
-            await using var streamOut = new MemoryStream();
+            using var streamOut = new MemoryStream();
             var settings = new XmlWriterSettings();
             settings.OmitXmlDeclaration = true;
             settings.Indent = true;
             var writer = XmlWriter.Create(streamOut, settings);
             doc.Save(writer);
-            await writer.FlushAsync();
+            writer.Flush();
+            streamOut.Position = 0;
 
             var resultFile =
                 await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
@@ -49,20 +63,20 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Get XML file property", Description = "Get XML file property")]
+        [Action("Get XML file property value", Description = "Get XML file property value or attribute value")]
         public async Task<GetXMLPropertyResponse> GetXMLProperty([ActionParameter] GetXMLPropertyRequest request)
         {
             if (request.Property.Contains(':'))
             {
-                throw new PluginMisconfigurationException("This action currently does not support namespaces. Please refrain from using a ':' in your property value.");
+                throw new PluginMisconfigurationException("You cannot use the ':' character in property names. Use the namespace optional input instead!");
             }
-
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            XNamespace ns = request.Namespace ?? string.Empty;
 
             var doc = XDocument.Load(streamIn);
             try 
             {
-                var items = doc.Root.Descendants(request.Property);
+                var items = doc.Root.Descendants(ns + request.Property);
                 var text = String.IsNullOrEmpty(request.Attribute) ?
                 items.First().Value :
                 items.First().Attribute(request.Attribute)?.Value;
@@ -72,7 +86,7 @@ namespace Apps.Utilities.Actions
             {
                 try 
                 {
-                    var element = doc.Element(request.Property);
+                    var element = doc.Element(ns + request.Property);
                     var text = String.IsNullOrEmpty(request.Attribute) ?
                     element?.Value :
                     element?.Attribute(request.Attribute)?.Value;
@@ -82,7 +96,7 @@ namespace Apps.Utilities.Actions
                 {
                     if (x.Message.ToLower().Contains("sequence contains no elements"))
                     {
-                        throw new Exception("The specified property or attribute is not present in the file");
+                        throw new PluginMisconfigurationException("The specified property or attribute is not present in the file");
                     }
                     throw x;
                 }
