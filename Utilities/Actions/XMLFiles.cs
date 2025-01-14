@@ -5,6 +5,7 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using System.Xml.Linq;
 using System.Xml;
 using Apps.Utilities.Models.XMLFiles;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions
 {
@@ -20,6 +21,11 @@ namespace Apps.Utilities.Actions
         [Action("Change XML file property", Description = "Change XML file property")]
         public async Task<ConvertTextToDocumentResponse> ChangeXML([ActionParameter] ChangeXMLRequest request)
         {
+            if (request.Property.Contains(':'))
+            {
+                throw new PluginMisconfigurationException("This action currently does not support namespaces. Please refrain from using a ':' in your property value.");
+            }
+
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
             var doc = XDocument.Load(streamIn);
             var items = doc.Root.Descendants(request.Property);
@@ -46,6 +52,11 @@ namespace Apps.Utilities.Actions
         [Action("Get XML file property", Description = "Get XML file property")]
         public async Task<GetXMLPropertyResponse> GetXMLProperty([ActionParameter] GetXMLPropertyRequest request)
         {
+            if (request.Property.Contains(':'))
+            {
+                throw new PluginMisconfigurationException("This action currently does not support namespaces. Please refrain from using a ':' in your property value.");
+            }
+
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
 
             var doc = XDocument.Load(streamIn);
