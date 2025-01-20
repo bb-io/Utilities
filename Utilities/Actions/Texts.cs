@@ -70,11 +70,11 @@ public class Texts : BaseInvocable
     {
         if (String.IsNullOrEmpty(regex.Group))
         {
-            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Value;
+            return Regex.Match(input.Text, regex.Regex).Value;
         }
         else
         {
-            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Groups[regex.Group].Value;
+            return Regex.Match(input.Text, regex.Regex).Groups[regex.Group].Value;
         }
     }
 
