@@ -136,7 +136,7 @@ public class Files : BaseInvocable
         
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
-        var replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
+        var replacedText = Regex.Replace(text, request.Regex, request.Replace);
         return new()
         {
             File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
@@ -157,8 +157,8 @@ public class Files : BaseInvocable
         var text = await reader.ReadToEndAsync();
         
         text = String.IsNullOrEmpty(request.Group) 
-            ? Regex.Match(text, Regex.Unescape(request.Regex)).Value 
-            : Regex.Match(text, Regex.Unescape(request.Regex)).Groups[request.Group].Value;
+            ? Regex.Match(text, request.Regex).Value 
+            : Regex.Match(text, request.Regex).Groups[request.Group].Value;
 
         return new()
         {

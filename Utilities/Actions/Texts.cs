@@ -70,18 +70,18 @@ public class Texts : BaseInvocable
     {
         if (String.IsNullOrEmpty(regex.Group))
         {
-            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Value;
+            return Regex.Match(input.Text, regex.Regex).Value;
         }
         else
         {
-            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Groups[regex.Group].Value;
+            return Regex.Match(input.Text, regex.Regex).Groups[regex.Group].Value;
         }
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
     public List<string> ExtractManyRegex([ActionParameter] TextDto input, [ActionParameter] RegexManyInput regex)
     {
-        return Regex.Matches(input.Text, Regex.Unescape(regex.Regex))
+        return Regex.Matches(input.Text, regex.Regex)
             .OfType<Match>()
             .Select(m => m.Value)
             .ToList();
@@ -112,7 +112,7 @@ public class Texts : BaseInvocable
     [Action("Replace using Regex", Description = "Use Regular Expressions to search and replace within text")]
     public string ReplaceRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceInput regex)
     {
-        return Regex.Replace(input.Text, Regex.Unescape(regex.Regex), Regex.Unescape(regex.Replace));
+        return Regex.Replace(input.Text, regex.Regex, regex.Replace);
     }
 
     [Action("Trim text", Description = "Trim specified text")]
