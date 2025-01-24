@@ -99,13 +99,21 @@ namespace Apps.Utilities.Actions
 
             foreach (var itemElement in items)
             {
-                if (!string.IsNullOrEmpty(request.Attribute)
-                    && itemElement.Attribute(ns + request.Attribute) != null)
+                if (!string.IsNullOrEmpty(request.Attribute))
                 {
-                    var attribute = itemElement.Attribute(ns + request.Attribute);
-                    if (attribute != null)
+                    var attributeWithNs = itemElement.Attribute(ns + request.Attribute);
+
+                    if (attributeWithNs == null)
                     {
-                        attribute.Value = request.Value;
+                        attributeWithNs = itemElement.Attribute(request.Attribute);
+                    }
+                    if (attributeWithNs != null)
+                    {
+                        attributeWithNs.Value = request.Value;
+                    }
+                    else
+                    {
+                        throw new PluginMisconfigurationException($"Attribute '{request.Attribute}' not found in element '{request.Property}'.");
                     }
                 }
                 else
