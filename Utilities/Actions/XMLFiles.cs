@@ -84,7 +84,6 @@ namespace Apps.Utilities.Actions
             }
         }
 
-
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingProperty(ChangeXMLRequest request)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
@@ -134,7 +133,6 @@ namespace Apps.Utilities.Actions
                 File = resultFile
             };
         }
-
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingXPath(ChangeXMLRequest request)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
@@ -235,7 +233,6 @@ namespace Apps.Utilities.Actions
                 throw new PluginApplicationException(ex.Message);
             }
         }
-
         private async Task<GetXMLPropertyResponse> GetXmlPropertyUsingProperty(GetXMLPropertyRequest request)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
@@ -275,7 +272,6 @@ namespace Apps.Utilities.Actions
                 throw new PluginApplicationException(ex.Message);
             }
         }
-
 
     }
 }

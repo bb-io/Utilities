@@ -5,6 +5,7 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using System.Text.RegularExpressions;
 using BleuNet;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions;
 
@@ -81,10 +82,26 @@ public class Texts : BaseInvocable
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
     public List<string> ExtractManyRegex([ActionParameter] TextDto input, [ActionParameter] RegexManyInput regex)
     {
-        return Regex.Matches(input.Text, regex.Regex)
-            .OfType<Match>()
-            .Select(m => m.Value)
-            .ToList();
+        if (input == null || string.IsNullOrEmpty(input.Text))
+            throw new PluginMisconfigurationException("Input text cannot be null or empty.");
+
+        if (regex == null || string.IsNullOrEmpty(regex.Regex))
+            throw new PluginMisconfigurationException("Regular expression cannot be null or empty.");
+        try
+        {
+            return Regex.Matches(input.Text, regex.Regex)
+                .OfType<Match>()
+                .Select(m => m.Value)
+                .ToList();
+        }
+        catch (ArgumentException ex)
+        {
+            throw new PluginMisconfigurationException("The provided regular expression is invalid.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new PluginApplicationException("Error:", ex);
+        }
     }
 
     [Action("Extract occurences from text", Description = "Returns all matches from text of a predefined list of possible options")]
