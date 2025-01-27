@@ -1,4 +1,5 @@
 using Apps.Utilities.Actions;
+using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
@@ -218,6 +219,19 @@ public class XMLTests : TestBase
         Assert.IsTrue(true);
     }
 
+    [TestMethod]
+    public async Task Count_Words_In_Html()
+    {
+        var actions = new Files(InvocationContext, FileManager);
+        var file = new FileReference { Name = "test.html" };
+        var input = new FileDto { File = file };
+
+        var result = await actions.GetWordCountInFile(input);
+        Console.WriteLine(result);
+        Assert.AreEqual(71, result);
+        Assert.IsTrue(true);
+    }
+
 
     private string GetXmlValue(string fileName, string xpath, string attribute = null, string namespaceUri = null)
     {
@@ -266,5 +280,10 @@ public class XMLTests : TestBase
             .Build();
         return config["TestFolder"];
     }
+
+
+
+
+    
 
 }
