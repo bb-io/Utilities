@@ -7,6 +7,7 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using HtmlAgilityPack;
 using System.IO.Compression;
 using System.Net.Mime;
 using System.Text;
@@ -284,9 +285,24 @@ public class Files : BaseInvocable
             text = await ReadPdfFile(file);
         else if (fileExtension == ".docx" || fileExtension == ".doc")
             text = await ReadDocxFile(file);
+        else if (fileExtension == ".html")
+            text = await ReadHtmlFile(file);
         else
             text = await ReadPlaintextFile(file);
 
+        return text;
+    }
+
+    private static async Task<string> ReadHtmlFile(Stream file)
+    {
+        var doc = new HtmlDocument();
+        using (var reader = new StreamReader(file))
+        {
+            var htmlContent = await reader.ReadToEndAsync();
+            doc.LoadHtml(htmlContent);
+        }
+        var text = doc.DocumentNode.InnerText;
+        text = Regex.Replace(text, @"\s+", " ").Trim();
         return text;
     }
 
