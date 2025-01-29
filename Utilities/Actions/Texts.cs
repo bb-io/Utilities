@@ -148,4 +148,17 @@ public class Texts : BaseInvocable
 
         return result;
     }
+
+
+    [Action("Concatenate Strings", Description = "Concatenate Strings")]
+    public string ConcatenateStrings([ActionParameter] ConcatenateStringsInput input)
+    {
+        if (input.Strings == null || !input.Strings.Any())
+            throw new PluginMisconfigurationException("Strings list cannot be null or empty.");
+
+        if (input.Delimiter == null)
+            input.Delimiter = ",";
+
+        return string.Join(input.Delimiter, input.Strings);
+    }
 }

@@ -1,5 +1,6 @@
 using Apps.Utilities.Actions;
 using Apps.Utilities.Models.Files;
+using Apps.Utilities.Models.Texts;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
@@ -315,6 +316,18 @@ public class XMLTests : TestBase
         Console.WriteLine(result);
         Assert.AreEqual(71, result);
     }
+
+    [TestMethod]
+    public async Task Concat_Strings()
+    {
+        var actions = new Texts(InvocationContext);
+        var input = new ConcatenateStringsInput { Strings = new List<string>{ "Apple", "Banana", "Cherry" }, Delimiter="," };
+        var result = actions.ConcatenateStrings(input);
+
+        Console.WriteLine(result);
+        Assert.AreEqual("Apple,Banana,Cherry", result);
+    }
+
 
     private string GetTestFolderPath()
     {
