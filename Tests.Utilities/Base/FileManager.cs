@@ -11,11 +11,22 @@ public class FileManager(string folderLocation) : IFileManagementClient
 {
     public Task<Stream> DownloadAsync(FileReference reference)
     {
-        var path = Path.Combine(folderLocation, @$"Input\{reference.Name}");
-        var bytes = File.ReadAllBytes(path);
+        var outputPath = Path.Combine(folderLocation, @$"Output\{reference.Name}");
+        if (File.Exists(outputPath))
+        {
+            var bytes = File.ReadAllBytes(outputPath);
+            var stream = new MemoryStream(bytes);
+            return Task.FromResult((Stream)stream);
+        }
 
-        var stream = new MemoryStream(bytes);
-        return Task.FromResult((Stream)stream);
+        var inputPath = Path.Combine(folderLocation, @$"Input\{reference.Name}");
+        if (File.Exists(inputPath))
+        {
+            var bytes = File.ReadAllBytes(inputPath);
+            var stream = new MemoryStream(bytes);
+            return Task.FromResult((Stream)stream);
+        }
+        throw new FileNotFoundException($"File '{reference.Name}' not found in either Input or Output folder.");
     }
 
     public Task<FileReference> UploadAsync(Stream stream, string contentType, string fileName)
