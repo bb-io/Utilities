@@ -94,13 +94,13 @@ public class Files : BaseInvocable
     }
 
     [Action("Get file word count", Description = "Returns number of words in the file")]
-    public async Task<int> GetWordCountInFile([ActionParameter] FileDto file)
+    public async Task<double> GetWordCountInFile([ActionParameter] FileDto file)
     {
         var _file = await _fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
         var filecontent = await ReadDocument(_file, extension);
-        return CountWords(filecontent);
+        return (double)CountWords(filecontent);
     }
     
     [Action("Get files word count", Description = "Returns number of words in the files")]
