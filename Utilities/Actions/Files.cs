@@ -225,9 +225,16 @@ public class Files : BaseInvocable
                         using (var stream = entry.Open())
                         {
                             _logger.LogInformation("zip entry stream is opened.");
-                            var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
-                            files.Add(new FileDto { File = uploadedFile });
-                            _logger.LogInformation("zip entry is uploaded.");
+                            using (var memorystream = new MemoryStream())
+                            {
+                                await stream.CopyToAsync(memorystream);
+                                memorystream.Position = 0;
+                                _logger.LogInformation("memorystream copy is done");
+                                var uploadedFile = await _fileManagementClient.UploadAsync(memorystream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                                files.Add(new FileDto { File = uploadedFile });
+                                _logger.LogInformation("zip entry is uploaded.");
+                                _logger.LogInformation(InvocationContext?.Flight?.Id.ToString());
+                            }
                         }
                     }
                 }
