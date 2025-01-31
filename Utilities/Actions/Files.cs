@@ -8,6 +8,7 @@ using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using System.IO.Compression;
 using System.Net.Mime;
 using System.Text;
@@ -21,10 +22,14 @@ public class Files : BaseInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;
 
-    public Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(
+    private readonly ILogger<Files> _logger;
+
+    public Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient, ILogger<Files> logger) : base(
         invocationContext)
     {
         _fileManagementClient = fileManagementClient;
+        _logger = logger;
+        _logger.LogInformation("Files is called.");
     }
 
     [Action("Get file name information",
@@ -198,29 +203,47 @@ public class Files : BaseInvocable
     [Action("Unzip files", Description = "Take a .zip file and unzips it into multiple files")]
     public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)
     {
-        var file = await _fileManagementClient.DownloadAsync(request.File);
-        var files = new List<FileDto>();
-        using (var filestream = new MemoryStream())
+        try
         {
-            await file.CopyToAsync(filestream);
-            filestream.Position = 0;
-            using (var zip = new ZipArchive(filestream, ZipArchiveMode.Read, false))
+            _logger.LogInformation("Unzipfiles is called.");
+
+            var file = await _fileManagementClient.DownloadAsync(request.File);
+            _logger.LogInformation("file is received to unzip");
+
+
+            var files = new List<FileDto>();
+            using (var filestream = new MemoryStream())
             {
-                foreach (var entry in zip.Entries)
+                await file.CopyToAsync(filestream);
+                filestream.Position = 0;
+                using (var zip = new ZipArchive(filestream, ZipArchiveMode.Read, false))
                 {
-                    using (var stream = entry.Open())
+                    _logger.LogInformation("zip is opened");
+
+                    foreach (var entry in zip.Entries)
                     {
-                        var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
-                        files.Add(new FileDto { File = uploadedFile });
+                        using (var stream = entry.Open())
+                        {
+                            var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                            files.Add(new FileDto { File = uploadedFile });
+                        }
                     }
                 }
             }
-        }
+            _logger.LogInformation("Every zip is unzipped.");
 
-        return new MultipleFilesResponse
+            return new MultipleFilesResponse
+            {
+                Files = files
+            };
+        }
+        catch (Exception e )
         {
-            Files = files
-        };
+
+            _logger.LogError(e.Message + e.StackTrace);
+            throw e;
+        }
+        
     }
 
     private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType)
