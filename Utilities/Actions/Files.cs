@@ -210,26 +210,31 @@ public class Files : BaseInvocable
             var file = await _fileManagementClient.DownloadAsync(request.File);
             _logger.LogInformation("file is received to unzip");
 
-
             var files = new List<FileDto>();
-            using (var zip = new ZipFile(file))
+            using (var file2 = new MemoryStream())
             {
-                _logger.LogInformation("zip is opened");
-                foreach (ZipEntry entry in zip)
+                file.CopyTo(file2);
+                using (var zip = new ZipFile(file2))
                 {
-                    if (entry.IsDirectory)
-                        continue;
-
-                    _logger.LogInformation("zip entry is opened.");
-                    using (var stream = zip.GetInputStream(entry))
+                    _logger.LogInformation("zip is opened");
+                    foreach (ZipEntry entry in zip)
                     {
-                        _logger.LogInformation("zip entry stream is opened.");
-                        var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
-                        files.Add(new FileDto { File = uploadedFile });
-                        _logger.LogInformation("zip entry is uploaded.");
+                        if (entry.IsDirectory)
+                            continue;
+
+                        _logger.LogInformation("zip entry is opened.");
+                        using (var stream = zip.GetInputStream(entry))
+                        {
+                            _logger.LogInformation("zip entry stream is opened.");
+                            var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                            files.Add(new FileDto { File = uploadedFile });
+                            _logger.LogInformation("zip entry is uploaded.");
+                        }
                     }
                 }
             }
+            
+
             _logger.LogInformation("Every zip is unzipped.");
 
             return new MultipleFilesResponse
