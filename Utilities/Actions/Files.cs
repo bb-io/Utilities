@@ -212,23 +212,18 @@ public class Files : BaseInvocable
 
 
             var files = new List<FileDto>();
-            using (var filestream = new MemoryStream())
+            using (var zip = new ZipArchive(file))
             {
-                await file.CopyToAsync(filestream);
-                filestream.Position = 0;
-                using (var zip = new ZipArchive(filestream, ZipArchiveMode.Read, false))
+                _logger.LogInformation("zip is opened");
+                foreach (var entry in zip.Entries)
                 {
-                    _logger.LogInformation("zip is opened");
-                    foreach (var entry in zip.Entries)
+                    _logger.LogInformation("zip entry is opened.");
+                    using (var stream = entry.Open())
                     {
-                        _logger.LogInformation("zip entry is opened.");
-                        using (var stream = entry.Open())
-                        {
-                            _logger.LogInformation("zip entry stream is opened.");
-                            var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
-                            files.Add(new FileDto { File = uploadedFile });
-                            _logger.LogInformation("zip entry is uploaded.");
-                        }
+                        _logger.LogInformation("zip entry stream is opened.");
+                        var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                        files.Add(new FileDto { File = uploadedFile });
+                        _logger.LogInformation("zip entry is uploaded.");
                     }
                 }
             }
