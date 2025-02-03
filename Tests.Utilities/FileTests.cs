@@ -2,6 +2,7 @@
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Texts;
 using Apps.Utilities.Models.XMLFiles;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
@@ -33,19 +34,30 @@ namespace Tests.Utilities
 
         [TestMethod]
 
-        public void UnzipFiles_ZipFileInput_Success()
+        public async Task UnzipFiles_ZipFileInput_Success()
         {
             var file = new FileReference { Name = "test.zip" };
-            //FileReference file = new FileReference();
 
-            var response = _fileActions.UnzipFiles(new FileDto
+            var response = await _fileActions.UnzipFiles(new FileDto
             {
                 File = file
             });
 
-            Assert.IsTrue(true);
+            Assert.IsNotNull(response.Files);
         }
 
+        [TestMethod]
+
+        public async Task UnzipFiles_NotZipFileInput_ThrowsPluginMisconfigurationException()
+        {
+            var file = new FileReference { Name = "test.txt" };
+            var fileDto = new FileDto
+            {
+                File = file
+            };
+
+            await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(()=> _fileActions.UnzipFiles(fileDto));
+        }
         private string GetTestFolderPath()
         {
             var config = new ConfigurationBuilder()

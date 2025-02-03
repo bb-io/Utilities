@@ -2,6 +2,7 @@
 using Apps.Utilities.Models.Shared;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Office2016.Excel;
@@ -10,9 +11,11 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using UglyToad.PdfPig;
 
 namespace Apps.Utilities.Actions;
@@ -203,52 +206,41 @@ public class Files : BaseInvocable
     [Action("Unzip files", Description = "Take a .zip file and unzips it into multiple files")]
     public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)
     {
-        try
+        if (!request.File.Name.EndsWith(".zip"))
         {
-            _logger.LogInformation("Unzipfiles is called.");
-
-            var file = await _fileManagementClient.DownloadAsync(request.File);
-            _logger.LogInformation("file is received to unzip");
-
-            var files = new List<FileDto>();
-            using (var file2 = new MemoryStream())
-            {
-                file.CopyTo(file2);
-                using (var zip = new ZipFile(file2))
-                {
-                    _logger.LogInformation("zip is opened");
-                    foreach (ZipEntry entry in zip)
-                    {
-                        if (entry.IsDirectory)
-                            continue;
-
-                        _logger.LogInformation("zip entry is opened.");
-                        using (var stream = zip.GetInputStream(entry))
-                        {
-                            _logger.LogInformation("zip entry stream is opened.");
-                            var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
-                            files.Add(new FileDto { File = uploadedFile });
-                            _logger.LogInformation("zip entry is uploaded.");
-                        }
-                    }
-                }
-            }
-            
-
-            _logger.LogInformation("Every zip is unzipped.");
-
-            return new MultipleFilesResponse
-            {
-                Files = files
-            };
+            throw new PluginMisconfigurationException("The input file must be a zip.");
         }
-        catch (Exception e )
-        {
+       var file = await _fileManagementClient.DownloadAsync(request.File);
 
-            _logger.LogError(e.Message + e.StackTrace);
-            throw e;
-        }
-        
+       var files = new List<FileDto>();
+       using (var seekableStream = new MemoryStream())
+       {
+           file.CopyTo(seekableStream);
+
+           using (var zip = new ZipFile(seekableStream))
+           {
+               foreach (ZipEntry entry in zip)
+               {
+                   if (!entry.CanDecompress)
+                   {
+                       throw new Exception();
+                   }
+
+                   if (entry.IsDirectory)
+                       continue;
+                   using (var stream = zip.GetInputStream(entry))
+                   {
+                       var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                       files.Add(new FileDto { File = uploadedFile });
+                   }
+               }
+           }           
+       }
+       return new MultipleFilesResponse
+       {
+           Files = files
+       };
+     
     }
 
     private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType)
