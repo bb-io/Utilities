@@ -8,8 +8,8 @@ using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Extensions.Logging;
-using System.IO.Compression;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -212,13 +212,16 @@ public class Files : BaseInvocable
 
 
             var files = new List<FileDto>();
-            using (var zip = new ZipArchive(file))
+            using (var zip = new ZipFile(file))
             {
                 _logger.LogInformation("zip is opened");
-                foreach (var entry in zip.Entries)
+                foreach (ZipEntry entry in zip)
                 {
+                    if (entry.IsDirectory)
+                        continue;
+
                     _logger.LogInformation("zip entry is opened.");
-                    using (var stream = entry.Open())
+                    using (var stream = zip.GetInputStream(entry))
                     {
                         _logger.LogInformation("zip entry stream is opened.");
                         var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
