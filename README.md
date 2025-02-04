@@ -1,16 +1,16 @@
 # Blackbird.io Utilities
 
-Blackbird is the new automation backbone for the language technology industry. Blackbird provides enterprise-scale automation and orchestration with a simple no-code/low-code platform. Blackbird enables ambitious organizations to identify, vet and automate as many processes as possible. Not just localization workflows, but any business and IT process. This repository represents an application that is deployable on Blackbird and usable inside the workflow editor.
+Blackbird is the automation backbone for the language technology industry. Blackbird provides enterprise-scale automation and orchestration with a simple no-code/low-code platform. Blackbird enables ambitious organizations to identify, vet and automate as many processes as possible. Not just localization workflows, but any business and IT process. This repository represents an application that is deployable on Blackbird and usable inside the workflow editor.
 
 ## Introduction
 
 <!-- begin docs -->
 
-This app provides generic utility actions that can come in useful in any bird. It includes utilities for dates and files.
+This free app provides generic utility actions that can come in useful in any bird. It includes utilities for dates and files.
 
 ## Connecting
 
-1. Navigate to apps and search for Utilities. If you cannot find Zendesk then click _Add App_ in the top right corner, select Zendesk and add the app to your Blackbird environment.
+1. Navigate to apps and search for Utilities. 
 2. Click _Add Connection_.
 3. Name your connection for future reference e.g. 'My utilities'.
 4. Click _Connect_.
