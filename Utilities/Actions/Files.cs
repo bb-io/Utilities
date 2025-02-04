@@ -7,6 +7,7 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using HtmlAgilityPack;
 using System.IO.Compression;
 using System.Net.Mime;
 using System.Text;
@@ -93,13 +94,13 @@ public class Files : BaseInvocable
     }
 
     [Action("Get file word count", Description = "Returns number of words in the file")]
-    public async Task<int> GetWordCountInFile([ActionParameter] FileDto file)
+    public async Task<double> GetWordCountInFile([ActionParameter] FileDto file)
     {
         var _file = await _fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
         var filecontent = await ReadDocument(_file, extension);
-        return CountWords(filecontent);
+        return (double)CountWords(filecontent);
     }
     
     [Action("Get files word count", Description = "Returns number of words in the files")]
@@ -136,7 +137,7 @@ public class Files : BaseInvocable
         
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
-        var replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
+        var replacedText = Regex.Replace(text, request.Regex, request.Replace);
         return new()
         {
             File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
@@ -157,8 +158,8 @@ public class Files : BaseInvocable
         var text = await reader.ReadToEndAsync();
         
         text = String.IsNullOrEmpty(request.Group) 
-            ? Regex.Match(text, Regex.Unescape(request.Regex)).Value 
-            : Regex.Match(text, Regex.Unescape(request.Regex)).Groups[request.Group].Value;
+            ? Regex.Match(text, request.Regex).Value 
+            : Regex.Match(text, request.Regex).Groups[request.Group].Value;
 
         return new()
         {
@@ -284,9 +285,24 @@ public class Files : BaseInvocable
             text = await ReadPdfFile(file);
         else if (fileExtension == ".docx" || fileExtension == ".doc")
             text = await ReadDocxFile(file);
+        else if (fileExtension == ".html")
+            text = await ReadHtmlFile(file);
         else
             text = await ReadPlaintextFile(file);
 
+        return text;
+    }
+
+    private static async Task<string> ReadHtmlFile(Stream file)
+    {
+        var doc = new HtmlDocument();
+        using (var reader = new StreamReader(file))
+        {
+            var htmlContent = await reader.ReadToEndAsync();
+            doc.LoadHtml(htmlContent);
+        }
+        var text = doc.DocumentNode.InnerText;
+        text = Regex.Replace(text, @"\s+", " ").Trim();
         return text;
     }
 

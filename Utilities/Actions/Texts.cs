@@ -5,6 +5,7 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using System.Text.RegularExpressions;
 using BleuNet;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions;
 
@@ -70,21 +71,37 @@ public class Texts : BaseInvocable
     {
         if (String.IsNullOrEmpty(regex.Group))
         {
-            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Value;
+            return Regex.Match(input.Text, regex.Regex).Value;
         }
         else
         {
-            return Regex.Match(input.Text, Regex.Unescape(regex.Regex)).Groups[regex.Group].Value;
+            return Regex.Match(input.Text, regex.Regex).Groups[regex.Group].Value;
         }
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
     public List<string> ExtractManyRegex([ActionParameter] TextDto input, [ActionParameter] RegexManyInput regex)
     {
-        return Regex.Matches(input.Text, Regex.Unescape(regex.Regex))
-            .OfType<Match>()
-            .Select(m => m.Value)
-            .ToList();
+        if (input == null || string.IsNullOrEmpty(input.Text))
+            throw new PluginMisconfigurationException("Input text cannot be null or empty.");
+
+        if (regex == null || string.IsNullOrEmpty(regex.Regex))
+            throw new PluginMisconfigurationException("Regular expression cannot be null or empty.");
+        try
+        {
+            return Regex.Matches(input.Text, regex.Regex)
+                .OfType<Match>()
+                .Select(m => m.Value)
+                .ToList();
+        }
+        catch (ArgumentException ex)
+        {
+            throw new PluginMisconfigurationException("The provided regular expression is invalid.", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new PluginApplicationException("Error:", ex);
+        }
     }
 
     [Action("Extract occurences from text", Description = "Returns all matches from text of a predefined list of possible options")]
@@ -112,7 +129,7 @@ public class Texts : BaseInvocable
     [Action("Replace using Regex", Description = "Use Regular Expressions to search and replace within text")]
     public string ReplaceRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceInput regex)
     {
-        return Regex.Replace(input.Text, Regex.Unescape(regex.Regex), Regex.Unescape(regex.Replace));
+        return Regex.Replace(input.Text, regex.Regex, regex.Replace);
     }
 
     [Action("Trim text", Description = "Trim specified text")]
@@ -130,5 +147,18 @@ public class Texts : BaseInvocable
             result = result.Trim();
 
         return result;
+    }
+
+
+    [Action("Concatenate Strings", Description = "Concatenate Strings")]
+    public string ConcatenateStrings([ActionParameter] ConcatenateStringsInput input)
+    {
+        if (input.Strings == null || !input.Strings.Any())
+            throw new PluginMisconfigurationException("Strings list cannot be null or empty.");
+
+        if (input.Delimiter == null)
+            input.Delimiter = ",";
+
+        return string.Join(input.Delimiter, input.Strings);
     }
 }
