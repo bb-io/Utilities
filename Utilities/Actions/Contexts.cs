@@ -17,7 +17,7 @@ namespace Apps.Utilities.Actions
         {
             return new()
             {
-                FlightId = InvocationContext.Flight?.Id.ToString(),
+                FlightId = InvocationContext.Flight?.Id,
                 FlightUrl = InvocationContext.Flight?.Url,
                 BirdId = InvocationContext.Bird?.Id.ToString(),
                 BirdName = InvocationContext.Bird?.Name,

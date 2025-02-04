@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <Product>Utilities</Product>
     <Description>Various utility actions to parse or convert data</Description>
-    <Version>1.4.17</Version>
+    <Version>1.5.0</Version>
     <AssemblyName>Apps.Utilities</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
@@ -15,7 +15,7 @@
     <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.11.0" />
+    <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.11.1" />
     <PackageReference Include="Blackbird.Applications.SDK.Extensions.FileManagement" Version="1.0.1" />
     <PackageReference Include="BleuNet" Version="1.0.2" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.0.2" />
