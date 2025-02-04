@@ -26,7 +26,7 @@ public class XMLTests : TestBase
             Directory.Delete(outputDirectory, true);
         Directory.CreateDirectory(outputDirectory);
         _xmlActions = new XMLFiles(FileManager);
-        _fileActions = new Files(InvocationContext, FileManager);
+        _fileActions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
     }
 
     //Get XML propetry using XPath
@@ -309,7 +309,7 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task Count_Words_In_Html()
     {
-        var actions = new Files(InvocationContext, FileManager);
+        var actions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
         var file = new FileReference { Name = "test.html" };
         var input = new FileDto { File = file };
         var result = await actions.GetWordCountInFile(input);

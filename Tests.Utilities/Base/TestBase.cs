@@ -1,6 +1,8 @@
-﻿using Blackbird.Applications.Sdk.Common.Authentication;
+﻿using Apps.Utilities.Actions;
+using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,5 +30,13 @@ public class TestBase
         };
 
         FileManager = new FileManager(folderLocation);
+    }
+
+    public ILogger<T> CreateLogger<T>()
+    {
+        using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder
+        .SetMinimumLevel(LogLevel.Trace));
+
+        return loggerFactory.CreateLogger<T>();
     }
 }
