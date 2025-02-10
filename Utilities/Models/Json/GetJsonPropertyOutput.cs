@@ -10,6 +10,6 @@ namespace Apps.Utilities.Models.Json
     public class GetJsonPropertyOutput
     {
         [Display("Value")]
-        public string? Value { get; set; }
+        public string Value { get; set; }
     }
 }
