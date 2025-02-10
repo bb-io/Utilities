@@ -9,7 +9,7 @@ namespace Apps.Utilities.Models.Json
         public string PropertyPath { get; set; }
 
         [Display("New JSON value")]
-        public object NewValue { get; set; }
+        public string NewValue { get; set; }
 
         [Display("JSON file")]
         public FileReference File { get; set; }
