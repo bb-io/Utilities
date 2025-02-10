@@ -57,6 +57,12 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
   
+### JSON
+
+- **Get JSON property value** Get JSON property value.
+- **Change JSON property value** Changes the JSON property value.
+
+
 ### Arrays
 
 - **Array contains** checks if an array contains a certain entry.

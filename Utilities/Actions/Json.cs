@@ -2,6 +2,7 @@
 using Apps.Utilities.Models.Json;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
@@ -31,7 +32,20 @@ namespace Apps.Utilities.Actions
                 jsonString = await reader.ReadToEndAsync();
             }
 
-            var jsonObj = JObject.Parse(input.JsonString);
+            if (string.IsNullOrWhiteSpace(jsonString))
+            {
+                throw new PluginMisconfigurationException("The file is empty. Please check the input");
+            }
+
+            JObject jsonObj;
+            try
+            {
+                jsonObj = JObject.Parse(jsonString);
+            }
+            catch (JsonReaderException ex)
+            {
+                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check th file input");
+            }
 
             JToken token = jsonObj.SelectToken(input.PropertyPath);
             var value = token?.ToObject<object>();
@@ -53,8 +67,21 @@ namespace Apps.Utilities.Actions
                 jsonString = await reader.ReadToEndAsync();
             }
 
-            var jsonObj = JObject.Parse(input.JsonString);
-          
+            if (string.IsNullOrWhiteSpace(jsonString))
+            {
+                throw new PluginMisconfigurationException("The file is empty. Please check the input");
+            }
+
+            JObject jsonObj;
+            try
+            {
+                jsonObj = JObject.Parse(jsonString);
+            }
+            catch (JsonReaderException ex)
+            {
+                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check th file input");
+            }
+
             JToken tokenToChange = jsonObj.SelectToken(input.PropertyPath);
             if (tokenToChange != null)
             {
