@@ -48,7 +48,7 @@ namespace Apps.Utilities.Actions
             }
 
             JToken token = jsonObj.SelectToken(input.PropertyPath);
-            var value = token?.ToObject<object>();
+            var value = token?.ToObject<string>();
 
             return new GetJsonPropertyOutput
             {
