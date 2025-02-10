@@ -5,9 +5,6 @@ namespace Apps.Utilities.Models.Json
 {
     public class ChangeJsonPropertyInput
     {
-        [Display("JSON string")]
-        public string JsonString { get; set; }
-
         [Display("Property path")]
         public string PropertyPath { get; set; }
 
