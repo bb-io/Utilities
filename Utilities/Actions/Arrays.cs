@@ -36,12 +36,12 @@ public class Arrays : BaseInvocable
         return new ArrayResponse { Array = input.Array.Distinct() };
     }
 
-    [Action("Remove entry from array", Description = "Returns the array without the specified entry")]
-    public ArrayResponse ArrayRemove([ActionParameter] ArrayContainsRequest input)
+    [Action("Remove entries from array", Description = "Returns the array without the specified entries")]
+    public ArrayResponse ArrayRemove([ActionParameter] ArrayRemoveRequest input)
     {
         return new()
         {
-            Array = input.Array.Where(x => x != input.Entry).ToArray()
+            Array = input.Array.Except(input.removeEntries).ToArray()
         };
     }
 
