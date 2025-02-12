@@ -136,12 +136,23 @@ public class Texts : BaseInvocable
     public string TrimText([ActionParameter] TextDto text, [ActionParameter] TrimTextInput input)
     {
         var result = text.Text;
+            if (input.CharactersFromBeginning is not null)
+            {
+                if ( input.CharactersFromBeginning > result.Length)
+                {
+                    input.CharactersFromBeginning = result.Length;
+                }
+                 result = result.Remove(0, input.CharactersFromBeginning.Value);
+            }
 
-        if (input.CharactersFromBeginning is not null)
-            result = result.Remove(0, input.CharactersFromBeginning.Value);
-
-        if (input.CharactersFromEnd is not null)
-            result = result.Remove(result.Length - input.CharactersFromEnd.Value);
+            if (input.CharactersFromEnd is not null)
+            {
+                if (input.CharactersFromEnd > result.Length)
+                {
+                    input.CharactersFromEnd = result.Length;
+                }
+                result = result.Remove(result.Length - input.CharactersFromEnd.Value);
+            }
 
         if (input.TrimSpaces is true)
             result = result.Trim();
