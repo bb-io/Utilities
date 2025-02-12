@@ -58,12 +58,5 @@ namespace Tests.Utilities
 
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(()=> _fileActions.UnzipFiles(fileDto));
         }
-        private string GetTestFolderPath()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
-            return config["TestFolder"];
-        }
     }
 }
