@@ -22,7 +22,27 @@ public class Dates : BaseInvocable
         return new DateResponse { Date = referenceDate.AddDays(input.AddDays ?? 0).AddHours(input.AddHours ?? 0).AddMinutes(input.AddMinutes ?? 0) };
     }
 
-    [Action("Format date", Description = "Format a date to text according to pre-defined formatting rules and culture")]
+    [Action("Get first day of previous month", Description = "Generates a date corresponding to the first day of the previous month.")]
+    public DateResponse FirstDayLastMonth()
+    {
+        var today = DateTime.Today;
+        var month = new DateTime(today.Year, today.Month, 1);
+        var first = month.AddMonths(-1);
+
+        return new DateResponse { Date = first};
+    }
+
+    [Action("Get last day of previous month", Description = "Generates a date corresponding to the last day of the previous month.")]
+    public DateResponse LastDayLastMonth()
+    {
+        var today = DateTime.Today;
+        var month = new DateTime(today.Year, today.Month, 1);
+        var last = month.AddDays(-1);
+
+        return new DateResponse { Date =  last};
+    }
+
+    [Action("Format date", Description = "Formats a date to text according to pre-defined formatting rules and culture")]
     public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input )
     {
         return new FormattedDateResponse { FormattedDate = input.Date.ToString(input.Format, input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture) };

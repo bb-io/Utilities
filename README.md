@@ -25,6 +25,8 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Format date** takes a date and formats it into a human readable string. The selectable format documentation can be found [here](https://ss64.com/ps/syntax-dateformats.html). Optionally a culture (locale) can be added as well.
 - **Get date difference** returns the difference between the two inputted days in total seconds, minutes, hours and days.
 - **Convert text to date** Converts text input to date. Optionally a culture (locale) can be specified.
+- **Get first day of previous month** Generates a date corresponding to the first day of the previous month.
+- **Get last day of previous month** Generates a date corresponding to the last day of the previous month.
 
 ### Files
 
