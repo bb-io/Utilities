@@ -11,7 +11,7 @@ public class Dates : BaseInvocable
 {
     public Dates(InvocationContext context) : base(context) { }
 
-    [Action("Generate date", Description = "Generate a date relative to the moment this action is called or relative to a custom date.")]
+    [Action("Generate date", Description = "Generates a date relative to the moment this action is called or relative to a custom date.")]
     public DateResponse GenerateDate([ActionParameter] GenerateDateRequest input)
     {
         var referenceDate = input.Date ?? DateTime.Now;
