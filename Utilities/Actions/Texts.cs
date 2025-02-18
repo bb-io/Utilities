@@ -10,12 +10,8 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 namespace Apps.Utilities.Actions;
 
 [ActionList]
-public class Texts : BaseInvocable
+public class Texts(InvocationContext context) : BaseInvocable(context)
 {
-    public Texts(InvocationContext context) : base(context)
-    {
-    }
-
     [Action("Calculate BLEU score",Description = "Evaluation of the quality of text which has been machine-translated from one natural language to another")]
     public BleuScore CalculateBleuScore(
         [ActionParameter][Display("Reference text", Description = "Reference text (human translation)")] string referenceText, 
@@ -171,5 +167,24 @@ public class Texts : BaseInvocable
             input.Delimiter = ",";
 
         return string.Join(input.Delimiter, input.Strings);
+    }
+    
+    [Action("Split string into array", Description = "Splits a string into an array using the specified delimiter.")]
+    public List<string> SplitStringToArray([ActionParameter] TextDto textDto, 
+        [ActionParameter] DelimiterRequest delimiterRequest)
+    {
+        if (string.IsNullOrEmpty(textDto.Text))
+        {
+            throw new PluginMisconfigurationException("Input text cannot be null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(delimiterRequest.Delimiter))
+        {
+            throw new PluginMisconfigurationException("Delimiter cannot be null or empty.");
+        }
+    
+        return textDto.Text.Split([delimiterRequest.Delimiter], StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .ToList();
     }
 }
