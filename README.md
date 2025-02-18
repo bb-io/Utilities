@@ -58,6 +58,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert text to document** Converts text to txt, doc or docx document.
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
+- **Split string into array** Splits a string into an array using the specified delimiter.
   
 ### JSON
 
