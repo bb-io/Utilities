@@ -344,6 +344,19 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadPdfFile(Stream file)
     {
+        MemoryStream memoryStream;
+
+        if (file is MemoryStream ms)
+        {
+            memoryStream = ms;
+        }
+        else
+        {
+            memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+        }
+
         var document = PdfDocument.Open(file);
         var text = string.Join(" ", document.GetPages().Select(p => p.Text));
         return text;
