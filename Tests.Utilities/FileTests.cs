@@ -58,5 +58,17 @@ namespace Tests.Utilities
 
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(()=> _fileActions.UnzipFiles(fileDto));
         }
+
+
+        [TestMethod]
+        public async Task ConvertDocumentToText_ReturnsConvertedText()
+        {
+            var file = new LoadDocumentRequest { File=new FileReference { Name= "test.pdf" } };
+
+            var response = _fileActions.LoadDocument(file);
+
+            Console.WriteLine(response.Result.Text);
+            Assert.IsNotNull(response.Result);
+        }
     }
 }
