@@ -78,4 +78,17 @@ public class TextTests : TestBase
         _textActions.SplitStringToArray(new(), new() { Delimiter = ","});
         return Task.CompletedTask;
     }
+
+
+    [TestMethod]
+    public Task CountWordsInTextFromArray_ReturnsCountWords()
+    {
+        int expected = 7;
+        var textDto = new TextsDto { Texts = ["hello","world","my friend", "how, are you?"] };
+        var result = _textActions.CountWordsInTextFromArray(textDto);
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+
+        return Task.CompletedTask;
+    }
 }

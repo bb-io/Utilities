@@ -62,6 +62,24 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
     }
 
+    [Action("Count words in texts", Description = "Returns number of words in text from array.")]
+    public int CountWordsInTextFromArray([ActionParameter] TextsDto input)
+    {
+        int totalWords = 0;
+
+        foreach (var text in input.Texts)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                continue;
+
+            char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
+            var words = text.Split().Select(x => x.Trim(punctuationCharacters));
+            totalWords += words.Count(x => !string.IsNullOrWhiteSpace(x));
+        }
+
+        return totalWords;
+    }
+
     [Action("Extract using Regex", Description = "Returns first match from text using input Regex")]
     public string ExtractRegex([ActionParameter] TextDto input, [ActionParameter] RegexInput regex)
     {
