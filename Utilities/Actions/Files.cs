@@ -315,8 +315,12 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadHtmlFile(Stream file)
     {
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
         var doc = new HtmlDocument();
-        using (var reader = new StreamReader(file))
+        using (var reader = new StreamReader(memoryStream))
         {
             var htmlContent = await reader.ReadToEndAsync();
             doc.LoadHtml(htmlContent);
@@ -328,8 +332,12 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadPlaintextFile(Stream file)
     {
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
         var stringBuilder = new StringBuilder();
-        using (var reader = new StreamReader(file))
+        using (var reader = new StreamReader(memoryStream))
         {
             while (!reader.EndOfStream)
             {
@@ -344,27 +352,22 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadPdfFile(Stream file)
     {
-        MemoryStream memoryStream;
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
 
-        if (file is MemoryStream ms)
-        {
-            memoryStream = ms;
-        }
-        else
-        {
-            memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-        }
-
-        var document = PdfDocument.Open(file);
+        var document = PdfDocument.Open(memoryStream);
         var text = string.Join(" ", document.GetPages().Select(p => p.Text));
         return text;
     }
 
     private static async Task<string> ReadDocxFile(Stream file)
     {
-        var document = WordprocessingDocument.Open(file, false);
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        using var document = WordprocessingDocument.Open(memoryStream, false);
         var text = document.MainDocumentPart.Document.Body.InnerText;
         return text;
     }
