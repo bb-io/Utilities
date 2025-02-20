@@ -42,7 +42,7 @@ namespace Apps.Utilities.Actions
         {
             return new ConvertTextsToNumbersResponse { Numbers = Texts.Select(text =>
             {
-                if (double.TryParse(text, CultureInfo.InvariantCulture, out var number))
+                if (float.TryParse(text, CultureInfo.InvariantCulture, out var number))
                 {
                     return number;
                 }
