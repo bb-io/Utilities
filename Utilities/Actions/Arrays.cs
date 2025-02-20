@@ -20,7 +20,7 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     }
 
     [Action("Array count", Description = "Counts the number of elements in an array")]
-    public int ArrayCount([ActionParameter] ArrayCountRequest input)
+    public double ArrayCount([ActionParameter] ArrayCountRequest input)
     {
         return input.Array.Count();
     }
