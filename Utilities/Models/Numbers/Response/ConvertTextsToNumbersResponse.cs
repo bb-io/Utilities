@@ -2,5 +2,5 @@
 
 public class ConvertTextsToNumbersResponse
 {
-    public List<double> Numbers { get; set; } = new();
+    public IEnumerable<double> Numbers { get; set; } = default!;
 }

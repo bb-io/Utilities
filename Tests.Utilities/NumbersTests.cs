@@ -31,7 +31,7 @@ public class NumbersTests : TestBase
 
         var result = _numberActions.ConvertTextsToNumbers(input);
 
-        CollectionAssert.AreEqual(expected, result.Numbers);
+        CollectionAssert.AreEqual(expected, result.Numbers.ToList());
         return Task.CompletedTask;
     }
 
@@ -73,7 +73,7 @@ public class NumbersTests : TestBase
 
         var result = _numberActions.ConvertTextsToNumbers(input);
 
-        Assert.AreEqual(0, result.Numbers.Count);
+        Assert.AreEqual(0, result.Numbers.Count());
         return Task.CompletedTask;
     }
 }
