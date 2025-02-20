@@ -24,12 +24,12 @@ public class NumbersTests : TestBase
     }
     
     [TestMethod]
-    public Task ConvertTextToNumber_ValidNumbers_ReturnsCorrectList()
+    public Task ConvertTextsToNumbers_ValidNumbers_ReturnsCorrectList()
     {
         var input = new List<string> { "1.5", "2", "3.14", "-4", "0" };
         var expected = new List<double> { 1.5, 2, 3.14, -4, 0 };
 
-        var result = _numberActions.ConvertTextToNumber(input);
+        var result = _numberActions.ConvertTextsToNumbers(input);
 
         CollectionAssert.AreEqual(expected, result.Numbers);
         return Task.CompletedTask;
@@ -37,41 +37,41 @@ public class NumbersTests : TestBase
 
     [TestMethod]
     [ExpectedException(typeof(PluginMisconfigurationException))]
-    public Task ConvertTextToNumber_InvalidNumber_ThrowsException()
+    public Task ConvertTextsToNumbers_InvalidNumber_ThrowsException()
     {
         var input = new List<string> { "1", "abc", "3" };
 
-        _numberActions.ConvertTextToNumber(input);
+        _numberActions.ConvertTextsToNumbers(input);
         return Task.CompletedTask;
     }
 
     [TestMethod]
     [ExpectedException(typeof(PluginMisconfigurationException))]
-    public Task ConvertTextToNumber_EmptyString_ThrowsException()
+    public Task ConvertTextsToNumbers_EmptyString_ThrowsException()
     {
         var input = new List<string> { " " };
 
-        _numberActions.ConvertTextToNumber(input);
+        _numberActions.ConvertTextsToNumbers(input);
         return Task.CompletedTask;
     }
 
     [TestMethod]
-    public Task ConvertTextToNumber_MixedValidAndInvalid_ThrowsException()
+    public Task ConvertTextsToNumbers_MixedValidAndInvalid_ThrowsException()
     {
         var input = new List<string> { "42", "invalid", "3.5" };
 
         Assert.ThrowsException<PluginMisconfigurationException>(() =>
-            _numberActions.ConvertTextToNumber(input));
+            _numberActions.ConvertTextsToNumbers(input));
 
         return Task.CompletedTask;
     }
 
     [TestMethod]
-    public Task ConvertTextToNumber_EmptyList_ReturnsEmptyList()
+    public Task ConvertTextsToNumbers_EmptyList_ReturnsEmptyList()
     {
         var input = new List<string>();
 
-        var result = _numberActions.ConvertTextToNumber(input);
+        var result = _numberActions.ConvertTextsToNumbers(input);
 
         Assert.AreEqual(0, result.Numbers.Count);
         return Task.CompletedTask;

@@ -37,8 +37,8 @@ namespace Apps.Utilities.Actions
             return new ConvertTextToNumberResponse { Number = double.Parse(Text) };
         }
         
-        [Action("Convert texts to numbers", Description = "Change the type of data")]
-        public ConvertTextsToNumbersResponse ConvertTextToNumber([ActionParameter] IEnumerable<string> Texts)
+        [Action("Convert text to numbers", Description = "Converts a list of numeric strings into a list of numbers. Throws an exception if any value is not a valid number")]
+        public ConvertTextsToNumbersResponse ConvertTextsToNumbers([ActionParameter] IEnumerable<string> Texts)
         {
             return new ConvertTextsToNumbersResponse { Numbers = Texts.Select(text =>
             {

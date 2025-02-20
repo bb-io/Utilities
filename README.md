@@ -81,6 +81,8 @@ This free app provides generic utility actions that can come in useful in any bi
 ### Numbers
 
 - **Generate Range** Generate a range by providing start and end numbers.
+- **Convert text to number** Change the type of data
+- **Convert text to numbers** Converts a list of numeric strings into a list of numbers. Throws an exception if any value is not a valid number.
 
 ### Scraping
 
