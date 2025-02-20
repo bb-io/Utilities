@@ -1,4 +1,5 @@
 ﻿using Apps.Utilities.Actions;
+using Apps.Utilities.Models.Numbers.Requests;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Tests.Utilities.Base;
 
@@ -17,19 +18,19 @@ public class NumbersTests : TestBase
         {
             Directory.Delete(outputDirectory, true);
         }
-        
+
         Directory.CreateDirectory(outputDirectory);
 
         _numberActions = new Numbers();
     }
-    
+
     [TestMethod]
     public Task ConvertTextsToNumbers_ValidNumbers_ReturnsCorrectList()
     {
         var input = new List<string> { "1.5", "2", "3.14", "-4", "0" };
         var expected = new List<double> { 1.5, 2, 3.14, -4, 0 };
 
-        var result = _numberActions.ConvertTextsToNumbers(input);
+        var result = _numberActions.ConvertTextsToNumbers(new() { NumericStrings = input });
 
         CollectionAssert.AreEqual(expected, result.Numbers.ToList());
         return Task.CompletedTask;
@@ -41,7 +42,7 @@ public class NumbersTests : TestBase
     {
         var input = new List<string> { "1", "abc", "3" };
 
-        _numberActions.ConvertTextsToNumbers(input);
+        _numberActions.ConvertTextsToNumbers(new() { NumericStrings = input });
         return Task.CompletedTask;
     }
 
@@ -51,17 +52,17 @@ public class NumbersTests : TestBase
     {
         var input = new List<string> { " " };
 
-        _numberActions.ConvertTextsToNumbers(input);
+        _numberActions.ConvertTextsToNumbers(new() { NumericStrings = input });
         return Task.CompletedTask;
     }
 
     [TestMethod]
     public Task ConvertTextsToNumbers_MixedValidAndInvalid_ThrowsException()
     {
-        var input = new List<string> { "42", "invalid", "3.5" };
+        var numericStrings = new List<string> { "42", "invalid", "3.5" };
 
         Assert.ThrowsException<PluginMisconfigurationException>(() =>
-            _numberActions.ConvertTextsToNumbers(input));
+            _numberActions.ConvertTextsToNumbers(new() { NumericStrings = numericStrings }));
 
         return Task.CompletedTask;
     }
@@ -71,7 +72,7 @@ public class NumbersTests : TestBase
     {
         var input = new List<string>();
 
-        var result = _numberActions.ConvertTextsToNumbers(input);
+        var result = _numberActions.ConvertTextsToNumbers(new() { NumericStrings = input });
 
         Assert.AreEqual(0, result.Numbers.Count());
         return Task.CompletedTask;

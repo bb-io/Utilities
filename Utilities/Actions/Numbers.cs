@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Apps.Utilities.Models.Numbers.Requests;
 using Apps.Utilities.Models.Numbers.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
@@ -38,11 +39,11 @@ namespace Apps.Utilities.Actions
         }
         
         [Action("Convert text to numbers", Description = "Converts a list of numeric strings into a list of numbers. Throws an exception if any value is not a valid number")]
-        public ConvertTextsToNumbersResponse ConvertTextsToNumbers([ActionParameter] IEnumerable<string> Texts)
+        public ConvertTextsToNumbersResponse ConvertTextsToNumbers([ActionParameter] ConvertTextsToNumbersRequest request)
         {
-            return new ConvertTextsToNumbersResponse { Numbers = Texts.Select(text =>
+            return new ConvertTextsToNumbersResponse { Numbers = request.NumericStrings.Select(text =>
             {
-                if (float.TryParse(text, CultureInfo.InvariantCulture, out var number))
+                if (double.TryParse(text, CultureInfo.InvariantCulture, out var number))
                 {
                     return number;
                 }
