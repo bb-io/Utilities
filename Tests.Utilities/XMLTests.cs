@@ -329,6 +329,18 @@ public class XMLTests : TestBase
     }
 
 
+    [TestMethod]
+    public async Task ReplaceXliffSource_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ReplaceXliffRequest { File=new FileReference { Name= "test.xliff" }, /*DeleteTargets = true, SetNewTargetLanguage = "nl"*/ };
+        var result = actions.ReplaceXliffSourceWithTarget(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
+
     private string GetTestFolderPath()
     {
         var config = new ConfigurationBuilder()
