@@ -46,6 +46,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Bump version string** Bump version string.
 - **Get XML file property** Get XML file property.
 - **Change XML file property** Change XML file property.
+- **Replace XLIFF source with target** Replace XLIFF source with target.
 
 ### Texts
 

@@ -84,6 +84,80 @@ namespace Apps.Utilities.Actions
             }
         }
 
+
+        [Action("Replace XLIFF source with target", Description = "Swap <source> and <target> contents, exchange language attributes, and optionally remove target elements or set a new target language.")]
+        public async Task<ConvertTextToDocumentResponse> ReplaceXliffSourceWithTarget([ActionParameter] ReplaceXliffRequest request)
+        {
+            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+
+            XNamespace ns = doc.Root.GetDefaultNamespace();
+
+            var transUnits = doc.Descendants(ns + "trans-unit").ToList();
+            foreach (var transUnit in transUnits)
+            {
+                var sourceElement = transUnit.Element(ns + "source");
+                var targetElement = transUnit.Element(ns + "target");
+
+                if (sourceElement == null || targetElement == null)
+                    continue;
+
+                var sourceNodes = sourceElement.Nodes().ToList();
+                var targetNodes = targetElement.Nodes().ToList();
+
+                sourceElement.RemoveNodes();
+                targetElement.RemoveNodes();
+
+                sourceElement.Add(targetNodes);
+                targetElement.Add(sourceNodes);
+
+                if (request.DeleteTargets == true)
+                {
+                    targetElement.Remove();
+                }
+            }
+
+            XElement fileElement = doc.Root.Element(ns + "file");
+            if (fileElement != null)
+            {
+                var sourceLangAttr = fileElement.Attribute("source-language");
+                var targetLangAttr = fileElement.Attribute("target-language");
+
+                if (sourceLangAttr != null && targetLangAttr != null)
+                {
+                    string originalSourceLang = sourceLangAttr.Value;
+                    string originalTargetLang = targetLangAttr.Value;
+
+                    sourceLangAttr.Value = originalTargetLang;
+
+                    if (!string.IsNullOrEmpty(request.SetNewTargetLanguage))
+                    {
+                        targetLangAttr.Value = request.SetNewTargetLanguage;
+                    }
+                    else
+                    {
+                        targetLangAttr.Value = originalSourceLang;
+                    }
+                }
+            }
+            using var streamOut = new MemoryStream();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                Indent = true,
+                NewLineHandling = NewLineHandling.Replace
+            };
+            using (var writer = XmlWriter.Create(streamOut, settings))
+            {
+                doc.Save(writer);
+            }
+            streamOut.Position = 0;
+
+            var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
+            return new ConvertTextToDocumentResponse { File = resultFile };
+        }
+
+
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingProperty(ChangeXMLRequest request)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
@@ -280,6 +354,5 @@ namespace Apps.Utilities.Actions
                 throw new PluginApplicationException(ex.Message);
             }
         }
-
     }
 }

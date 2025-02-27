@@ -75,6 +75,15 @@ public class Files : BaseInvocable
         return new FileDto { File = file.File };
     }
 
+    [Action("Change file extension", Description = "Update file extension.")]
+    public FileDto ChangeFileExtension([ActionParameter] FileDto file, [ActionParameter] string Extension)
+    {
+        var name = Path.GetFileNameWithoutExtension(file.File.Name);
+        string newExtension = Extension.Contains(".") ? Extension : "." + Extension;
+        file.File.Name = name + newExtension;
+        return new FileDto { File = file.File };
+    }
+
     [Action("Sanitize file name", Description = "Remove any defined characters from a file name (without extension).")]
     public FileDto SanitizeFileName([ActionParameter] FileDto file, [ActionParameter] SanitizeRequest input)
     {
