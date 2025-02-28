@@ -158,6 +158,109 @@ namespace Apps.Utilities.Actions
         }
 
 
+        [Action("Get XML file property values", Description = "Get XML file property or attribute values and return all matching results")]
+        public async Task<GetXMLPropertiesResponse> GetXMLProperties([ActionParameter] GetXMLPropertyRequest request)
+        {
+            if ((string.IsNullOrEmpty(request.Property) && string.IsNullOrEmpty(request.XPath))
+                || (!string.IsNullOrEmpty(request.Property) && !string.IsNullOrEmpty(request.XPath)))
+            {
+                throw new PluginMisconfigurationException("You must fill exactly one of [Property] or [XPath].");
+            }
+
+            if (!string.IsNullOrEmpty(request.Property))
+            {
+                if (request.Property.Contains(':'))
+                {
+                    throw new PluginMisconfigurationException("You cannot use the ':' character in property names. Use the [Namespace] or [XPath] approach instead!");
+                }
+                if (request.Property.StartsWith("/"))
+                {
+                    throw new PluginMisconfigurationException("The property must not start with a '/' character. Ensure that your property is correctly formatted as a name.");
+                }
+                return await GetXmlPropertiesUsingProperty(request);
+            }
+            else
+            {
+                return await GetXmlPropertiesUsingXPath(request);
+            }
+        }
+
+
+        private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingProperty(GetXMLPropertyRequest request)
+        {
+            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            XNamespace ns = request.Namespace ?? string.Empty;
+            var doc = XDocument.Load(streamIn);
+
+            var values = new List<string>();
+
+            var items = doc.Root.Descendants(ns + request.Property);
+            if (items.Any())
+            {
+                foreach (var item in items)
+                {
+                    string value = string.IsNullOrEmpty(request.Attribute)
+                        ? item.Value
+                        : item.Attribute(request.Attribute)?.Value;
+                    if (value != null)
+                    {
+                        values.Add(value);
+                    }
+                }
+            }
+            else
+            {
+                var element = doc.Element(ns + request.Property);
+                string value = string.IsNullOrEmpty(request.Attribute)
+                        ? element?.Value
+                        : element?.Attribute(ns + request.Attribute)?.Value;
+                if (value != null)
+                {
+                    values.Add(value);
+                }
+            }
+
+            if (!values.Any())
+                throw new PluginMisconfigurationException("The specified property or attribute is not present in the file");
+
+            return new GetXMLPropertiesResponse { Values = values };
+        }
+        private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingXPath(GetXMLPropertyRequest request)
+        {
+            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+
+            var xmlDoc = new XmlDocument();
+            xmlDoc.Load(streamIn);
+
+            var nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
+            if (!string.IsNullOrEmpty(request.Namespace))
+            {
+                nsManager.AddNamespace("ns", request.Namespace);
+            }
+
+            var nodes = xmlDoc.SelectNodes(request.XPath, nsManager);
+            if (nodes == null || nodes.Count == 0)
+                throw new PluginMisconfigurationException("No elements found for the specified XPath.");
+
+            var values = new List<string>();
+            foreach (XmlNode node in nodes)
+            {
+                if (!string.IsNullOrEmpty(request.Attribute))
+                {
+                    var attribute = node.Attributes?[request.Attribute];
+                    if (attribute == null)
+                        throw new PluginMisconfigurationException($"Attribute '{request.Attribute}' not found for node '{request.XPath}'.");
+                    values.Add(attribute.Value);
+                }
+                else
+                {
+                    values.Add(node.InnerText);
+                }
+            }
+
+            return new GetXMLPropertiesResponse { Values = values };
+        }
+
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingProperty(ChangeXMLRequest request)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
