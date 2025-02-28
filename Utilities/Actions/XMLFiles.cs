@@ -225,7 +225,6 @@ namespace Apps.Utilities.Actions
 
             return new GetXMLPropertiesResponse { Values = values };
         }
-
         private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingXPath(GetXMLPropertyRequest request)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
@@ -261,9 +260,6 @@ namespace Apps.Utilities.Actions
 
             return new GetXMLPropertiesResponse { Values = values };
         }
-
-
-
 
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingProperty(ChangeXMLRequest request)
         {
