@@ -328,7 +328,6 @@ public class XMLTests : TestBase
         Assert.AreEqual("Apple,Banana,Cherry", result);
     }
 
-
     [TestMethod]
     public async Task ReplaceXliffSource_ReturnsSucces()
     {
@@ -338,6 +337,70 @@ public class XMLTests : TestBase
 
         Console.WriteLine(result);
         Assert.IsNotNull(result);
+    }
+
+
+    [TestMethod]
+    public async Task Get_XML_Properties_Using_Property_Returns_All_Values()
+    {
+        var file = new FileReference { Name = "multiple_meta.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            Property = "meta",
+            Attribute = "version"
+        });
+
+        var expectedValues = new List<string> { "1.0", "2.0", "3.0" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+    [TestMethod]
+    public async Task XPath_Get_XML_Properties_Returns_All_Values()
+    {
+        var file = new FileReference { Name = "multiple_meta.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            XPath = "//meta",
+            Attribute = "version"
+        });
+
+        var expectedValues = new List<string> { "1.0", "2.0", "3.0" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+
+    [TestMethod]
+    public async Task XPath_Get_XML_Properties_With_Namespace_Returns_All_Values()
+    {
+        var file = new FileReference { Name = "multiple_namespace.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            XPath = "//ns:meta",
+            Attribute = "version",
+            Namespace = "http://example.com/ns"
+        });
+
+        var expectedValues = new List<string> { "1.0", "2.0" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+
+    [TestMethod]
+    public async Task Get_XML_Properties_Using_Property_Returns_All_Values_No_Attribute()
+    {
+        var file = new FileReference { Name = "multiple_titles.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            Property = "title"
+        });
+
+        var expectedValues = new List<string> { "Foo", "Bar" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
     }
 
 
