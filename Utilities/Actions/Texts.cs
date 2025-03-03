@@ -40,6 +40,11 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     public TextDto SanitizeText([ActionParameter] TextDto text, [ActionParameter] SanitizeRequest input)
     {
         var newText = text.Text;
+
+        var filteredCharacters = input.FilterCharacters
+        .Select(c => c == "\\" ? "\\" : c.TrimEnd(' '))
+        .ToList();
+
         foreach (string filteredCharacter in input.FilterCharacters)
         {
             newText = newText.Replace(filteredCharacter, string.Empty);

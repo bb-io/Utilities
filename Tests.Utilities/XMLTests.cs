@@ -247,23 +247,21 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task Change_XML_property_attribute_works()
     {
-        var file = new FileReference { Name = "test1.xlf" };
+        var file = new FileReference { Name = "simple.xml" };
         await _xmlActions.ChangeXML(new ChangeXMLRequest
         {
             File = file,
-            Property = "file",
-            Value = "de",
-            Attribute = "target-language",
-            Namespace = "urn:oasis:names:tc:xliff:document:1.2"
+            Property = "meta",
+            Value = "2.0",
+            Attribute = "version"
         });
         var response = await _xmlActions.GetXMLProperty(new GetXMLPropertyRequest
         {
             File = file,
-            Property = "file",
-            Attribute = "target-language",
-            Namespace = "urn:oasis:names:tc:xliff:document:1.2"
+            XPath = "//meta",
+            Attribute = "version"
         });
-        Assert.AreEqual("de", response.Value);
+        Assert.AreEqual("2.0", response.Value);
     }
 
     [TestMethod]
