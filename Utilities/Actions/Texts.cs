@@ -46,7 +46,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         .Select(c => Regex.Escape(c))
         .ToList();
 
-        foreach (string filteredCharacter in input.FilterCharacters)
+        foreach (string filteredCharacter in filteredCharacters)
         {
             newText = Regex.Replace(newText, filteredCharacter, string.Empty);
         }
