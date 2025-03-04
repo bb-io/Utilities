@@ -40,9 +40,15 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     public TextDto SanitizeText([ActionParameter] TextDto text, [ActionParameter] SanitizeRequest input)
     {
         var newText = text.Text;
-        foreach (string filteredCharacter in input.FilterCharacters)
+
+        var filteredCharacters = input.FilterCharacters
+        .Select(c => c.TrimEnd(' '))
+        .Select(c => Regex.Escape(c))
+        .ToList();
+
+        foreach (string filteredCharacter in filteredCharacters)
         {
-            newText = newText.Replace(filteredCharacter, string.Empty);
+            newText = Regex.Replace(newText, filteredCharacter, string.Empty);
         }
 
         return new TextDto { Text = newText };

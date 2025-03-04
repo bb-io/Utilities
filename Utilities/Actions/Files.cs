@@ -88,13 +88,19 @@ public class Files : BaseInvocable
     public FileDto SanitizeFileName([ActionParameter] FileDto file, [ActionParameter] SanitizeRequest input)
     {
         var extension = Path.GetExtension(file.File.Name);
-        var newName = file.File.Name;
-        foreach (string filteredCharacter in input.FilterCharacters)
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.File.Name);
+        var filteredCharacters = input.FilterCharacters
+        .Select(c => c.TrimEnd(' '))
+        .Select(Regex.Escape)
+        .ToList();
+
+        foreach (var filteredCharacter in filteredCharacters)
         {
-            newName = newName.Replace(filteredCharacter, string.Empty);
+            fileNameWithoutExtension = Regex.Replace(fileNameWithoutExtension, filteredCharacter, string.Empty);
         }
 
-        file.File.Name = newName + extension;
+        file.File.Name = fileNameWithoutExtension + extension;
+
         return new FileDto { File = file.File };
     }
 
