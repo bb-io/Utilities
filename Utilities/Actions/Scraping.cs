@@ -6,6 +6,7 @@ using HtmlAgilityPack;
 using Apps.Utilities.Models.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using System.Text;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions
 {
@@ -62,12 +63,20 @@ namespace Apps.Utilities.Actions
             var document = new HtmlDocument();
             document.LoadHtml(content);
 
-            var nodes = document.DocumentNode.SelectNodes(xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']");
-
-            return new ContentDto
+            try
             {
-                Content = nodes == null ? "" : string.Join('\n', nodes.Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
-            };
+                var nodes = document.DocumentNode.SelectNodes(
+                    xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']"
+                );
+                return new ContentDto
+                {
+                    Content = nodes == null ? "" : string.Join('\n', nodes.Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new PluginApplicationException($"Error occured while procesing XPath expression: {ex.Message}.", ex);
+            }
         }
 
     }
