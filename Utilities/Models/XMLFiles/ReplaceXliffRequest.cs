@@ -17,5 +17,8 @@ namespace Apps.Utilities.Models.XMLFiles
 
         [Display("Set new target language")]
         public string? SetNewTargetLanguage { get; set; }
+
+        [Display("Set new source language")]
+        public string? SetNewSourceLanguage { get; set; }
     }
 }
