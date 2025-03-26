@@ -329,10 +329,21 @@ public class XMLTests : TestBase
     }
 
     [TestMethod]
-    public async Task ReplaceXliffSource_ReturnsSucces()
+    public async Task ReplaceXliffTargetWithSource_ReturnsSucces()
     {
         var actions = new XMLFiles(FileManager);
         var input = new ReplaceXliffRequest { File=new FileReference { Name= "test.xliff" }, /*DeleteTargets = true, SetNewTargetLanguage = "nl"*/ };
+        var result = actions.ReplaceXliffSourceWithTarget(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public async Task ChangeXliffSource_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ReplaceXliffRequest { File = new FileReference { Name = "test.xliff" }, SetNewSourceLanguage="nl" };
         var result = actions.ReplaceXliffSourceWithTarget(input);
 
         Console.WriteLine(result);

@@ -128,7 +128,14 @@ namespace Apps.Utilities.Actions
                     string originalSourceLang = sourceLangAttr.Value;
                     string originalTargetLang = targetLangAttr.Value;
 
-                    sourceLangAttr.Value = originalTargetLang;
+                    if (!string.IsNullOrEmpty(request.SetNewSourceLanguage))
+                    {
+                        sourceLangAttr.Value = request.SetNewSourceLanguage;
+                    }
+                    else
+                    {
+                        sourceLangAttr.Value = originalTargetLang;
+                    }
 
                     if (!string.IsNullOrEmpty(request.SetNewTargetLanguage))
                     {
