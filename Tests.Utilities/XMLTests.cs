@@ -415,6 +415,32 @@ public class XMLTests : TestBase
     }
 
 
+    [TestMethod]
+    public async Task ExtractContentAsHtml_ReturnsSucces()
+    {
+        var actions = new Scraping(InvocationContext,FileManager);
+        var input = new LoadDocumentRequest { File = new FileReference { Name = "8CFA7618-C9EB-4AA5-B282-03B7A7CBA7AF.html" } };
+        var string1 = string.Empty;
+        var result = actions.ExtractHtmlContent(input, string1);
+
+        Console.WriteLine(result.Result.Content);
+        Assert.IsNotNull(result);
+    }
+
+
+    [TestMethod]
+    public async Task ExtractWebContentAsHtml_ReturnsSucces()
+    {
+        var actions = new Scraping(InvocationContext, FileManager);
+        var input = "https://dev.blackbird.io/";
+        var string1 = string.Empty;
+        var result = actions.ExtractWebContent(input, string1);
+
+        Console.WriteLine(result.Result.Content);
+        Assert.IsNotNull(result);
+    }
+
+
     private string GetTestFolderPath()
     {
         var config = new ConfigurationBuilder()
