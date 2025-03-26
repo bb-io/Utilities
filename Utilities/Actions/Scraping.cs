@@ -7,6 +7,7 @@ using Apps.Utilities.Models.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using System.Text;
 using Blackbird.Applications.Sdk.Common.Exceptions;
+using Apps.Utilities.ErrorWrapper;
 
 namespace Apps.Utilities.Actions
 {
@@ -22,49 +23,54 @@ namespace Apps.Utilities.Actions
         [Action("Extract web page content", Description = "Get raw and unformatted content from a URL as text")]
         public async Task<ContentDto> ExtractWebContent([ActionParameter][Display("URL")] string url, [ActionParameter][Display("XPath")] string? xpath)
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0");
-
-            using (var response = await client.GetAsync(url))
+            return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
             {
-                using (var content = response.Content)
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0");
+
+                using (var response = await client.GetAsync(url))
                 {
-                    var result = await content.ReadAsStringAsync();
-                    var document = new HtmlDocument();
-                    document.LoadHtml(result);
-
-                    var nodes = document.DocumentNode.SelectNodes(xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']");
-
-                    return new ContentDto
+                    using (var content = response.Content)
                     {
-                        Content = nodes == null ? "" : string.Join('\n', nodes.Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
-                    };
+                        var result = await content.ReadAsStringAsync();
+                        var document = new HtmlDocument();
+                        document.LoadHtml(result);
+
+                        var nodes = document.DocumentNode.SelectNodes(
+                            xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']"
+                        );
+
+                        return new ContentDto
+                        {
+                            Content = nodes == null ? "" : string.Join('\n', nodes.Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
+                        };
+                    }
                 }
-            }
+            });
         }
 
         [Action("Extract HTML content", Description = "Get raw and unformatted content from an HTML file")]
         public async Task<ContentDto> ExtractHtmlContent([ActionParameter] LoadDocumentRequest request, [ActionParameter][Display("XPath")] string? xpath)
         {
-            var file = await _fileManagementClient.DownloadAsync(request.File);
-
-            var stringBuilder = new StringBuilder();
-            using (var reader = new StreamReader(file))
+            return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
             {
-                while (!reader.EndOfStream)
+                var file = await _fileManagementClient.DownloadAsync(request.File);
+
+                var stringBuilder = new StringBuilder();
+                using (var reader = new StreamReader(file))
                 {
-                    var line = await reader.ReadLineAsync();
-                    stringBuilder.Append(line);
+                    while (!reader.EndOfStream)
+                    {
+                        var line = await reader.ReadLineAsync();
+                        stringBuilder.Append(line);
+                    }
                 }
-            }
 
-            var content = stringBuilder.ToString();
+                var content = stringBuilder.ToString();
 
-            var document = new HtmlDocument();
-            document.LoadHtml(content);
+                var document = new HtmlDocument();
+                document.LoadHtml(content);
 
-            try
-            {
                 var nodes = document.DocumentNode.SelectNodes(
                     xpath ?? "//*[not(self::style) and not(self::script) and not(self::noscript)]/text()[normalize-space(.) != '']"
                 );
@@ -72,11 +78,8 @@ namespace Apps.Utilities.Actions
                 {
                     Content = nodes == null ? "" : string.Join('\n', nodes.Select(x => HtmlEntity.DeEntitize(x.InnerText.Trim())))
                 };
-            }
-            catch (Exception ex)
-            {
-                throw new PluginApplicationException($"Error occured while procesing XPath expression: {ex.Message}.", ex);
-            }
+            });
+
         }
 
     }
