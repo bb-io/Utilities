@@ -2,6 +2,7 @@ using Apps.Utilities.Models.Arrays.Request;
 using Apps.Utilities.Models.Arrays.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using DocumentFormat.OpenXml.Presentation;
 
@@ -61,6 +62,10 @@ public class Arrays : BaseInvocable
     public string GetEntryInPosition([ActionParameter] ArrayCountRequest input,
         [ActionParameter] int Position)
     {
+        if (input.Array?.Count() < Position)
+        { 
+            throw new PluginMisconfigurationException("Position is out of bounds");
+        }
         return input.Array.ToList()[Position - 1];
     }
 
