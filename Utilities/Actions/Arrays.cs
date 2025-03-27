@@ -9,12 +9,8 @@ using DocumentFormat.OpenXml.Presentation;
 namespace Apps.Utilities.Actions;
 
 [ActionList]
-public class Arrays : BaseInvocable
+public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
-    public Arrays(InvocationContext invocationContext) : base(invocationContext)
-    {
-    }
-
     [Action("Array contains", Description = "Check if array contains a ceratin entry")]
     public ArrayContainsResponse ArrayContains([ActionParameter] ArrayContainsRequest input)
     {
@@ -25,7 +21,7 @@ public class Arrays : BaseInvocable
     }
 
     [Action("Array count", Description = "Counts the number of elements in an array")]
-    public int ArrayCount([ActionParameter] ArrayCountRequest input)
+    public double ArrayCount([ActionParameter] ArrayCountRequest input)
     {
         return input.Array.Count();
     }

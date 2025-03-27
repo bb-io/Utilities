@@ -1,8 +1,6 @@
-﻿namespace Apps.Utilities.Models.Numbers.Response
-{
-    public class ConvertTextToNumberResponse
+﻿namespace Apps.Utilities.Models.Numbers.Response;
 
-    {
-        public double Number { get; set; }
-    }
+public class ConvertTextToNumberResponse
+{
+    public double Number { get; set; }
 }

@@ -1,6 +1,9 @@
-﻿using Apps.Utilities.Models.Numbers.Response;
+﻿using System.Globalization;
+using Apps.Utilities.Models.Numbers.Requests;
+using Apps.Utilities.Models.Numbers.Response;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions
 {
@@ -33,7 +36,20 @@ namespace Apps.Utilities.Actions
         public ConvertTextToNumberResponse ConvertTextToNumber([ActionParameter] string Text)
         {
             return new ConvertTextToNumberResponse { Number = double.Parse(Text) };
-
+        }
+        
+        [Action("Convert text to numbers", Description = "Converts a list of numeric strings into a list of numbers. Throws an exception if any value is not a valid number")]
+        public ConvertTextsToNumbersResponse ConvertTextsToNumbers([ActionParameter] ConvertTextsToNumbersRequest request)
+        {
+            return new ConvertTextsToNumbersResponse { Numbers = request.NumericStrings.Select(text =>
+            {
+                if (double.TryParse(text, CultureInfo.InvariantCulture, out var number))
+                {
+                    return number;
+                }
+                
+                throw new PluginMisconfigurationException($"Couldn't parse given text ({text}) to number. Please verify you sent valid numbers to this action");
+            }).ToList()};
         }
     }
 }

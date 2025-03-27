@@ -10,12 +10,8 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 namespace Apps.Utilities.Actions;
 
 [ActionList]
-public class Texts : BaseInvocable
+public class Texts(InvocationContext context) : BaseInvocable(context)
 {
-    public Texts(InvocationContext context) : base(context)
-    {
-    }
-
     [Action("Calculate BLEU score",Description = "Evaluation of the quality of text which has been machine-translated from one natural language to another")]
     public BleuScore CalculateBleuScore(
         [ActionParameter][Display("Reference text", Description = "Reference text (human translation)")] string referenceText, 
@@ -44,9 +40,15 @@ public class Texts : BaseInvocable
     public TextDto SanitizeText([ActionParameter] TextDto text, [ActionParameter] SanitizeRequest input)
     {
         var newText = text.Text;
-        foreach (string filteredCharacter in input.FilterCharacters)
+
+        var filteredCharacters = input.FilterCharacters
+        .Select(c => c.TrimEnd(' '))
+        .Select(c => Regex.Escape(c))
+        .ToList();
+
+        foreach (string filteredCharacter in filteredCharacters)
         {
-            newText = newText.Replace(filteredCharacter, string.Empty);
+            newText = Regex.Replace(newText, filteredCharacter, string.Empty);
         }
 
         return new TextDto { Text = newText };
@@ -64,6 +66,24 @@ public class Texts : BaseInvocable
         char[] punctuationCharacters = input.Text.Where(char.IsPunctuation).Distinct().ToArray();
         var words = input.Text.Split().Select(x => x.Trim(punctuationCharacters));
         return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
+    }
+
+    [Action("Count words in texts", Description = "Returns number of words in text from array.")]
+    public int CountWordsInTextFromArray([ActionParameter] TextsDto input)
+    {
+        int totalWords = 0;
+
+        foreach (var text in input.Texts)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                continue;
+
+            char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
+            var words = text.Split().Select(x => x.Trim(punctuationCharacters));
+            totalWords += words.Count(x => !string.IsNullOrWhiteSpace(x));
+        }
+
+        return totalWords;
     }
 
     [Action("Extract using Regex", Description = "Returns first match from text using input Regex")]
@@ -171,5 +191,24 @@ public class Texts : BaseInvocable
             input.Delimiter = ",";
 
         return string.Join(input.Delimiter, input.Strings);
+    }
+    
+    [Action("Split string into array", Description = "Splits a string into an array using the specified delimiter.")]
+    public List<string> SplitStringToArray([ActionParameter] TextDto textDto, 
+        [ActionParameter] DelimiterRequest delimiterRequest)
+    {
+        if (string.IsNullOrEmpty(textDto.Text))
+        {
+            throw new PluginMisconfigurationException("Input text cannot be null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(delimiterRequest.Delimiter))
+        {
+            throw new PluginMisconfigurationException("Delimiter cannot be null or empty.");
+        }
+    
+        return textDto.Text.Split([delimiterRequest.Delimiter], StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .ToList();
     }
 }

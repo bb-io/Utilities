@@ -75,17 +75,32 @@ public class Files : BaseInvocable
         return new FileDto { File = file.File };
     }
 
+    [Action("Change file extension", Description = "Update file extension.")]
+    public FileDto ChangeFileExtension([ActionParameter] FileDto file, [ActionParameter] string Extension)
+    {
+        var name = Path.GetFileNameWithoutExtension(file.File.Name);
+        string newExtension = Extension.Contains(".") ? Extension : "." + Extension;
+        file.File.Name = name + newExtension;
+        return new FileDto { File = file.File };
+    }
+
     [Action("Sanitize file name", Description = "Remove any defined characters from a file name (without extension).")]
     public FileDto SanitizeFileName([ActionParameter] FileDto file, [ActionParameter] SanitizeRequest input)
     {
         var extension = Path.GetExtension(file.File.Name);
-        var newName = file.File.Name;
-        foreach (string filteredCharacter in input.FilterCharacters)
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.File.Name);
+        var filteredCharacters = input.FilterCharacters
+        .Select(c => c.TrimEnd(' '))
+        .Select(Regex.Escape)
+        .ToList();
+
+        foreach (var filteredCharacter in filteredCharacters)
         {
-            newName = newName.Replace(filteredCharacter, string.Empty);
+            fileNameWithoutExtension = Regex.Replace(fileNameWithoutExtension, filteredCharacter, string.Empty);
         }
 
-        file.File.Name = newName + extension;
+        file.File.Name = fileNameWithoutExtension + extension;
+
         return new FileDto { File = file.File };
     }
 
@@ -315,8 +330,12 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadHtmlFile(Stream file)
     {
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
         var doc = new HtmlDocument();
-        using (var reader = new StreamReader(file))
+        using (var reader = new StreamReader(memoryStream))
         {
             var htmlContent = await reader.ReadToEndAsync();
             doc.LoadHtml(htmlContent);
@@ -328,8 +347,12 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadPlaintextFile(Stream file)
     {
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
         var stringBuilder = new StringBuilder();
-        using (var reader = new StreamReader(file))
+        using (var reader = new StreamReader(memoryStream))
         {
             while (!reader.EndOfStream)
             {
@@ -344,14 +367,22 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadPdfFile(Stream file)
     {
-        var document = PdfDocument.Open(file);
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        var document = PdfDocument.Open(memoryStream);
         var text = string.Join(" ", document.GetPages().Select(p => p.Text));
         return text;
     }
 
     private static async Task<string> ReadDocxFile(Stream file)
     {
-        var document = WordprocessingDocument.Open(file, false);
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        using var document = WordprocessingDocument.Open(memoryStream, false);
         var text = document.MainDocumentPart.Document.Body.InnerText;
         return text;
     }

@@ -25,6 +25,8 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Format date** takes a date and formats it into a human readable string. The selectable format documentation can be found [here](https://ss64.com/ps/syntax-dateformats.html). Optionally a culture (locale) can be added as well.
 - **Get date difference** returns the difference between the two inputted days in total seconds, minutes, hours and days.
 - **Convert text to date** Converts text input to date. Optionally a culture (locale) can be specified.
+- **Get first day of previous month** Generates a date corresponding to the first day of the previous month.
+- **Get last day of previous month** Generates a date corresponding to the last day of the previous month.
 
 ### Files
 
@@ -44,6 +46,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Bump version string** Bump version string.
 - **Get XML file property** Get XML file property.
 - **Change XML file property** Change XML file property.
+- **Replace XLIFF source with target** Replace XLIFF source with target.
 
 ### Texts
 
@@ -56,6 +59,8 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert text to document** Converts text to txt, doc or docx document.
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
+- **Split string into array** Splits a string into an array using the specified delimiter.
+- **Count words in texts** "Returns number of words in text from array. 
   
 ### JSON
 
@@ -77,6 +82,8 @@ This free app provides generic utility actions that can come in useful in any bi
 ### Numbers
 
 - **Generate Range** Generate a range by providing start and end numbers.
+- **Convert text to number** Change the type of data
+- **Convert text to numbers** Converts a list of numeric strings into a list of numbers. Throws an exception if any value is not a valid number.
 
 ### Scraping
 

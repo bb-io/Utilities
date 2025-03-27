@@ -328,6 +328,118 @@ public class XMLTests : TestBase
         Assert.AreEqual("Apple,Banana,Cherry", result);
     }
 
+    [TestMethod]
+    public async Task ReplaceXliffTargetWithSource_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ReplaceXliffRequest { File=new FileReference { Name= "test.xliff" }, /*DeleteTargets = true, SetNewTargetLanguage = "nl"*/ };
+        var result = actions.ReplaceXliffSourceWithTarget(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public async Task ChangeXliffSource_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ReplaceXliffRequest { File = new FileReference { Name = "test.xliff" }, SetNewSourceLanguage="nl" };
+        var result = actions.ReplaceXliffSourceWithTarget(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
+
+    [TestMethod]
+    public async Task Get_XML_Properties_Using_Property_Returns_All_Values()
+    {
+        var file = new FileReference { Name = "multiple_meta.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            Property = "meta",
+            Attribute = "version"
+        });
+
+        var expectedValues = new List<string> { "1.0", "2.0", "3.0" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+    [TestMethod]
+    public async Task XPath_Get_XML_Properties_Returns_All_Values()
+    {
+        var file = new FileReference { Name = "multiple_meta.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            XPath = "//meta",
+            Attribute = "version"
+        });
+
+        var expectedValues = new List<string> { "1.0", "2.0", "3.0" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+
+    [TestMethod]
+    public async Task XPath_Get_XML_Properties_With_Namespace_Returns_All_Values()
+    {
+        var file = new FileReference { Name = "multiple_namespace.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            XPath = "//ns:meta",
+            Attribute = "version",
+            Namespace = "http://example.com/ns"
+        });
+
+        var expectedValues = new List<string> { "1.0", "2.0" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+
+    [TestMethod]
+    public async Task Get_XML_Properties_Using_Property_Returns_All_Values_No_Attribute()
+    {
+        var file = new FileReference { Name = "multiple_titles.xml" };
+        var response = await _xmlActions.GetXMLProperties(new GetXMLPropertyRequest
+        {
+            File = file,
+            Property = "title"
+        });
+
+        var expectedValues = new List<string> { "Foo", "Bar" };
+        CollectionAssert.AreEqual(expectedValues.ToArray(), response.Values.ToArray());
+        Console.WriteLine(string.Join(", ", response.Values));
+    }
+
+
+    [TestMethod]
+    public async Task ExtractContentAsHtml_ReturnsSucces()
+    {
+        var actions = new Scraping(InvocationContext,FileManager);
+        var input = new LoadDocumentRequest { File = new FileReference { Name = "8CFA7618-C9EB-4AA5-B282-03B7A7CBA7AF.html" } };
+        var string1 = string.Empty;
+        var result = actions.ExtractHtmlContent(input, string1);
+
+        Console.WriteLine(result.Result.Content);
+        Assert.IsNotNull(result);
+    }
+
+
+    [TestMethod]
+    public async Task ExtractWebContentAsHtml_ReturnsSucces()
+    {
+        var actions = new Scraping(InvocationContext, FileManager);
+        var input = "https://dev.blackbird.io/";
+        var string1 = string.Empty;
+        var result = actions.ExtractWebContent(input, string1);
+
+        Console.WriteLine(result.Result.Content);
+        Assert.IsNotNull(result);
+    }
+
 
     private string GetTestFolderPath()
     {
