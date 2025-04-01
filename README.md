@@ -60,7 +60,8 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
-- **Count words in texts** "Returns number of words in text from array. 
+- **Count words in texts** Returns number of words in text from array. 
+- **Generate random text** Returns a random text of variable length and characters used. Default length is 10 and default characters are A-Z, a-z and 0-9.
   
 ### JSON
 
