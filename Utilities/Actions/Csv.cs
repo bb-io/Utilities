@@ -20,7 +20,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> RemoveRows([ActionParameter] CsvFile csvFile, [ActionParameter][Display("Row indexes", Description = "The first row starts with 0")] IEnumerable<int> rowIndexes)
     {
         await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        streamIn.Position = 0;
 
         using var reader = new StreamReader(streamIn);
         var lines = new List<string>();
@@ -52,7 +51,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
             IEnumerable<int> columnOrder)
     {
         await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        streamIn.Position = 0;
 
         using var reader = new StreamReader(streamIn);
         var lines = new List<string>();
@@ -89,14 +87,13 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         return new CsvFile { File = resultFile };
     }
 
-    [Action("Apply regex to column", Description = "Apply a regex pattern to a specified column in the CSV file.")]
+    [Action("Apply regex to CSV column", Description = "Apply a regex pattern to a specified column in the CSV file.")]
     public async Task<CsvFile> ApplyRegexToColumn(
         [ActionParameter] CsvFile csvFile, 
         [ActionParameter][Display("Column index")] int columnIndex,
         [ActionParameter] RegexInput regex)
     {
         await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        streamIn.Position = 0;
 
         using var reader = new StreamReader(streamIn);
         var lines = new List<string>();
