@@ -25,18 +25,17 @@ public class TextTests : TestBase
     }
 
     [TestMethod]
-    public Task TrimText_TrimSizeLongerThanText_ReturnsEmptyString()
+    public void TrimText_TrimSizeLongerThanText_ReturnsEmptyString()
     {
         var text = "not a very long text";
 
         var result = _textActions.TrimText(new TextDto { Text = text},new TrimTextInput { CharactersFromEnd = 60000});
 
         Assert.IsTrue(result.Length == 0);
-        return Task.CompletedTask;
     }
     
     [TestMethod]
-    public Task SplitStringToArray_CommaSeparated_ReturnsCorrectArray()
+    public void SplitStringToArray_CommaSeparated_ReturnsCorrectArray()
     {
         var textDto = new TextDto { Text = "en,de,fr"};
         var expected = new List<string> { "en", "de", "fr" };
@@ -44,11 +43,10 @@ public class TextTests : TestBase
         var result = _textActions.SplitStringToArray(textDto, new() { Delimiter = ","});
 
         CollectionAssert.AreEqual(expected, result);
-        return Task.CompletedTask;
     }
 
     [TestMethod]
-    public Task SplitStringToArray_CustomDelimiter_ReturnsCorrectArray()
+    public void SplitStringToArray_CustomDelimiter_ReturnsCorrectArray()
     {
         var textDto = new TextDto { Text = "apple | banana | cherry"};
         var expected = new List<string> { "apple", "banana", "cherry" };
@@ -56,11 +54,10 @@ public class TextTests : TestBase
         var result = _textActions.SplitStringToArray(textDto, new() { Delimiter = " | "});
 
         CollectionAssert.AreEqual(expected, result);
-        return Task.CompletedTask;
     }
 
     [TestMethod]
-    public Task SplitStringToArray_HandlesExtraSpaces_ReturnsTrimmedArray()
+    public void SplitStringToArray_HandlesExtraSpaces_ReturnsTrimmedArray()
     {
         var textDto = new TextDto { Text = "  en , de ,  fr  "};
         var expected = new List<string> { "en", "de", "fr" };
@@ -68,27 +65,52 @@ public class TextTests : TestBase
         var result = _textActions.SplitStringToArray(textDto, new() { Delimiter = ","});
 
         CollectionAssert.AreEqual(expected, result);
-        return Task.CompletedTask;
     }
 
     [TestMethod]
     [ExpectedException(typeof(PluginMisconfigurationException))]
-    public Task SplitStringToArray_EmptyString_ThrowsException()
+    public void SplitStringToArray_EmptyString_ThrowsException()
     {
         _textActions.SplitStringToArray(new(), new() { Delimiter = ","});
-        return Task.CompletedTask;
     }
 
 
     [TestMethod]
-    public Task CountWordsInTextFromArray_ReturnsCountWords()
+    public void CountWordsInTextFromArray_ReturnsCountWords()
     {
         int expected = 7;
         var textDto = new TextsDto { Texts = ["hello","world","my friend", "how, are you?"] };
         var result = _textActions.CountWordsInTextFromArray(textDto);
         Console.WriteLine(result);
         Assert.IsNotNull(result);
+    }
 
-        return Task.CompletedTask;
+    [TestMethod]
+    public void GenerateRandomText_Works()
+    {
+        var result = _textActions.GenerateRandomText(null, null);
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public void GenerateRandomText_with_charcount_Works()
+    {
+        var result = _textActions.GenerateRandomText(15, null);
+        Console.WriteLine(result);
+        Assert.IsTrue(result.Length == 15);
+    }
+
+    [TestMethod]
+    public void GenerateRandomText_with_charset_Works()
+    {
+        var chars = "abcdef";
+        var result = _textActions.GenerateRandomText(null, chars);
+        Console.WriteLine(result);
+        foreach (char c in result)
+        {
+            Assert.IsTrue(chars.Contains(c));
+        }
+        
     }
 }

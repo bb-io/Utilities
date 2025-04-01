@@ -48,6 +48,12 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Change XML file property** Change XML file property.
 - **Replace XLIFF source with target** Replace XLIFF source with target.
 
+### CSV Files
+
+- **Remove CSV rows** Remove the selected rows from a CSV file. The first row is indexed 0.
+- **Redefine CSV columns** Rearrange the columns of a CSV file according to the specified order. 0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.
+- **Apply regex to column** Apply a regex pattern to a specified column in the CSV file.
+
 ### Texts
 
 - **Count characters in text** returns number of chracters in text.
@@ -60,7 +66,8 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
-- **Count words in texts** "Returns number of words in text from array. 
+- **Count words in texts** Returns number of words in text from array. 
+- **Generate random text** Returns a random text of variable length and characters used. Default length is 10 and default characters are A-Z, a-z and 0-9.
   
 ### JSON
 

@@ -6,6 +6,8 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 using System.Text.RegularExpressions;
 using BleuNet;
 using Blackbird.Applications.Sdk.Common.Exceptions;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using System.Text;
 
 namespace Apps.Utilities.Actions;
 
@@ -210,5 +212,26 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         return textDto.Text.Split([delimiterRequest.Delimiter], StringSplitOptions.RemoveEmptyEntries)
             .Select(s => s.Trim())
             .ToList();
+    }
+
+    [Action("Generate random text", Description = "Generates a random text with definable length and characters used.")]
+    public string GenerateRandomText(
+        [ActionParameter][Display("Length", Description = "Length of the text. Default is 10 characters.")] int? length,
+        [ActionParameter][Display("Characters", Description = "Characters used. Default is A-Z, a-z and 0-9")] string? characterSet
+        )
+    {
+        length = length ?? 10;
+        characterSet = characterSet ?? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        StringBuilder result = new StringBuilder((int)length);
+        Random random = new Random();
+
+        for (int i = 0; i < length; i++)
+        {
+            int index = random.Next(characterSet.Length);
+            result.Append(characterSet[index]);
+        }
+
+        return result.ToString();
     }
 }
