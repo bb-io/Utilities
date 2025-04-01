@@ -48,6 +48,12 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Change XML file property** Change XML file property.
 - **Replace XLIFF source with target** Replace XLIFF source with target.
 
+### CSV Files
+
+- **Remove CSV rows** Remove the selected rows from a CSV file. The first row is indexed 0.
+- **Redefine CSV columns** Rearrange the columns of a CSV file according to the specified order. 0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.
+- **Apply regex to column** Apply a regex pattern to a specified column in the CSV file.
+
 ### Texts
 
 - **Count characters in text** returns number of chracters in text.

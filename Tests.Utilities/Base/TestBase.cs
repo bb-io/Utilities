@@ -39,6 +39,7 @@ public class TestBase
 
         return loggerFactory.CreateLogger<T>();
     }
+
     public static string GetTestFolderPath()
     {
         var config = new ConfigurationBuilder()
