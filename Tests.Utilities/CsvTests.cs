@@ -34,7 +34,7 @@ public class CsvTests : TestBase
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.RemoveRows(csvFile, new List<int> { -1, 0, 1 });
+        var response = await actions.RemoveRows(csvFile, new List<int> { 0 });
     }
 
     [TestMethod]

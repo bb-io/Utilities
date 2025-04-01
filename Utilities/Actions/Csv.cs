@@ -20,7 +20,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> RemoveRows([ActionParameter] CsvFile csvFile, [ActionParameter][Display("Row indexes", Description = "The first row starts with 0")] IEnumerable<int> rowIndexes)
     {
         await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        streamIn.Position = 0;
 
         using var reader = new StreamReader(streamIn);
         var lines = new List<string>();
@@ -52,7 +51,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
             IEnumerable<int> columnOrder)
     {
         await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        streamIn.Position = 0;
 
         using var reader = new StreamReader(streamIn);
         var lines = new List<string>();
@@ -96,7 +94,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         [ActionParameter] RegexInput regex)
     {
         await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        streamIn.Position = 0;
 
         using var reader = new StreamReader(streamIn);
         var lines = new List<string>();
