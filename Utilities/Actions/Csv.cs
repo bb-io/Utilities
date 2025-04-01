@@ -89,7 +89,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         return new CsvFile { File = resultFile };
     }
 
-    [Action("Apply regex to column", Description = "Apply a regex pattern to a specified column in the CSV file.")]
+    [Action("Apply regex to CSV column", Description = "Apply a regex pattern to a specified column in the CSV file.")]
     public async Task<CsvFile> ApplyRegexToColumn(
         [ActionParameter] CsvFile csvFile, 
         [ActionParameter][Display("Column index")] int columnIndex,
