@@ -218,6 +218,30 @@ public class Files : BaseInvocable
         return response;
     }
 
+    [Action("Compare file contents", Description = "Compare whether two files have the same content.")]
+    public async Task<CompareContentResults> CompareFileContents(
+    [ActionParameter] CompareFilesRequest request)
+    {
+        string currentContent = null;
+        foreach(var file in request.Files)
+        {
+            var stream = await _fileManagementClient.DownloadAsync(file);
+            var filecontent = await ReadPlaintextFile(stream);
+            if (currentContent == null)
+            {
+                currentContent = filecontent;
+                continue;
+            }
+
+            if (currentContent != filecontent)
+            {
+                return new CompareContentResults { AreEqual = false };
+            }
+        }
+
+        return new CompareContentResults { AreEqual = true };
+    }
+
     [Action("Unzip files", Description = "Take a .zip file and unzips it into multiple files")]
     public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)
     {

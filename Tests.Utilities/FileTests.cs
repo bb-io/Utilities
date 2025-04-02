@@ -34,7 +34,6 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
-
         public async Task UnzipFiles_ZipFileInput_Success()
         {
             var file = new FileReference { Name = "test.zip" };
@@ -48,7 +47,6 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
-
         public async Task UnzipFiles_NotZipFileInput_ThrowsPluginMisconfigurationException()
         {
             var file = new FileReference { Name = "test.txt" };
@@ -81,6 +79,24 @@ namespace Tests.Utilities
 
             Console.WriteLine(response.File.Name);
             Assert.IsNotNull(response);
+        }
+
+        [TestMethod]
+        public async Task Compare_same_file_returns_true()
+        {
+            var file = new FileReference { Name = "test.txt" };
+            var file2 = new FileReference { Name = "test.txt" };
+            var response = await _fileActions.CompareFileContents(new CompareFilesRequest { Files = new List<FileReference> { file, file2 } });
+            Assert.IsTrue(response.AreEqual);
+        }
+
+        [TestMethod]
+        public async Task Compare_different_file_returns_false()
+        {
+            var file = new FileReference { Name = "test.html" };
+            var file2 = new FileReference { Name = "test.txt" };
+            var response = await _fileActions.CompareFileContents(new CompareFilesRequest { Files = new List<FileReference> { file, file2 } });
+            Assert.IsFalse(response.AreEqual);
         }
     }
 }
