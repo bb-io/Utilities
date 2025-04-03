@@ -10,7 +10,6 @@ using System.Text;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text.RegularExpressions;
 using Apps.Utilities.Models.Texts;
-using Microsoft.VisualBasic.FileIO;
 
 namespace Apps.Utilities.Actions;
 
@@ -40,32 +39,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
             }
         }
 
-        streamOut.Position = 0;
-        var resultFile = await fileManagementClient.UploadAsync(streamOut, csvFile.File.ContentType, csvFile.File.Name);
-        return new CsvFile { File = resultFile };
-    }
-
-    [Action("Remove CSV columns", Description = "Remove the selected columns from a CSV file.")]
-    public async Task<CsvFile> RemoveColumns([ActionParameter] CsvFile csvFile, [ActionParameter][Display("Column indexes to be removed", Description = "The first column starts with 0")] IEnumerable<int> columnsToRemove)
-    {
-        await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-
-        using var streamOut = new MemoryStream();
-        using (var reader = new TextFieldParser(streamIn))        
-        using (var writer = new StreamWriter(streamOut))
-        {
-            reader.TextFieldType = FieldType.Delimited;
-            reader.SetDelimiters(",");
-
-            while (!reader.EndOfData)
-            {
-                string[] fields = reader.ReadFields();
-                if (fields == null) continue;
-
-                var filteredFields = fields.Where((_, index) => !columnsToRemove.Contains(index)).ToArray();
-                writer.WriteLine(string.Join(",", filteredFields.Select(field => $"\"{field}\"")));
-            }
-        }
         streamOut.Position = 0;
         var resultFile = await fileManagementClient.UploadAsync(streamOut, csvFile.File.ContentType, csvFile.File.Name);
         return new CsvFile { File = resultFile };
