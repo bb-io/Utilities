@@ -160,7 +160,7 @@ public class Files : BaseInvocable
         
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
-        var replacedText = Regex.Replace(text, request.Regex, request.Replace);
+        var replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
         return new()
         {
             File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
