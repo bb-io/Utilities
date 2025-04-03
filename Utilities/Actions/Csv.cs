@@ -10,6 +10,8 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text.RegularExpressions;
 using Apps.Utilities.Models.Texts;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Apps.Utilities.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.Utilities.Actions;
 
@@ -20,26 +22,53 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> RemoveRows(
         [ActionParameter] CsvFile csvFile,
         [ActionParameter] CsvOptions csvOptions,
-        [ActionParameter][Display("Row indexes", Description = "The first row starts with 0")] IEnumerable<int> rowIndexes        
+        [ActionParameter] RowIndexesRequest rowIndexes        
         )
     {
         var records = await ReadCsv(csvFile, csvOptions);
-        var filteredRecords = records.Where((_, index) => !rowIndexes.Contains(index)).ToList();
+        var filteredRecords = records.Where((_, index) => !rowIndexes.RowIndexes.Contains(index)).ToList();
         return await WriteCsv(filteredRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
+    }
+
+    [Action("Filter CSV rows", Description = "Remove the selected rows from a CSV file based on a column condition.")]
+    public async Task<CsvFile> FilterRows(
+        [ActionParameter] CsvFile csvFile,
+        [ActionParameter] CsvOptions csvOptions,
+        [ActionParameter][Display("Column index")] int columnIndex,
+        [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition
+        )
+    {
+        if (columnIndex < 0) throw new PluginApplicationException("A column index must be 0 or a positive number.");
+        var records = await ReadCsv(csvFile, csvOptions);
+        var newRecords = new List<List<string>>();
+        foreach (var record in records)
+        {
+            if (columnIndex >= record.Count) throw new PluginApplicationException("The column index is bigger than the amount of columns.");
+            var value = record[columnIndex];
+
+            if (condition == "is_empty" && string.IsNullOrEmpty(value))
+            {
+                newRecords.Add(record);
+            } else if (condition == "is_full" && !string.IsNullOrEmpty(value))
+            {
+                newRecords.Add(record);
+            }
+        }
+        return await WriteCsv(newRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
     }
 
     [Action("Remove CSV columns", Description = "Remove the selected columns from a CSV file.")]
     public async Task<CsvFile> RemoveColumns(
     [ActionParameter] CsvFile csvFile,
     [ActionParameter] CsvOptions csvOptions,
-    [ActionParameter][Display("Column indexes", Description = "The first column starts with 0")] IEnumerable<int> columnIndexes
+    [ActionParameter] ColumnIndexesRequest columnIndexes
     )
     {
         var records = await ReadCsv(csvFile, csvOptions);
         var newRecords = new List<List<string>>();
         foreach (var record in records)
         {
-            var newColumns = record.Where((_, index) => !columnIndexes.Contains(index)).ToList();
+            var newColumns = record.Where((_, index) => !columnIndexes.ColumnIndexes.Contains(index)).ToList();
             newRecords.Add(newColumns);
         }
         return await WriteCsv(newRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
@@ -49,15 +78,14 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> SwapColumns(
         [ActionParameter] CsvFile csvFile,
         [ActionParameter] CsvOptions csvOptions,
-        [ActionParameter][Display("New columns", Description = "0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.")] 
-            IEnumerable<int> columnOrder)
+        [ActionParameter] ColumnOrderRequest columnOrder)
     {
-        if (columnOrder.Any(x => x < 0)) throw new PluginApplicationException("A column identifier must be 0 or a positive number.");
+        if (columnOrder.ColumnOrder.Any(x => x < 0)) throw new PluginApplicationException("A column identifier must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);
         var newRecords = new List<List<string>>();
         foreach (var record in records)
         {
-            var newColumns = columnOrder.Select(index => index < record.Count ? record[index] : "").ToList();
+            var newColumns = columnOrder.ColumnOrder.Select(index => index < record.Count ? record[index] : "").ToList();
             newRecords.Add(newColumns);
         }
         return await WriteCsv(newRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);

@@ -30,12 +30,21 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
+    public async Task FilterRows_works()
+    {
+        var file = new FileReference { Name = CSV_FILE };
+        var csvFile = new CsvFile { File = file };
+
+        var response = await actions.FilterRows(csvFile, new CsvOptions { HasHeader = false }, 0, "is_full");
+    }
+
+    [TestMethod]
     public async Task RemoveRows_works()
     {
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.RemoveRows(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 0 });
+        var response = await actions.RemoveRows(csvFile, new CsvOptions { HasHeader = false }, new RowIndexesRequest { RowIndexes = new List<int> { 0 } });
     }
 
     [TestMethod]
@@ -44,7 +53,7 @@ public class CsvTests : TestBase
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.RemoveColumns(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 3, 4 });
+        var response = await actions.RemoveColumns(csvFile, new CsvOptions { HasHeader = false }, new ColumnIndexesRequest{ ColumnIndexes = new List<int> { 3, 4 } });
     }
 
     [TestMethod]
@@ -53,7 +62,7 @@ public class CsvTests : TestBase
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.SwapColumns(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 1, 1, 2, 0, 4 });
+        var response = await actions.SwapColumns(csvFile, new CsvOptions { HasHeader = false }, new ColumnOrderRequest { ColumnOrder = new List<int> { 3, 3, 3, 3 } });
     }
 
     [TestMethod]
