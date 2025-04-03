@@ -441,6 +441,28 @@ public class XMLTests : TestBase
     }
 
 
+    [TestMethod]
+    public async Task ConvertHtmlToXliff_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Ceci.html" }, SourceLanguage = "en", TargetLanguage = "de" };
+        var result = actions.ConvertHtmlToXliff(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public async Task ConvertXliffToHtml_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "Ceci.xliff" } };
+        var result = actions.ConvertXliffToHtml(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
     private string GetTestFolderPath()
     {
         var config = new ConfigurationBuilder()
