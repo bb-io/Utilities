@@ -22,7 +22,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> RemoveRows(
         [ActionParameter] CsvFile csvFile,
         [ActionParameter] CsvOptions csvOptions,
-        [ActionParameter][Display("Row indexes", Description = "The first row starts with 0")] IEnumerable<int> rowIndexes        
+        [ActionParameter][Display("Row indexes", Description = "The first row starts with 0")] List<int> rowIndexes        
         )
     {
         var records = await ReadCsv(csvFile, csvOptions);
@@ -61,7 +61,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> RemoveColumns(
     [ActionParameter] CsvFile csvFile,
     [ActionParameter] CsvOptions csvOptions,
-    [ActionParameter][Display("Column indexes", Description = "The first column starts with 0")] IEnumerable<int> columnIndexes
+    [ActionParameter][Display("Column indexes", Description = "The first column starts with 0")] List<int> columnIndexes
     )
     {
         var records = await ReadCsv(csvFile, csvOptions);
@@ -78,8 +78,8 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     public async Task<CsvFile> SwapColumns(
         [ActionParameter] CsvFile csvFile,
         [ActionParameter] CsvOptions csvOptions,
-        [ActionParameter][Display("New columns", Description = "0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.")] 
-            IEnumerable<int> columnOrder)
+        [ActionParameter][Display("New columns", Description = "0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.")]
+            List<int> columnOrder)
     {
         if (columnOrder.Any(x => x < 0)) throw new PluginApplicationException("A column identifier must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);

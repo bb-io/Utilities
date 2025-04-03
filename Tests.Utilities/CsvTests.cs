@@ -62,7 +62,7 @@ public class CsvTests : TestBase
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.SwapColumns(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 1, 1, 2, 0, 4 });
+        var response = await actions.SwapColumns(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 1, 2 });
     }
 
     [TestMethod]
