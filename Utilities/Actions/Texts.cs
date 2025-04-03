@@ -151,7 +151,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     [Action("Replace using Regex", Description = "Use Regular Expressions to search and replace within text")]
     public string ReplaceRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceInput regex)
     {
-        return Regex.Replace(input.Text, Regex.Unescape(regex.Regex), Regex.Unescape(regex.Replace));
+        return Regex.Replace(input.Text, regex.Regex, regex.Replace);
     }
 
     [Action("Trim text", Description = "Trim specified text")]
