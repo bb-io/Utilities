@@ -7,6 +7,9 @@ namespace Apps.Utilities.Models.Texts
         [Display("Regular Expression")]
         public string Regex { get; set; }
 
+        [Display("Replace pattern")]
+        public string? Replace { get; set; }
+
         [Display("Group Number")]
         public string? Group { get; set; }
     }

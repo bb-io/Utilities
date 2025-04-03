@@ -104,14 +104,22 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         {
             if (columnIndex < record.Count)
             {
-                if (String.IsNullOrEmpty(regex.Group))
+                if (String.IsNullOrEmpty(regex.Replace))
                 {
-                    record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Value;
+                    record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, regex.Replace);
                 }
-                else
+                else 
                 {
-                    record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Groups[regex.Group].Value;
+                    if (String.IsNullOrEmpty(regex.Group))
+                    {
+                        record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Value;
+                    }
+                    else
+                    {
+                        record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Groups[regex.Group].Value;
+                    }
                 }
+               
             }
         }
         return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
@@ -130,14 +138,22 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
 
         for (int i = 0; i < records[rowIndex].Count; i++)
         {
-            if (String.IsNullOrEmpty(regex.Group))
+            if (String.IsNullOrEmpty(regex.Replace))
             {
-                records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Value;
+                records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, regex.Replace);
             }
-            else
+            else 
             {
-                records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Groups[regex.Group].Value;
+                if (String.IsNullOrEmpty(regex.Group))
+                {
+                    records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Value;
+                }
+                else
+                {
+                    records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Groups[regex.Group].Value;
+                }
             }
+            
         }
 
         return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
