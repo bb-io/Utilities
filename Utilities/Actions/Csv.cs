@@ -104,7 +104,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         {
             if (columnIndex < record.Count)
             {
-                if (String.IsNullOrEmpty(regex.Replace))
+                if (!String.IsNullOrEmpty(regex.Replace))
                 {
                     if (Regex.IsMatch(record[columnIndex], regex.Regex)) 
                     {
@@ -141,7 +141,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
 
         for (int i = 0; i < records[rowIndex].Count; i++)
         {
-            if (String.IsNullOrEmpty(regex.Replace))
+            if (!String.IsNullOrEmpty(regex.Replace))
             {
                 if (Regex.IsMatch(records[rowIndex][i], regex.Regex))
                 {
