@@ -1,5 +1,6 @@
 ﻿using Apps.Utilities.Actions;
 using Apps.Utilities.Models.Files;
+using Apps.Utilities.Models.Texts;
 using Blackbird.Applications.Sdk.Common.Files;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ public class CsvTests : TestBase
 {
     private Csv actions;
 
-    private const string CSV_FILE = "customers.csv";
+    private const string CSV_FILE = "test.csv";
 
     [TestInitialize]
     public void Init()
@@ -29,29 +30,47 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
-    public async Task CsvRemoveRows_works()
+    public async Task RemoveRows_works()
     {
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.RemoveRows(csvFile, new List<int> { 0 });
+        var response = await actions.RemoveRows(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 0 });
     }
 
     [TestMethod]
-    public async Task CsvRedefineColumns_works()
+    public async Task RemoveColumns_works()
     {
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.SwapColumns(csvFile, new List<int> { 1, 1, 2, 0, 4 });
+        var response = await actions.RemoveColumns(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 3, 4 });
     }
 
     [TestMethod]
-    public async Task CsvRegex_works()
+    public async Task RedefineColumns_works()
     {
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.ApplyRegexToColumn(csvFile, 2, new Apps.Utilities.Models.Texts.RegexInput { Regex = "\\((\\d*?)\\)", Group = "1"});
+        var response = await actions.SwapColumns(csvFile, new CsvOptions { HasHeader = false }, new List<int> { 1, 1, 2, 0, 4 });
+    }
+
+    [TestMethod]
+    public async Task RegexColumn_works()
+    {
+        var file = new FileReference { Name = CSV_FILE };
+        var csvFile = new CsvFile { File = file };
+
+        var response = await actions.ApplyRegexToColumn(csvFile, new CsvOptions { HasHeader = false }, 3, new RegexInput { Regex = "\\((\\d*?)\\)", Group = "1"});
+    }
+
+    [TestMethod]
+    public async Task RegexRow_works()
+    {
+        var file = new FileReference { Name = CSV_FILE };
+        var csvFile = new CsvFile { File = file };
+
+        var response = await actions.ApplyRegexToRow(csvFile, new CsvOptions { HasHeader = false }, 3, new RegexInput { Regex = "\\((\\d*?)\\)", Group = "1" });
     }
 }
