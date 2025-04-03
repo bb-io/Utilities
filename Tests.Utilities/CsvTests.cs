@@ -30,6 +30,15 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
+    public async Task FilterRows_works()
+    {
+        var file = new FileReference { Name = CSV_FILE };
+        var csvFile = new CsvFile { File = file };
+
+        var response = await actions.FilterRows(csvFile, new CsvOptions { HasHeader = false }, 0, "is_full");
+    }
+
+    [TestMethod]
     public async Task RemoveRows_works()
     {
         var file = new FileReference { Name = CSV_FILE };

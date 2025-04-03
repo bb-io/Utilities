@@ -10,6 +10,8 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text.RegularExpressions;
 using Apps.Utilities.Models.Texts;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Apps.Utilities.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.Utilities.Actions;
 
@@ -26,6 +28,33 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         var records = await ReadCsv(csvFile, csvOptions);
         var filteredRecords = records.Where((_, index) => !rowIndexes.Contains(index)).ToList();
         return await WriteCsv(filteredRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
+    }
+
+    [Action("Filter CSV rows", Description = "Remove the selected rows from a CSV file based on a column condition.")]
+    public async Task<CsvFile> FilterRows(
+        [ActionParameter] CsvFile csvFile,
+        [ActionParameter] CsvOptions csvOptions,
+        [ActionParameter][Display("Column index")] int columnIndex,
+        [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition
+        )
+    {
+        if (columnIndex < 0) throw new PluginApplicationException("A column index must be 0 or a positive number.");
+        var records = await ReadCsv(csvFile, csvOptions);
+        var newRecords = new List<List<string>>();
+        foreach (var record in records)
+        {
+            if (columnIndex >= record.Count) throw new PluginApplicationException("The column index is bigger than the amount of columns.");
+            var value = record[columnIndex];
+
+            if (condition == "is_empty" && string.IsNullOrEmpty(value))
+            {
+                newRecords.Add(record);
+            } else if (condition == "is_full" && !string.IsNullOrEmpty(value))
+            {
+                newRecords.Add(record);
+            }
+        }
+        return await WriteCsv(newRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
     }
 
     [Action("Remove CSV columns", Description = "Remove the selected columns from a CSV file.")]
