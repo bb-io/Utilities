@@ -100,15 +100,31 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     {
         if (columnIndex < 0) throw new PluginApplicationException("A column index must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);
+        var replaceValues = new Dictionary<string, string>();
+        bool useDictionary = false;
+        if (regex.From != null && regex.To != null)
+        {
+            useDictionary = true;
+            replaceValues = regex.From.ToList().Zip(regex.To.ToList(), (key, value) => new { key, value })
+                       .ToDictionary(x => x.key, x => x.value);
+        }
         foreach (var record in records)
         {
             if (columnIndex < record.Count)
             {
-                if (!String.IsNullOrEmpty(regex.Replace))
+                if (useDictionary)
+                {
+                    var match = Regex.Match(record[columnIndex], regex.Regex);
+                    if (match != null && match.Success)
+                    {
+                        record[columnIndex] = Regex.Replace(record[columnIndex], match.Value, replaceValues[match.Value]);
+                    }
+                }
+                else if (!String.IsNullOrEmpty(regex.Replace))
                 {
                     if (Regex.IsMatch(record[columnIndex], regex.Regex)) 
                     {
-                        record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, regex.Replace);
+                        record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, Regex.Unescape(regex.Replace));
                     }
                 }
                 else 
@@ -138,18 +154,34 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         if (rowIndex < 0) throw new PluginApplicationException("A row index must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);
         if (rowIndex >= records.Count) return csvFile;
+        var replaceValues = new Dictionary<string,string>();
+        bool useDictionary = false;
+        if (regex.From != null && regex.To != null)
+        {
+            useDictionary = true;
+            replaceValues = regex.From.ToList().Zip(regex.To.ToList(), (key, value) => new { key, value })
+                       .ToDictionary(x => x.key, x => x.value);
+        }
 
         for (int i = 0; i < records[rowIndex].Count; i++)
         {
-            if (!String.IsNullOrEmpty(regex.Replace))
+            if (useDictionary)
+            {
+                var match = Regex.Match(records[rowIndex][i], regex.Regex);
+                if (match != null && match.Success)
+                {
+                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], match.Value, replaceValues[match.Value]);
+                }
+            }
+            else if (!String.IsNullOrEmpty(regex.Replace))
             {
                 if (Regex.IsMatch(records[rowIndex][i], regex.Regex))
                 {
-                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, regex.Replace);
+                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, Regex.Unescape(regex.Replace));
                 }
             }
             else 
-            {
+            {                
                 if (String.IsNullOrEmpty(regex.Group))
                 {
                     records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Value;
