@@ -9,6 +9,8 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using System.Web;
+using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.Utilities.Actions
 {
@@ -198,82 +200,23 @@ namespace Apps.Utilities.Actions
         [Action("Convert HTML to XLIFF", Description = "Convert HTML file to XLIFF 1.2 format")]
         public async Task<ConvertTextToDocumentResponse> ConvertHtmlToXliff([ActionParameter] ConvertHtmlToXliffRequest request)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-            string htmlContent;
-            using (var reader = new StreamReader(streamIn, Encoding.UTF8))
-            {
-                htmlContent = await reader.ReadToEndAsync();
-            }
-
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.OptionFixNestedTags = true;
-            htmlDoc.LoadHtml(htmlContent);
-
-            var divNodes = htmlDoc.DocumentNode.SelectNodes("//div");
-
+            string htmlContent = await DownloadHtmlContentAsync(request.File);
+            HtmlDocument htmlDoc = ParseHtmlDocument(htmlContent);
             XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
 
-            var fileElement = new XElement(ns + "file",
-                 new XAttribute("original", request.File.Name),
-                 new XAttribute("source-language", string.IsNullOrEmpty(request.SourceLanguage) ? "en" : request.SourceLanguage),
-                 new XAttribute("target-language", string.IsNullOrEmpty(request.TargetLanguage) ? "en" : request.TargetLanguage),
-                 new XAttribute("datatype", "html")
+            XElement fileElement = CreateFileNode(request.File.Name, request.SourceLanguage, request.TargetLanguage, htmlContent, ns);
+            XElement bodyElement = CreateBodyNodes(htmlDoc, ns);
+
+            XDocument xliffDoc = new XDocument(
+                 new XElement(ns + "xliff",
+                     new XAttribute("version", "1.2"),
+                     fileElement,
+                     bodyElement
+                 )
             );
 
-            fileElement.AddFirst(new XElement("originalFile", htmlContent));
-
-            var bodyElement = new XElement(ns + "body");
-
-            int transUnitId = 1;
-            if (divNodes != null)
-            {
-                foreach (var div in divNodes)
-                {
-                    string slugAttr = div.GetAttributeValue("slug", null) ?? div.GetAttributeValue("id", null);
-
-                    string divInnerHtml = div.InnerHtml;
-
-                    string transformedContent = TransformInlineTagsForXliff(divInnerHtml);
-
-                    var transUnit = new XElement(ns + "trans-unit",
-                        new XAttribute("id", transUnitId.ToString())
-                    );
-                    if (!string.IsNullOrEmpty(slugAttr))
-                    {
-                        transUnit.SetAttributeValue("slug", slugAttr);
-                    }
-
-                    transUnit.Add(new XElement(ns + "source", transformedContent));
-                    transUnit.Add(new XElement(ns + "target", ""));
-
-                    bodyElement.Add(transUnit);
-                    transUnitId++;
-                }
-            }
-
-            var xliffDoc = new XDocument(
-                new XElement(ns + "xliff",
-                    new XAttribute("version", "1.2"),
-                    fileElement,
-                    bodyElement
-                )
-            );
-
-            using var streamOut = new MemoryStream();
-            var settings = new XmlWriterSettings
-            {
-                OmitXmlDeclaration = false,
-                Indent = true,
-                NewLineHandling = NewLineHandling.Replace,
-                Encoding = Encoding.UTF8
-            };
-            using (var writer = XmlWriter.Create(streamOut, settings))
-            {
-                xliffDoc.Save(writer);
-            }
-            streamOut.Position = 0;
-
-            var fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".xliff";
+            MemoryStream streamOut = WriteXmlToMemoryStream(xliffDoc);
+            string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".xliff";
             var resultFile = await _fileManagementClient.UploadAsync(streamOut, "application/xml", fileName);
             return new ConvertTextToDocumentResponse { File = resultFile };
         }
@@ -281,94 +224,123 @@ namespace Apps.Utilities.Actions
         [Action("Convert XLIFF to HTML", Description = "Convert XLIFF file (version 1.2) to HTML file")]
         public async Task<ConvertTextToDocumentResponse> ConvertXliffToHtml([ActionParameter] ConvertXliffToHtmlRequest request)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-            var xliffDoc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+            XDocument xliffDoc = await LoadXliffDocumentAsync(request.File);
             XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
+            HtmlDocument htmlDoc = LoadOriginalHtmlDocument(xliffDoc, ns);
 
+            ApplyTranslationsToHtml(htmlDoc, xliffDoc, ns);
+
+            string updatedHtml = GetHtmlFromDocument(htmlDoc);
+            MemoryStream streamOut = WriteTextToMemoryStream(updatedHtml);
+            string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
+            var resultFile = await _fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
+            return new ConvertTextToDocumentResponse { File = resultFile };
+        }
+
+        private async Task<XDocument> LoadXliffDocumentAsync(FileReference file)
+        {
+            await using var streamIn = await _fileManagementClient.DownloadAsync(file);
+            return XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+        }
+
+        private HtmlDocument LoadOriginalHtmlDocument(XDocument xliffDoc, XNamespace ns)
+        {
             var fileElement = xliffDoc.Descendants(ns + "file").FirstOrDefault();
             string originalHtml = null;
             if (fileElement != null)
             {
-                var originalFileElement = fileElement.Element("originalFile");
+                var originalFileElement = fileElement.Element(XName.Get("originalFile", "urn:oasis:names:tc:xliff:document:1.2"))
+                                          ?? fileElement.Element(XName.Get("originalFile", ""));
                 if (originalFileElement != null)
                 {
                     originalHtml = originalFileElement.Value;
                 }
             }
 
-            var htmlDoc = new HtmlDocument();
+            var doc = new HtmlDocument();
             if (!string.IsNullOrEmpty(originalHtml))
             {
-                htmlDoc.LoadHtml(originalHtml);
+                string decodedHtml = HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(originalHtml));
+                doc.LoadHtml(decodedHtml);
             }
             else
             {
-                htmlDoc.LoadHtml("<html><head><title></title></head><body></body></html>");
+                doc.LoadHtml("<html><head><title></title></head><body></body></html>");
             }
+            return doc;
+        }
+        private void ApplyTranslationsToHtml(HtmlDocument htmlDoc, XDocument xliffDoc, XNamespace ns)
+        {
+            var transUnits = xliffDoc.Descendants(ns + "trans-unit")
+                              .OrderBy(t => (int)t.Attribute("id"))
+                              .ToList();
 
-            var transUnits = xliffDoc.Descendants(ns + "trans-unit").ToList();
-            foreach (var transUnit in transUnits)
+            var titleTransUnit = transUnits.FirstOrDefault(t =>
+                                      string.Equals((string)t.Attribute("slug"), "title", StringComparison.OrdinalIgnoreCase) &&
+                                      string.Equals((string)t.Attribute("tag"), "title", StringComparison.OrdinalIgnoreCase));
+            if (titleTransUnit != null)
             {
-                var targetElement = transUnit.Element(ns + "target");
-                string translated = (targetElement != null && !string.IsNullOrWhiteSpace(targetElement.Value))
-                                        ? targetElement.Value
-                                        : transUnit.Element(ns + "source")?.Value ?? "";
-
-                string revertedContent = RevertInlineTagsFromXliff(translated);
-
-                var slug = transUnit.Attribute("slug")?.Value;
-                if (!string.IsNullOrEmpty(slug))
+                string titleTranslation = GetTranslatedText(titleTransUnit, ns);
+                var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//head/title");
+                if (titleNode != null)
                 {
-                    var divNode = htmlDoc.DocumentNode.SelectSingleNode($"//div[@slug='{slug}' or @id='{slug}']");
-                    if (divNode != null)
-                    {
-                        divNode.InnerHtml = revertedContent;
-                    }
-                    else
-                    {
-                        var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
-                        if (bodyNode != null)
-                        {
-                            var newDiv = htmlDoc.CreateElement("div");
-                            newDiv.SetAttributeValue("slug", slug);
-                            newDiv.InnerHtml = revertedContent;
-                            bodyNode.AppendChild(newDiv);
-                        }
-                    }
-                }
-                else
-                {
-                    var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
-                    if (bodyNode != null)
-                    {
-                        var newDiv = htmlDoc.CreateElement("div");
-                        newDiv.InnerHtml = revertedContent;
-                        bodyNode.AppendChild(newDiv);
-                    }
+                    titleNode.InnerHtml = RevertInlineTagsFromXliff(titleTranslation);
                 }
             }
 
-            string updatedHtml;
+            var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
+            if (bodyNode != null)
+            {
+                var translatableNodes = new List<HtmlNode>();
+                foreach (var child in bodyNode.ChildNodes)
+                {
+                    if ((child.NodeType == HtmlNodeType.Element && !string.IsNullOrWhiteSpace(child.InnerText)) ||
+                        (child.NodeType == HtmlNodeType.Text && !string.IsNullOrWhiteSpace(child.InnerText)))
+                    {
+                        translatableNodes.Add(child);
+                    }
+                }
+
+                var bodyTransUnits = transUnits.Where(t => !string.Equals((string)t.Attribute("slug"), "title", StringComparison.OrdinalIgnoreCase))
+                                                .ToList();
+
+                int count = Math.Min(translatableNodes.Count, bodyTransUnits.Count);
+                for (int i = 0; i < count; i++)
+                {
+                    string translation = GetTranslatedText(bodyTransUnits[i], ns);
+                    translation = RevertInlineTagsFromXliff(translation);
+                    translatableNodes[i].InnerHtml = translation;
+                }
+            }
+        }
+        private string GetHtmlFromDocument(HtmlDocument doc)
+        {
             using (var sw = new StringWriter())
             {
-                htmlDoc.Save(sw);
-                updatedHtml = sw.ToString();
+                doc.Save(sw);
+                return sw.ToString();
             }
-
-            using var streamOut = new MemoryStream();
-            using (var writer = new StreamWriter(streamOut, Encoding.UTF8, 1024, true))
-            {
-                await writer.WriteAsync(updatedHtml);
-                await writer.FlushAsync();
-            }
-            streamOut.Position = 0;
-
-            var fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
-            var resultFile = await _fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
-            return new ConvertTextToDocumentResponse { File = resultFile };
         }
-
-        private string TransformInlineTagsForXliff(string html)
+        private MemoryStream WriteTextToMemoryStream(string text)
+        {
+            var stream = new MemoryStream();
+            using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))
+            {
+                writer.Write(text);
+                writer.Flush();
+            }
+            stream.Position = 0;
+            return stream;
+        }
+        private string GetTranslatedText(XElement transUnit, XNamespace ns)
+        {
+            var targetElement = transUnit.Element(ns + "target");
+            if (targetElement != null && !string.IsNullOrWhiteSpace(targetElement.Value))
+                return string.Concat(targetElement.Nodes());
+            else
+                return string.Concat(transUnit.Element(ns + "source")?.Nodes() ?? Enumerable.Empty<XNode>());
+        }
+        private IEnumerable<XNode> TransformInlineTagsForXliffNodes(string html)
         {
             XElement container;
             try
@@ -377,42 +349,160 @@ namespace Apps.Utilities.Actions
             }
             catch
             {
-                return html;
+                return new List<XNode> { new XText(html) };
             }
-
             var counters = new Dictionary<string, int>();
-            return TransformNodes(container.Nodes(), counters);
+            return TransformNodesToNodes(container.Nodes(), counters);
         }
-
-        private string TransformNodes(IEnumerable<XNode> nodes, Dictionary<string, int> counters)
+        private IEnumerable<XNode> TransformNodesToNodes(IEnumerable<XNode> nodes, Dictionary<string, int> counters)
         {
-            var sb = new StringBuilder();
             foreach (var node in nodes)
             {
                 if (node is XText textNode)
                 {
-                    sb.Append(textNode.Value);
+                    yield return new XText(textNode.Value);
                 }
                 else if (node is XElement element)
                 {
                     string tagName = element.Name.LocalName.ToLower();
-                    if (tagName == "br")
+                    int id = GetNextId(counters, tagName);
+
+                    if (IsVoidInlineElement(tagName))
                     {
-                        int id = GetNextId(counters, tagName);
-                        sb.Append($"<ph id=\"{id}\">&lt;br/&gt;</ph>");
+                        string attributes = string.Join("", element.Attributes().Select(a => $" {a.Name}=\"{a.Value}\""));
+                        string selfClosingTag = $"<{tagName}{attributes}/>";
+                        string encodedTag = HttpUtility.HtmlEncode(selfClosingTag);
+                        yield return new XElement("ph", new XAttribute("id", id), encodedTag);
                     }
                     else
                     {
-                        int id = GetNextId(counters, tagName);
-                        sb.Append($"<bpt id=\"{id}\">&lt;{tagName}&gt;</bpt>");
-                        sb.Append(TransformNodes(element.Nodes(), counters));
-                        sb.Append($"<ept id=\"{id}\">&lt;/{tagName}&gt;</ept>");
+                        string attributes = string.Join("", element.Attributes().Select(a => $" {a.Name}=\"{a.Value}\""));
+                        string openTag = HttpUtility.HtmlEncode($"<{tagName}{attributes}>");
+                        string closeTag = HttpUtility.HtmlEncode($"</{tagName}>");
+
+                        yield return new XElement("bpt", new XAttribute("id", id), openTag);
+                        foreach (var child in TransformNodesToNodes(element.Nodes(), counters))
+                        {
+                            yield return child;
+                        }
+                        yield return new XElement("ept", new XAttribute("id", id), closeTag);
                     }
                 }
             }
-            return sb.ToString();
         }
+        private bool IsVoidInlineElement(string tagName)
+        {
+            var voidElements = new HashSet<string> { "br", "hr", "img", "input", "link", "base", "wbr", "area", "embed", "col", "source", "track" };
+            return voidElements.Contains(tagName);
+        }
+        private async Task<string> DownloadHtmlContentAsync(FileReference file)
+        {
+            await using var streamIn = await _fileManagementClient.DownloadAsync(file);
+            using (var reader = new StreamReader(streamIn, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
+        private HtmlDocument ParseHtmlDocument(string htmlContent)
+        {
+            var doc = new HtmlDocument();
+            doc.OptionFixNestedTags = true;
+            doc.LoadHtml(htmlContent);
+            return doc;
+        }
+        private XElement CreateFileNode(string fileName, string sourceLanguage, string targetLanguage, string htmlContent, XNamespace ns)
+        {
+            var fileElement = new XElement(ns + "file",
+                 new XAttribute("original", fileName),
+                 new XAttribute("source-language", string.IsNullOrEmpty(sourceLanguage) ? "en" : sourceLanguage),
+                 new XAttribute("target-language", string.IsNullOrEmpty(targetLanguage) ? "en" : targetLanguage),
+                 new XAttribute("datatype", "html")
+            );
+            fileElement.AddFirst(new XElement("originalFile", htmlContent));
+            return fileElement;
+        }
+        private XElement CreateBodyNodes(HtmlDocument htmlDoc, XNamespace ns)
+        {
+            var bodyElement = new XElement(ns + "body");
+            int transUnitId = 1;
 
+            var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
+            if (titleNode != null && !string.IsNullOrWhiteSpace(titleNode.InnerHtml))
+            {
+                var transformedNodes = TransformInlineTagsForXliffNodes(titleNode.InnerHtml).ToList();
+                var titleTransUnit = new XElement(ns + "trans-unit",
+                    new XAttribute("id", transUnitId.ToString()),
+                    new XAttribute("slug", "title"),
+                    new XAttribute("tag", "title")
+                );
+                titleTransUnit.Add(new XElement(ns + "source", transformedNodes));
+                titleTransUnit.Add(new XElement(ns + "target", ""));
+                bodyElement.Add(titleTransUnit);
+                transUnitId++;
+            }
+
+            var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
+            if (bodyNode != null)
+            {
+                foreach (var child in bodyNode.ChildNodes)
+                {
+                    if (child.NodeType == HtmlNodeType.Element && !string.IsNullOrWhiteSpace(child.InnerText))
+                    {
+                        string slugAttr = child.GetAttributeValue("slug", null)
+                            ?? child.GetAttributeValue("id", null);
+                        if (string.IsNullOrEmpty(slugAttr))
+                        {
+                            slugAttr = "body_" + transUnitId;
+                        }
+                        string tagName = child.Name.ToLower();
+                        var transformedNodes = TransformInlineTagsForXliffNodes(child.InnerHtml).ToList();
+                        var transUnit = new XElement(ns + "trans-unit",
+                            new XAttribute("id", transUnitId.ToString()),
+                            new XAttribute("slug", slugAttr),
+                            new XAttribute("tag", tagName)
+                        );
+                        transUnit.Add(new XElement(ns + "source", transformedNodes));
+                        transUnit.Add(new XElement(ns + "target", ""));
+                        bodyElement.Add(transUnit);
+                        transUnitId++;
+                        child.SetAttributeValue("data-slug", slugAttr);
+                    }
+                    else if (child.NodeType == HtmlNodeType.Text && !string.IsNullOrWhiteSpace(child.InnerText))
+                    {
+                        string textContent = child.InnerText.Trim();
+                        string slugAttr = "body_text_" + transUnitId;
+                        var transformedNodes = TransformInlineTagsForXliffNodes(textContent).ToList();
+                        var transUnit = new XElement(ns + "trans-unit",
+                            new XAttribute("id", transUnitId.ToString()),
+                            new XAttribute("slug", slugAttr),
+                            new XAttribute("tag", "p")
+                        );
+                        transUnit.Add(new XElement(ns + "source", transformedNodes));
+                        transUnit.Add(new XElement(ns + "target", ""));
+                        bodyElement.Add(transUnit);
+                        transUnitId++;
+                    }
+                }
+            }
+            return bodyElement;
+        }
+        private MemoryStream WriteXmlToMemoryStream(XDocument doc)
+        {
+            var stream = new MemoryStream();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = false,
+                Indent = true,
+                NewLineHandling = NewLineHandling.Replace,
+                Encoding = Encoding.UTF8
+            };
+            using (var writer = XmlWriter.Create(stream, settings))
+            {
+                doc.Save(writer);
+            }
+            stream.Position = 0;
+            return stream;
+        }
         private int GetNextId(Dictionary<string, int> counters, string tag)
         {
             if (!counters.ContainsKey(tag))
@@ -421,15 +511,13 @@ namespace Apps.Utilities.Actions
                 counters[tag]++;
             return counters[tag];
         }
-
         private string RevertInlineTagsFromXliff(string inlineContent)
         {
-            inlineContent = Regex.Replace(inlineContent, @"<bpt id=""\d+"">&lt;(\w+)&gt;</bpt>", "<$1>");
-            inlineContent = Regex.Replace(inlineContent, @"<ept id=""\d+"">&lt;/(\w+)&gt;</ept>", "</$1>");
-            inlineContent = Regex.Replace(inlineContent, @"<ph id=""\d+"">&lt;(\w+\/?)&gt;</ph>", "<$1>");
-            return inlineContent;
+            inlineContent = Regex.Replace(inlineContent, @"<bpt(?:\s+[^>]+)?>\s*([^<]+?)\s*</bpt>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            inlineContent = Regex.Replace(inlineContent, @"<ept(?:\s+[^>]+)?>\s*([^<]+?)\s*</ept>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            inlineContent = Regex.Replace(inlineContent, @"<ph(?:\s+[^>]+)?>\s*([^<]+?)\s*</ph>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            return HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(inlineContent));
         }
-
 
         private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingProperty(GetXMLPropertyRequest request)
         {
