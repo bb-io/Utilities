@@ -209,8 +209,6 @@ namespace Apps.Utilities.Actions
             htmlDoc.OptionFixNestedTags = true;
             htmlDoc.LoadHtml(htmlContent);
 
-            var divNodes = htmlDoc.DocumentNode.SelectNodes("//div");
-
             XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
 
             var fileElement = new XElement(ns + "file",
@@ -223,40 +221,72 @@ namespace Apps.Utilities.Actions
             fileElement.AddFirst(new XElement("originalFile", htmlContent));
 
             var bodyElement = new XElement(ns + "body");
-
             int transUnitId = 1;
-            if (divNodes != null)
+
+            var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
+            if (titleNode != null && !string.IsNullOrWhiteSpace(titleNode.InnerHtml))
             {
-                foreach (var div in divNodes)
+                string transformedTitle = TransformInlineTagsForXliff(titleNode.InnerHtml);
+                var titleTransUnit = new XElement(ns + "trans-unit",
+                    new XAttribute("id", transUnitId.ToString()),
+                    new XAttribute("slug", "title"),
+                    new XAttribute("tag", "title")
+                );
+                titleTransUnit.Add(new XElement(ns + "source", transformedTitle));
+                titleTransUnit.Add(new XElement(ns + "target", ""));
+                bodyElement.Add(titleTransUnit);
+                transUnitId++;
+            }
+
+            var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
+            if (bodyNode != null)
+            {
+                foreach (var child in bodyNode.ChildNodes)
                 {
-                    string slugAttr = div.GetAttributeValue("slug", null) ?? div.GetAttributeValue("id", null);
-
-                    string divInnerHtml = div.InnerHtml;
-
-                    string transformedContent = TransformInlineTagsForXliff(divInnerHtml);
-
-                    var transUnit = new XElement(ns + "trans-unit",
-                        new XAttribute("id", transUnitId.ToString())
-                    );
-                    if (!string.IsNullOrEmpty(slugAttr))
+                    if (child.NodeType == HtmlNodeType.Element && !string.IsNullOrWhiteSpace(child.InnerText))
                     {
-                        transUnit.SetAttributeValue("slug", slugAttr);
+                        string slugAttr = child.GetAttributeValue("slug", null) ?? child.GetAttributeValue("id", null);
+                        if (string.IsNullOrEmpty(slugAttr))
+                        {
+                            slugAttr = "body_" + transUnitId;
+                        }
+                        string tagName = child.Name.ToLower();
+                        string transformedContent = TransformInlineTagsForXliff(child.InnerHtml);
+                        var transUnit = new XElement(ns + "trans-unit",
+                            new XAttribute("id", transUnitId.ToString()),
+                            new XAttribute("slug", slugAttr),
+                            new XAttribute("tag", tagName)
+                        );
+                        transUnit.Add(new XElement(ns + "source", transformedContent));
+                        transUnit.Add(new XElement(ns + "target", ""));
+                        bodyElement.Add(transUnit);
+                        transUnitId++;
                     }
 
-                    transUnit.Add(new XElement(ns + "source", transformedContent));
-                    transUnit.Add(new XElement(ns + "target", ""));
-
-                    bodyElement.Add(transUnit);
-                    transUnitId++;
+                    if (child.NodeType == HtmlNodeType.Text && !string.IsNullOrWhiteSpace(child.InnerText))
+                    {
+                        string textContent = child.InnerText.Trim();
+                        string slugAttr = "body_text_" + transUnitId;
+                        string transformedContent = TransformInlineTagsForXliff(textContent);
+                        var transUnit = new XElement(ns + "trans-unit",
+                            new XAttribute("id", transUnitId.ToString()),
+                            new XAttribute("slug", slugAttr),
+                            new XAttribute("tag", "p")
+                        );
+                        transUnit.Add(new XElement(ns + "source", transformedContent));
+                        transUnit.Add(new XElement(ns + "target", ""));
+                        bodyElement.Add(transUnit);
+                        transUnitId++;
+                    }
                 }
             }
 
             var xliffDoc = new XDocument(
-                new XElement(ns + "xliff",
-                    new XAttribute("version", "1.2"),
-                    fileElement,
-                    bodyElement
-                )
+                 new XElement(ns + "xliff",
+                     new XAttribute("version", "1.2"),
+                     fileElement,
+                     bodyElement
+                 )
             );
 
             using var streamOut = new MemoryStream();
@@ -298,52 +328,58 @@ namespace Apps.Utilities.Actions
 
             var htmlDoc = new HtmlDocument();
             if (!string.IsNullOrEmpty(originalHtml))
-            {
                 htmlDoc.LoadHtml(originalHtml);
-            }
             else
-            {
                 htmlDoc.LoadHtml("<html><head><title></title></head><body></body></html>");
-            }
 
             var transUnits = xliffDoc.Descendants(ns + "trans-unit").ToList();
             foreach (var transUnit in transUnits)
             {
                 var targetElement = transUnit.Element(ns + "target");
                 string translated = (targetElement != null && !string.IsNullOrWhiteSpace(targetElement.Value))
-                                        ? targetElement.Value
-                                        : transUnit.Element(ns + "source")?.Value ?? "";
-
+                                       ? targetElement.Value
+                                       : transUnit.Element(ns + "source")?.Value ?? "";
                 string revertedContent = RevertInlineTagsFromXliff(translated);
 
                 var slug = transUnit.Attribute("slug")?.Value;
-                if (!string.IsNullOrEmpty(slug))
+                var tag = transUnit.Attribute("tag")?.Value;
+                if (!string.IsNullOrEmpty(slug) && !string.IsNullOrEmpty(tag))
                 {
-                    var divNode = htmlDoc.DocumentNode.SelectSingleNode($"//div[@slug='{slug}' or @id='{slug}']");
-                    if (divNode != null)
+                    if (slug == "title" && tag == "title")
                     {
-                        divNode.InnerHtml = revertedContent;
+                        var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
+                        if (titleNode != null)
+                            titleNode.InnerHtml = revertedContent;
+                        else
+                        {
+                            var headNode = htmlDoc.DocumentNode.SelectSingleNode("//head");
+                            if (headNode != null)
+                            {
+                                var newTitle = htmlDoc.CreateElement("title");
+                                newTitle.InnerHtml = revertedContent;
+                                headNode.AppendChild(newTitle);
+                            }
+                        }
                     }
                     else
                     {
-                        var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
-                        if (bodyNode != null)
+                        var xpathQuery = $"//body//{tag}[@slug='{slug}' or @id='{slug}']";
+                        var targetNode = htmlDoc.DocumentNode.SelectSingleNode(xpathQuery);
+                        if (targetNode != null)
                         {
-                            var newDiv = htmlDoc.CreateElement("div");
-                            newDiv.SetAttributeValue("slug", slug);
-                            newDiv.InnerHtml = revertedContent;
-                            bodyNode.AppendChild(newDiv);
+                            targetNode.InnerHtml = revertedContent;
                         }
-                    }
-                }
-                else
-                {
-                    var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
-                    if (bodyNode != null)
-                    {
-                        var newDiv = htmlDoc.CreateElement("div");
-                        newDiv.InnerHtml = revertedContent;
-                        bodyNode.AppendChild(newDiv);
+                        else
+                        {
+                            var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("//body");
+                            if (bodyNode != null)
+                            {
+                                var newElem = htmlDoc.CreateElement(tag);
+                                newElem.SetAttributeValue("slug", slug);
+                                newElem.InnerHtml = revertedContent;
+                                bodyNode.AppendChild(newElem);
+                            }
+                        }
                     }
                 }
             }
@@ -367,7 +403,6 @@ namespace Apps.Utilities.Actions
             var resultFile = await _fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
             return new ConvertTextToDocumentResponse { File = resultFile };
         }
-
         private string TransformInlineTagsForXliff(string html)
         {
             XElement container;
