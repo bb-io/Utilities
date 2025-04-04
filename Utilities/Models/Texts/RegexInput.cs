@@ -12,5 +12,12 @@ namespace Apps.Utilities.Models.Texts
 
         [Display("Group Number")]
         public string? Group { get; set; }
+
+        [Display("Replace value from")]
+        public IEnumerable<string>? From { get; set; }
+
+        [Display("Replace value to")]
+        public IEnumerable<string>? To { get; set; }
+
     }
 }
