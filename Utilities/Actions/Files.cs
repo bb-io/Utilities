@@ -11,6 +11,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -160,7 +161,15 @@ public class Files : BaseInvocable
         
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
-        var replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
+        string replacedText = "";
+        try
+        {
+           replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
+        }
+        catch (Exception e)
+        {
+            throw new PluginApplicationException(e.Message);
+        }
         return new()
         {
             File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
