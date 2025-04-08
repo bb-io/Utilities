@@ -243,44 +243,15 @@ namespace Apps.Utilities.Actions
             return XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
         }
 
-        //private HtmlDocument LoadOriginalHtmlDocument(XDocument xliffDoc, XNamespace ns)
-        //{
-        //    var fileElement = xliffDoc.Descendants(ns + "file").FirstOrDefault();
-        //    string originalHtml = null;
-        //    if (fileElement != null)
-        //    {
-        //        var originalFileElement = fileElement.Element(XName.Get("originalFile", "urn:oasis:names:tc:xliff:document:1.2"))
-        //                                  ?? fileElement.Element(XName.Get("originalFile", ""));
-        //        if (originalFileElement != null)
-        //        {
-        //            originalHtml = originalFileElement.Value;
-        //        }
-        //    }
-
-        //    var doc = new HtmlDocument();
-        //    if (!string.IsNullOrEmpty(originalHtml))
-        //    {
-        //        string decodedHtml = HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(originalHtml));
-        //        doc.LoadHtml(decodedHtml);
-        //    }
-        //    else
-        //    {
-        //        doc.LoadHtml("<html><head><title></title></head><body></body></html>");
-        //    }
-        //    return doc;
-        //}
-
         private HtmlDocument LoadOriginalHtmlDocument(XDocument xliffDoc, XNamespace ns)
         {
             var fileElement = xliffDoc.Descendants(ns + "file").FirstOrDefault();
             string originalHtml = null;
             if (fileElement != null)
             {
-                // Першочергово намагаємося отримати елемент з пустим неймспейсом (де JSON зберігається)
                 var originalFileElement = fileElement.Element(XName.Get("originalFile", ""));
                 if (originalFileElement == null)
                 {
-                    // Якщо не знайдено – пробуємо стандартний неймспейс
                     originalFileElement = fileElement.Element(XName.Get("originalFile", "urn:oasis:names:tc:xliff:document:1.2"));
                 }
                 if (originalFileElement != null)
@@ -292,7 +263,6 @@ namespace Apps.Utilities.Actions
             var doc = new HtmlDocument();
             if (!string.IsNullOrEmpty(originalHtml))
             {
-                // НЕ декодуємо HTML – так ми збережемо закодовані лапки
                 doc.LoadHtml(originalHtml);
             }
             else
