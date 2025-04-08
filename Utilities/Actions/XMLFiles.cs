@@ -249,8 +249,11 @@ namespace Apps.Utilities.Actions
             string originalHtml = null;
             if (fileElement != null)
             {
-                var originalFileElement = fileElement.Element(XName.Get("originalFile", "urn:oasis:names:tc:xliff:document:1.2"))
-                                          ?? fileElement.Element(XName.Get("originalFile", ""));
+                var originalFileElement = fileElement.Element(XName.Get("originalFile", ""));
+                if (originalFileElement == null)
+                {
+                    originalFileElement = fileElement.Element(XName.Get("originalFile", "urn:oasis:names:tc:xliff:document:1.2"));
+                }
                 if (originalFileElement != null)
                 {
                     originalHtml = originalFileElement.Value;
@@ -260,8 +263,7 @@ namespace Apps.Utilities.Actions
             var doc = new HtmlDocument();
             if (!string.IsNullOrEmpty(originalHtml))
             {
-                string decodedHtml = HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(originalHtml));
-                doc.LoadHtml(decodedHtml);
+                doc.LoadHtml(originalHtml);
             }
             else
             {
@@ -269,6 +271,7 @@ namespace Apps.Utilities.Actions
             }
             return doc;
         }
+
         private void ApplyTranslationsToHtml(HtmlDocument htmlDoc, XDocument xliffDoc, XNamespace ns)
         {
             var transUnits = xliffDoc.Descendants(ns + "trans-unit")
