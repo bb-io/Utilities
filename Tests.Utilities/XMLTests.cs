@@ -445,7 +445,7 @@ public class XMLTests : TestBase
     public async Task ConvertHtmlToXliff_ReturnsSucces()
     {
         var actions = new XMLFiles(FileManager);
-        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Starting a flight.html" }, SourceLanguage = "en", TargetLanguage = "de" };
+        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Global HR Solutions & Employment Tools for Distributed Teams _ Remote.html" }, SourceLanguage = "en", TargetLanguage = "de" };
         var result = actions.ConvertHtmlToXliff(input);
 
         Console.WriteLine(result);
@@ -456,7 +456,7 @@ public class XMLTests : TestBase
     public async Task ConvertXliffToHtml_ReturnsSucces()
     {
         var actions = new XMLFiles(FileManager);
-        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "Starting a flight.xliff" } };
+        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "Global HR Solutions & Employment Tools for Distributed Teams _ Remote.xliff" } };
         var result = actions.ConvertXliffToHtml(input);
 
         Console.WriteLine(result);
