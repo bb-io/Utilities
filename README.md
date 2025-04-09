@@ -57,6 +57,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Redefine CSV columns** Rearrange the columns of a CSV file according to the specified order. 0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.
 - **Apply regex to CSV column** Apply a regex pattern to a specified column in the CSV file.
 - **Apply regex to CSV row** Apply a regex pattern to a specified row in the CSV file.
+- **Add CSV row** Add a new row at the specified row index to the CSV file
 
 ### Texts
 

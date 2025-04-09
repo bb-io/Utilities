@@ -200,7 +200,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
 
 
 
-    [Action("Add CSV row", Description = "Add a new row at the specified row index to the CSV file.")]
+    [Action("Add CSV row", Description = "Add a new row at the specified row index to the CSV file")]
     public async Task<CsvFile> AddRow(
     [ActionParameter] CsvFile csvFile,
     [ActionParameter] CsvOptions csvOptions,
