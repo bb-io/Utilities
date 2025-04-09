@@ -12,6 +12,7 @@ using Apps.Utilities.Models.Texts;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Apps.Utilities.Models.Csv;
 
 namespace Apps.Utilities.Actions;
 
@@ -196,6 +197,27 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
 
         return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
     }
+
+
+
+    [Action("Add CSV row", Description = "Add a new row at the specified row index to the CSV file.")]
+    public async Task<CsvFile> AddRow(
+    [ActionParameter] CsvFile csvFile,
+    [ActionParameter] CsvOptions csvOptions,
+    [ActionParameter] RowPositionOption rawOptions)
+    {
+        var records = await ReadCsv(csvFile, csvOptions);
+
+        if (rawOptions.RowPosition < 0 || rawOptions.RowPosition > records.Count)
+        {
+            throw new PluginMisconfigurationException("Invalid row position specified. Please check the input and try again");
+        }
+
+        records.Insert(rawOptions.RowPosition, rawOptions.InputValues.ToList());
+
+        return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
+    }
+
 
     private CsvConfiguration CreateConfiguration(CsvOptions csvOptions)
     {
