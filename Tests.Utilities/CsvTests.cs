@@ -1,4 +1,5 @@
 ﻿using Apps.Utilities.Actions;
+using Apps.Utilities.Models.Csv;
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Texts;
 using Blackbird.Applications.Sdk.Common.Files;
@@ -81,5 +82,16 @@ public class CsvTests : TestBase
         var csvFile = new CsvFile { File = file };
 
         var response = await actions.ApplyRegexToRow(csvFile, new CsvOptions { HasHeader = false }, 3, new RegexInput { Regex = "\\((\\d*?)\\)", Group = "1" });
+    }
+
+    [TestMethod]
+    public async Task AddRows_works()
+    {
+        var file = new FileReference { Name = "test.csv" };
+        var csvFile = new CsvFile { File = file };
+
+        var response = await actions.AddRow(csvFile, new CsvOptions { HasHeader = true }, 
+            new RowPositionOption { RowPosition=6, InputValues = ["TRW,Nicole Ponkey,Global Purchasing Manager at TRW Automotive,44.197.866.7800,,производитель автозапчастей,29,09,не зацікавлені,Великобритания,Стальная шерсть,,,Интернет,https://www.trwaftermarket.com/ru/,Стальная шерсть,Наташа,"] });
+
     }
 }

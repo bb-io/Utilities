@@ -331,7 +331,7 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task ReplaceXliffTargetWithSource_ReturnsSucces()
     {
-        var actions = new XMLFiles(FileManager);
+        var actions = new Xliff(FileManager);
         var input = new ReplaceXliffRequest { File=new FileReference { Name= "test.xliff" }, /*DeleteTargets = true, SetNewTargetLanguage = "nl"*/ };
         var result = actions.ReplaceXliffSourceWithTarget(input);
 
@@ -342,7 +342,7 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task ChangeXliffSource_ReturnsSucces()
     {
-        var actions = new XMLFiles(FileManager);
+        var actions = new Xliff(FileManager);
         var input = new ReplaceXliffRequest { File = new FileReference { Name = "test.xliff" }, SetNewSourceLanguage="nl" };
         var result = actions.ReplaceXliffSourceWithTarget(input);
 
@@ -444,7 +444,7 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task ConvertHtmlToXliff_ReturnsSucces()
     {
-        var actions = new XMLFiles(FileManager);
+        var actions = new Xliff(FileManager);
         var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Global HR Solutions & Employment Tools for Distributed Teams _ Remote.html" }, SourceLanguage = "en", TargetLanguage = "de" };
         var result = actions.ConvertHtmlToXliff(input);
 
@@ -455,7 +455,7 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task ConvertXliffToHtml_ReturnsSucces()
     {
-        var actions = new XMLFiles(FileManager);
+        var actions = new Xliff(FileManager);
         var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "Global HR Solutions & Employment Tools for Distributed Teams _ Remote.xliff" } };
         var result = actions.ConvertXliffToHtml(input);
 
