@@ -112,6 +112,8 @@ namespace Apps.Utilities.Actions
         public async Task<ConvertTextToDocumentResponse> ConvertHtmlToXliff([ActionParameter] ConvertHtmlToXliffRequest request)
         {
             string htmlContent = await DownloadHtmlContentAsync(request.File);
+            htmlContent = RemoveInvalidXmlChars(htmlContent);
+
             HtmlDocument htmlDoc = ParseHtmlDocument(htmlContent);
             XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
 
@@ -152,6 +154,14 @@ namespace Apps.Utilities.Actions
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(file);
             return XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+        }
+
+        private string RemoveInvalidXmlChars(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            return Regex.Replace(text, @"[\u0000-\u0008\u000B\u000C\u000E-\u001F]", "");
         }
 
         private HtmlDocument LoadOriginalHtmlDocument(XDocument xliffDoc, XNamespace ns)

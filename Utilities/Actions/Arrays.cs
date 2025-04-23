@@ -73,5 +73,14 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
             Array = input.Array.Where(x => input.Control.Contains(x))
         };
     }
+
+    [Action("Array intersection", Description = "Returns the intersection of two input arrays (returns the elements contained in both arrays)")]
+    public ArrayResponse ArrayIntersect([ActionParameter] ArrayIntersectionRequest input)
+    {
+        return new()
+        {
+            Array = input.FirstArray.Intersect(input.SecondArray)
+        };
+    }
 }
 

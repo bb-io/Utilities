@@ -445,7 +445,7 @@ public class XMLTests : TestBase
     public async Task ConvertHtmlToXliff_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Global HR Solutions & Employment Tools for Distributed Teams _ Remote.html" }, SourceLanguage = "en", TargetLanguage = "de" };
+        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Starting a flight.html" }, SourceLanguage = "en", TargetLanguage = "de" };
         var result = actions.ConvertHtmlToXliff(input);
 
         Console.WriteLine(result);

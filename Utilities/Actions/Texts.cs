@@ -27,6 +27,14 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         referenceText = referenceText.ToLower().Trim();
         translatedText = translatedText.ToLower().Trim();
 
+        if (referenceText == translatedText)
+        {
+            return new BleuScore
+            {
+                Score = 1
+            };
+        }
+
         var referenceSentenceTokens = new string[][] {Utility.Tokenize( referenceText) };
         var translatedSentenceTokens = new string[][] { Utility.Tokenize(translatedText) };
 
