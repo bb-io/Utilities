@@ -90,6 +90,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Get last entry from array** returns the last element in the array.
 - **Get entry by position** returns the element in the specified position within the array. Initial position is 1.
 - **Retain specified entries in array** returns the original array without the entries that were not present in the provided control group (entries to keep).
+- **Array intersection** returns the intersection of two input arrays (returns the elements contained in both arrays).
 
 ### Numbers
 
