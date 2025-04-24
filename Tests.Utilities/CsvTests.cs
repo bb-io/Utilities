@@ -85,6 +85,22 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
+    public async Task RegexChangeValues_works()
+    {
+        var file = new FileReference { Name = "testReg.csv" };
+        var csvFile = new CsvFile { File = file };
+        var regexInput = new RegexInput
+        {
+            Regex = @"\S+",
+            From = new[] { "US", "GB", "UA" },
+            To = new[] { "United States", "Great Britain", "Ukraine" }
+        };
+
+
+        var response = await actions.ApplyRegexToRow(csvFile, new CsvOptions { HasHeader = false }, 0, regexInput);
+    }
+
+    [TestMethod]
     public async Task AddRows_works()
     {
         var file = new FileReference { Name = "test.csv" };
