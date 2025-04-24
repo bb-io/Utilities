@@ -153,6 +153,13 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     [ActionParameter] RegexInput regex)
     {
         if (rowIndex < 0) throw new PluginApplicationException("A row index must be 0 or a positive number.");
+
+        if ((regex.From != null || regex.To != null) &&
+            (regex.From == null || regex.To == null || regex.From.Count() != regex.To.Count()))
+        {
+            throw new PluginMisconfigurationException("'From' and 'To' lists must be both provided and have the same number of elements. Please check your input and try again");
+        }
+
         var records = await ReadCsv(csvFile, csvOptions);
         if (rowIndex >= records.Count) return csvFile;
         var replaceValues = new Dictionary<string,string>();
