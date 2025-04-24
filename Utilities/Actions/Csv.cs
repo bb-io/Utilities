@@ -154,10 +154,13 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     {
         if (rowIndex < 0) throw new PluginApplicationException("A row index must be 0 or a positive number.");
 
-        if ((regex.From != null || regex.To != null) &&
-            (regex.From == null || regex.To == null || regex.From.Count() != regex.To.Count()))
+        bool hasFrom = regex.From != null && regex.From.Any();
+        bool hasTo = regex.To != null && regex.To.Any();
+        if (hasFrom || hasTo)
         {
-            throw new PluginMisconfigurationException("'From' and 'To' lists must be both provided and have the same number of elements. Please check your input and try again");
+            if (!hasFrom || !hasTo || regex.From.Count() != regex.To.Count())
+                throw new PluginMisconfigurationException("'From' and 'To' lists must both be provided and have the same number of " +
+                    "elements when one is specified. Please check the input and try again");
         }
 
         var records = await ReadCsv(csvFile, csvOptions);

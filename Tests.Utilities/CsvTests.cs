@@ -93,7 +93,7 @@ public class CsvTests : TestBase
         {
             Regex = @"\S+",
             From = new[] { "US", "GB", "UA" },
-            To = new[] { "United States", "Great Britain"/*, "Ukraine"*/ }
+            To = new[] { "United States", "Great Britain", "Ukraine" }
         };
 
 
