@@ -10,7 +10,7 @@ This free app provides generic utility actions that can come in useful in any bi
 
 ## Connecting
 
-1. Navigate to apps and search for Utilities. 
+1. Navigate to apps and search for Blackbird Utilities. 
 2. Click _Add Connection_.
 3. Name your connection for future reference e.g. 'My utilities'.
 4. Click _Connect_.
