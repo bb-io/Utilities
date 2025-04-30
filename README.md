@@ -42,14 +42,20 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
 
-### XML Files
+### XLIFF files
+
+- **Replace XLIFF source with target** Swap `source` and `target` contents, exchange language attributes, and optionally remove target elements or set a new target language.
+- **Convert HTML to XLIFF** Convert HTML file to XLIFF 1.2 format
+- **Convert XLIFF to HTML** Convert XLIFF file (version 1.2) to HTML file
+
+### XML files
 
 - **Bump version string** Bump version string.
 - **Get XML file property** Get XML file property.
 - **Change XML file property** Change XML file property.
 - **Replace XLIFF source with target** Replace XLIFF source with target.
 
-### CSV Files
+### CSV files
 
 - **Remove CSV rows** Remove the selected rows from a CSV file. The first row is indexed 0.
 - **Filter CSV rows** Remove the selected rows from a CSV file based on a column condition.
