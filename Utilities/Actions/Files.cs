@@ -126,7 +126,7 @@ public class Files : BaseInvocable
         var filecontent = await ReadDocument(_file, extension);
         return (double)CountWords(filecontent);
     }
-    
+
     [Action("Get files word count", Description = "Returns number of words in the files")]
     public async Task<FilesWordCountResponse> GetWordCountInFiles([ActionParameter] FilesWordCountRequest request)
     {
@@ -149,7 +149,7 @@ public class Files : BaseInvocable
             FilesWithWordCount = files
         };
     }
-    
+
     [Action("Replace using Regex in document", Description = "Replace text in a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files")]
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
@@ -158,13 +158,13 @@ public class Files : BaseInvocable
         var fileMemoryStream = new MemoryStream();
         await file.CopyToAsync(fileMemoryStream);
         fileMemoryStream.Position = 0;
-        
+
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
         string replacedText = "";
         try
         {
-           replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
+            replacedText = Regex.Replace(text, Regex.Unescape(request.Regex), Regex.Unescape(request.Replace));
         }
         catch (Exception e)
         {
@@ -176,7 +176,7 @@ public class Files : BaseInvocable
                 request.File.ContentType, request.File.Name)
         };
     }
-    
+
     [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
     public async Task<ExtractTextFromDocumentResponse> ExtractTextFromDocument(
         [ActionParameter] ExtractTextFromDocumentRequest request)
@@ -185,12 +185,12 @@ public class Files : BaseInvocable
         var fileMemoryStream = new MemoryStream();
         await file.CopyToAsync(fileMemoryStream);
         fileMemoryStream.Position = 0;
-        
+
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
-        
-        text = String.IsNullOrEmpty(request.Group) 
-            ? Regex.Match(text, request.Regex).Value 
+
+        text = String.IsNullOrEmpty(request.Group)
+            ? Regex.Match(text, request.Regex).Value
             : Regex.Match(text, request.Regex).Groups[request.Group].Value;
 
         return new()
@@ -204,25 +204,17 @@ public class Files : BaseInvocable
         [ActionParameter] ConvertTextToDocumentRequest request)
     {
         var filename = $"{request.Filename}{request.FileExtension}";
-        ConvertTextToDocumentResponse response;
+        var (encoding, includeBom) = ResolveEncoding(request.Encoding);
 
-        switch (request.FileExtension.ToLower())
+        ConvertTextToDocumentResponse response = request.FileExtension.ToLower() switch
         {
-            case ".txt":
-                response = await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain);
-                break;
-            case ".html":
-                response = await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html);
-                break;
-            case ".doc":
-            case ".docx":
-                var font = request.Font ?? "Arial";
-                var fontSize = request.FontSize ?? 12;
-                response = await ConvertToWordDocument(request.Text, filename, font, fontSize);
-                break;
-            default:
-                throw new ArgumentException("Can convert to txt, doc, or docx file only.");
-        }
+            ".txt" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain, encoding, includeBom),
+            ".csv" => await ConvertToTextFile(request.Text, filename, "text/csv", encoding, includeBom),
+            ".html" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html, encoding, includeBom),
+            ".doc" or ".docx" =>
+                await ConvertToWordDocument(request.Text, filename, request.Font ?? "Arial", request.FontSize ?? 12),
+            _ => throw new ArgumentException("Can convert to txt, csv, html, doc, or docx file only.")
+        };
 
         return response;
     }
@@ -232,7 +224,7 @@ public class Files : BaseInvocable
     [ActionParameter] CompareFilesRequest request)
     {
         string currentContent = null;
-        foreach(var file in request.Files)
+        foreach (var file in request.Files)
         {
             var stream = await _fileManagementClient.DownloadAsync(file);
             var filecontent = await ReadPlaintextFile(stream);
@@ -258,48 +250,66 @@ public class Files : BaseInvocable
         {
             throw new PluginMisconfigurationException("The input file must be a zip.");
         }
-       var file = await _fileManagementClient.DownloadAsync(request.File);
+        var file = await _fileManagementClient.DownloadAsync(request.File);
 
-       var files = new List<FileDto>();
-       using (var seekableStream = new MemoryStream())
-       {
-           file.CopyTo(seekableStream);
+        var files = new List<FileDto>();
+        using (var seekableStream = new MemoryStream())
+        {
+            file.CopyTo(seekableStream);
 
-           using (var zip = new ZipFile(seekableStream))
-           {
-               foreach (ZipEntry entry in zip)
-               {
-                   if (!entry.CanDecompress)
-                   {
-                       throw new Exception();
-                   }
+            using (var zip = new ZipFile(seekableStream))
+            {
+                foreach (ZipEntry entry in zip)
+                {
+                    if (!entry.CanDecompress)
+                    {
+                        throw new Exception();
+                    }
 
-                   if (entry.IsDirectory)
-                       continue;
-                   using (var stream = zip.GetInputStream(entry))
-                   {
-                       var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
-                       files.Add(new FileDto { File = uploadedFile });
-                   }
-               }
-           }           
-       }
-       return new MultipleFilesResponse
-       {
-           Files = files
-       };
-     
+                    if (entry.IsDirectory)
+                        continue;
+                    using (var stream = zip.GetInputStream(entry))
+                    {
+                        var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                        files.Add(new FileDto { File = uploadedFile });
+                    }
+                }
+            }
+        }
+        return new MultipleFilesResponse
+        {
+            Files = files
+        };
+
     }
 
-    private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType)
+    private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType, Encoding encoding, bool includeBom)
     {
-        var bytes = Encoding.UTF8.GetBytes(text);
-        var file = await _fileManagementClient.UploadAsync(new MemoryStream(bytes), contentType,
-            filename);
-
-        return new ConvertTextToDocumentResponse
+        var contentBytes = encoding.GetBytes(text ?? string.Empty);
+        if (includeBom)
         {
-            File = file
+            var preamble = encoding.GetPreamble();
+            if (preamble?.Length > 0)
+            {
+                var combined = new byte[preamble.Length + contentBytes.Length];
+                Buffer.BlockCopy(preamble, 0, combined, 0, preamble.Length);
+                Buffer.BlockCopy(contentBytes, 0, combined, preamble.Length, contentBytes.Length);
+                contentBytes = combined;
+            }
+        }
+
+        var file = await _fileManagementClient.UploadAsync(new MemoryStream(contentBytes), contentType, filename);
+
+        return new ConvertTextToDocumentResponse { File = file };
+    }
+
+    private static (Encoding Encoding, bool IncludeBom) ResolveEncoding(string? encodingKey)
+    {
+        return encodingKey?.ToLower() switch
+        {
+            "utf8bom" => (new UTF8Encoding(true), true),
+            "utf16le" => (new UnicodeEncoding(false, true), true),
+            _ => (new UTF8Encoding(false), false)
         };
     }
 
@@ -315,20 +325,20 @@ public class Files : BaseInvocable
             var body = mainPart.Document.Body!;
 
             var paragraphs = text.Split(new[] { "\n\n" }, StringSplitOptions.None);
-            
+
             var runProperties = new RunProperties();
             var runFonts = new RunFonts { Ascii = font };
             var size = new FontSize { Val = (fontSize * 2).ToString() }; // Font size in half-points (24 = 12pt)
 
             runProperties.Append(runFonts);
             runProperties.Append(size);
-            
+
             foreach (var para in paragraphs)
             {
                 var run = new Run();
                 run.Append(runProperties.CloneNode(true));
                 run.Append(new Text(para));
-                
+
                 var paragraph = new Paragraph(run);
                 body.Append(paragraph);
             }
