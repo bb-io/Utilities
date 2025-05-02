@@ -98,5 +98,20 @@ namespace Tests.Utilities
             var response = await _fileActions.CompareFileContents(new CompareFilesRequest { Files = new List<FileReference> { file, file2 } });
             Assert.IsFalse(response.AreEqual);
         }
+
+
+        [TestMethod]
+        public async Task Convert_Text_To_File_returns_true()
+        {
+            var response = _fileActions.ConvertTextToDocument( 
+                new ConvertTextToDocumentRequest { 
+                    Text = "Some text oh lala", 
+                    FileExtension=".txt", 
+                    Filename="TestNamea1", 
+                    Encoding= "utf8bom"
+                });
+            Assert.IsNotNull(response.Result);
+
+        }
     }
 }

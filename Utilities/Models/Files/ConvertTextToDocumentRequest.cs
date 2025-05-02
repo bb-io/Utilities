@@ -20,4 +20,8 @@ public class ConvertTextToDocumentRequest
     
     [Display("Font size", Description = "By default, the font size is set to 12.")]
     public int? FontSize { get; set; }
+
+    [Display("Encoding", Description = "Text encoding for txt, html, or csv files. Default is UTF-8 without BOM.")]
+    [StaticDataSource(typeof(EncodingSourceHandler))]
+    public string? Encoding { get; set; }
 }
