@@ -18,12 +18,12 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
 {
     [Action("Redefine Excel columns", Description = "Rearrange the columns of an Excel file according to the specified order.")]
     public async Task<FileReference> ReorderColumns(
-        [ActionParameter][Display("Excel file")] FileReference File,
+        [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex,
         [ActionParameter] ColumnOrderRequest columnOrder)
     {
         if (columnOrder.ColumnOrder.Any(x => x < 0)) throw new PluginApplicationException("A column identifier must be a positive number.");
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         var usedRange = worksheet.RangeUsed();
         var rowCount = usedRange.RowCount();
         var colCount = usedRange.ColumnCount();
@@ -48,49 +48,49 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         
         worksheet.Workbook.Worksheets.Delete(tempSheet.Name);
 
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     [Action("Remove Excel rows by indexes", Description = "Remove the selected rows from an Excel file.")]
     public async Task<FileReference> RemoveRowsByIndexes(
-        [ActionParameter][Display("Excel file")] FileReference File,
+        [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex,
         [ActionParameter][Display("Row indexes", Description = "The first row starts with 1")]
         IEnumerable<int> rowIndexes)
     {
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         foreach (var rowIndex in rowIndexes.OrderByDescending(i => i))
         {
             worksheet.Row(rowIndex).Delete();
         }
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     [Action("Remove Excel columns by indexes", Description = "Remove the selected columns from an Excel file.")]
     public async Task<FileReference> RemoveColumnsByIndexes(
-        [ActionParameter][Display("Excel file")] FileReference File,
+        [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex,
         [ActionParameter][Display("Column indexes", Description = "The first column starts with 1")]
         IEnumerable<int> ColumnIndexes)
     {
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         foreach (var colIndex in ColumnIndexes.OrderByDescending(i => i))
         {
             worksheet.Column(colIndex).Delete();
         }
 
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     [Action("Remove Excel rows by condition", Description = "Remove the rows that meet the condition in the specfied column index.")]
     public async Task<FileReference> RemoveRowsByCondition(
-        [ActionParameter][Display("Excel file")] FileReference File,
+        [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex, 
         [ActionParameter][Display("Column letter")] string columnIndex,
         [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition
         )
     {
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         var usedRange = worksheet.RangeUsed();
         var rows = usedRange.RowsUsed().ToList();
 
@@ -110,18 +110,18 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             }
         }
 
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     [Action("Replace using Regex in Excel row", Description = "Apply a regular expression and replace patternt to an Excel row")]
     public async Task<FileReference> ApplyRegexToRow(
-    [ActionParameter][Display("Excel file")] FileReference File,
+    [ActionParameter][Display("Excel file")] ExcelFile File,
     [ActionParameter][Display("Sheet number")] int worksheetIndex,
     [ActionParameter][Display("Row index", Description = "The first row starts with 1")] int rowIndex,
     [ActionParameter][Display("Regular expression")] string pattern,
     [ActionParameter][Display("Replacement pattern")] string replacement)
     {
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
 
         var regex = new Regex(pattern);
         var row = worksheet.Row(rowIndex);
@@ -136,18 +136,18 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             }
         }
 
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     [Action("Replace using Regex in Excel column", Description = "Apply a regular expression and replace patternt to an Excel column")]
     public async Task<FileReference> ApplyRegexToColumn(
-    [ActionParameter][Display("Excel file")] FileReference File,
+    [ActionParameter][Display("Excel file")] ExcelFile File,
     [ActionParameter][Display("Sheet number")] int worksheetIndex,
     [ActionParameter][Display("Column index", Description = "The first column starts with 1")] int columnIndex,
     [ActionParameter][Display("Regular expression")] string pattern,
     [ActionParameter][Display("Replacement pattern")] string replacement)
     {
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
 
         var regex = new Regex(pattern);
         var column = worksheet.Column(columnIndex);
@@ -162,17 +162,17 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             }
         }
 
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     [Action("Insert row to an Excel sheet", Description = "Inserts a new row at the given index in an Excel worksheet")]
     public async Task<FileReference> InsertRowAtIndex(
-    [ActionParameter][Display("Excel file")] FileReference File,
+    [ActionParameter][Display("Excel file")] ExcelFile File,
     [ActionParameter][Display("Sheet number")] int worksheetIndex,
     [ActionParameter][Display("Row index", Description = "The first row starts with 1")] int rowIndex,
     [ActionParameter][Display("Cell values")] IEnumerable<string> cellValues)
     {
-        var (workbook, worksheet) = await ReadExcel(File, worksheetIndex);
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
 
         worksheet.Row(rowIndex).InsertRowsAbove(1);
 
@@ -183,7 +183,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             columnIndex++;
         }
 
-        return await WriteExcel(workbook, File.Name);
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     private async Task<(XLWorkbook Workbook, IXLWorksheet Worksheet)> ReadExcel(FileReference file, int worksheetIndex)
