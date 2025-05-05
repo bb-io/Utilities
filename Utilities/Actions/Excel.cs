@@ -179,10 +179,9 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         int columnIndex = 1;
         foreach (var value in cellValues)
         {
-            worksheet.Cell(rowIndex, columnIndex).Value = value;
+            worksheet.Cell(rowIndex, columnIndex).SetValue(value);
             columnIndex++;
         }
-
         return await WriteExcel(workbook, File.File.Name);
     }
 
