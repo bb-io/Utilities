@@ -172,8 +172,11 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     [ActionParameter][Display("Row index", Description = "The first row starts with 1")] int rowIndex,
     [ActionParameter][Display("Cell values")] IEnumerable<string> cellValues)
     {
-        await using var excelStream = await fileManagementClient.DownloadAsync(File.File);
-        var workbook = new XLWorkbook(excelStream);
+        var stream = new MemoryStream();
+        await using var downloaded = await fileManagementClient.DownloadAsync(File.File);
+        await downloaded.CopyToAsync(stream);
+        stream.Position = 0;
+        var workbook = new XLWorkbook(stream);
         var worksheet = workbook.Worksheet(worksheetIndex);
 
         worksheet.Row(rowIndex).InsertRowsAbove(1);
@@ -192,7 +195,6 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         var mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         var file = await fileManagementClient.UploadAsync(streamOut, mimeType, File.File.Name);
         return file;
-
 
     }
 
