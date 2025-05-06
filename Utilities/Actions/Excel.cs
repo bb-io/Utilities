@@ -172,17 +172,27 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     [ActionParameter][Display("Row index", Description = "The first row starts with 1")] int rowIndex,
     [ActionParameter][Display("Cell values")] IEnumerable<string> cellValues)
     {
-        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
+        await using var excelStream = await fileManagementClient.DownloadAsync(File.File);
+        var workbook = new XLWorkbook(excelStream);
+        var worksheet = workbook.Worksheet(worksheetIndex);
 
         worksheet.Row(rowIndex).InsertRowsAbove(1);
 
         int columnIndex = 1;
         foreach (var value in cellValues)
         {
-            worksheet.Cell(rowIndex, columnIndex).SetValue(value);
+            worksheet.Cell(rowIndex, columnIndex).Value = value;
             columnIndex++;
         }
-        return await WriteExcel(workbook, File.File.Name);
+        using var streamOut = new MemoryStream();
+        workbook.SaveAs(streamOut);
+        streamOut.Position = 0;
+
+        var mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        var file = await fileManagementClient.UploadAsync(streamOut, mimeType, File.File.Name);
+        return file;
+
+
     }
 
     private async Task<(XLWorkbook Workbook, IXLWorksheet Worksheet)> ReadExcel(FileReference file, int worksheetIndex)
