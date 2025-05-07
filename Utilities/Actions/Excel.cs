@@ -172,13 +172,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     [ActionParameter][Display("Row index", Description = "The first row starts with 1")] int rowIndex,
     [ActionParameter][Display("Cell values")] IEnumerable<string> cellValues)
     {
-        var stream = new MemoryStream();
-        await using var downloaded = await fileManagementClient.DownloadAsync(File.File);
-        await downloaded.CopyToAsync(stream);
-        stream.Position = 0;
-        var workbook = new XLWorkbook(stream);
-        var worksheet = workbook.Worksheet(worksheetIndex);
-
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         worksheet.Row(rowIndex).InsertRowsAbove(1);
 
         int columnIndex = 1;
@@ -188,20 +182,13 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             columnIndex++;
         }
 
-        using var streamOut = new MemoryStream();
-        workbook.SaveAs(streamOut);
-        streamOut.Position = 0;
-
-        var mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        var file = await fileManagementClient.UploadAsync(streamOut, mimeType, File.File.Name);
-        return file;
-
+        return await WriteExcel(workbook, File.File.Name);
     }
 
     private async Task<(XLWorkbook Workbook, IXLWorksheet Worksheet)> ReadExcel(FileReference file, int worksheetIndex)
     {
         var stream = new MemoryStream();
-        await using var downloaded = await fileManagementClient.DownloadAsync(file);
+        var downloaded = await fileManagementClient.DownloadAsync(file);
         await downloaded.CopyToAsync(stream);
         stream.Position = 0;
 
@@ -219,9 +206,5 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         var mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         var file = await fileManagementClient.UploadAsync(streamOut, mimeType, originalFileName);
         return file;
-        
     }
-
 }
-
-
