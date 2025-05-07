@@ -9,7 +9,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using System.Text.RegularExpressions;
-
+using Apps.Utilities.Models.Excel;
 
 namespace Apps.Utilities.Actions;
 
@@ -55,11 +55,10 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     public async Task<FileReference> RemoveRowsByIndexes(
         [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex,
-        [ActionParameter][Display("Row indexes", Description = "The first row starts with 1")]
-        IEnumerable<int> rowIndexes)
+        [ActionParameter] Models.Excel.RowIndexesRequest rowIndexesRequest)
     {
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
-        foreach (var rowIndex in rowIndexes.OrderByDescending(i => i))
+        foreach (var rowIndex in rowIndexesRequest.RowIndexes.OrderByDescending(i => i))
         {
             worksheet.Row(rowIndex).Delete();
         }
@@ -70,11 +69,10 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     public async Task<FileReference> RemoveColumnsByIndexes(
         [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex,
-        [ActionParameter][Display("Column indexes", Description = "The first column starts with 1")]
-        IEnumerable<int> ColumnIndexes)
+        [ActionParameter] Models.Excel.ColumnIndexesRequest columnIndexesRequest)
     {
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
-        foreach (var colIndex in ColumnIndexes.OrderByDescending(i => i))
+        foreach (var colIndex in columnIndexesRequest.ColumnIndexes.OrderByDescending(i => i))
         {
             worksheet.Column(colIndex).Delete();
         }
@@ -170,13 +168,13 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     [ActionParameter][Display("Excel file")] ExcelFile File,
     [ActionParameter][Display("Sheet number")] int worksheetIndex,
     [ActionParameter][Display("Row index", Description = "The first row starts with 1")] int rowIndex,
-    [ActionParameter][Display("Cell values")] IEnumerable<string> cellValues)
+    [ActionParameter] CellValuesRequest cellValuesRequest)
     {
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         worksheet.Row(rowIndex).InsertRowsAbove(1);
 
         int columnIndex = 1;
-        foreach (var value in cellValues)
+        foreach (var value in cellValuesRequest.CellValues)
         {
             worksheet.Cell(rowIndex, columnIndex).SetValue(value);
             columnIndex++;
