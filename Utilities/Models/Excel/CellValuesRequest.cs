@@ -5,5 +5,5 @@ namespace Apps.Utilities.Models.Excel;
 public class CellValuesRequest
 {
     [Display("Cell values")]
-    public IEnumerable<int> CellValues { get; set; } = default!;
+    public IEnumerable<string> CellValues { get; set; } = default!;
 }
