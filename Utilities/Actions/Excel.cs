@@ -20,7 +20,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     public async Task<FileReference> ReorderColumns(
         [ActionParameter][Display("Excel file")] ExcelFile File,
         [ActionParameter][Display("Sheet number")] int worksheetIndex,
-        [ActionParameter] ColumnOrderRequest columnOrder)
+        [ActionParameter] ExcelColumnOrderRequest columnOrder)
     {
         if (columnOrder.ColumnOrder.Any(x => x < 0)) throw new PluginApplicationException("A column identifier must be a positive number.");
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
