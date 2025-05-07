@@ -65,6 +65,16 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Apply regex to CSV row** Apply a regex pattern to a specified row in the CSV file.
 - **Add CSV row** Add a new row at the specified row index to the CSV file
 
+### XLSX files (spreadsheets)
+
+- **Redefine Excel columns** Rearrange the columns of an Excel file according to the specified order.
+- **Remove Excel rows by indexes** Remove the selected rows from an Excel file.
+- **Remove Excel columns by indexes** Remove the selected columns from an Excel file.
+- **Remove Excel rows by condition** Remove the rows that meet the condition in the specfied column index.
+- **Replace using Regex in Excel row** Apply a regular expression and replace patternt to an Excel row.
+- **Replace using Regex in Excel column** Apply a regular expression and replace patternt to an Excel column.
+- **Insert row to an Excel sheet** Insert a new row at the given index in an Excel worksheet.
+
 ### Texts
 
 - **Count characters in text** returns number of chracters in text.

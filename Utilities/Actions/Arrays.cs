@@ -58,9 +58,9 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     public string GetEntryInPosition([ActionParameter] ArrayCountRequest input,
         [ActionParameter] int Position)
     {
-        if (input.Array?.Count() < Position)
-        { 
-            throw new PluginMisconfigurationException("Position is out of bounds");
+        if (input.Array == null || !input.Array.Any() || Position <= 0 || input.Array.Count() < Position)
+        {
+            throw new PluginMisconfigurationException("Position is out of bounds or invalid");
         }
         return input.Array.ToList()[Position - 1];
     }
