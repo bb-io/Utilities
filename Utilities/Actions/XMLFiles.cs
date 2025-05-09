@@ -26,7 +26,7 @@ namespace Apps.Utilities.Actions
 
 
 
-        [Action("Convert TBX to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified source and target languages")]
+        [Action("Reduce multilingual glossary to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified language pair")]
         public async Task<ConvertTextToDocumentResponse> ConvertTbxToBilingual(
             [ActionParameter] ConvertTbxToBilingualRequest request)
         {
@@ -36,7 +36,7 @@ namespace Apps.Utilities.Actions
             }
             if (string.IsNullOrEmpty(request.SourceLanguage) || string.IsNullOrEmpty(request.TargetLanguage))
             {
-                throw new PluginMisconfigurationException("Source and target languages must be specified.");
+                throw new PluginMisconfigurationException("Both languages to keep must be specified.");
             }
 
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
