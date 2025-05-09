@@ -463,6 +463,18 @@ public class XMLTests : TestBase
         Assert.IsNotNull(result);
     }
 
+
+    [TestMethod]
+    public async Task ConvertMultilingualToBilingual_ReturnsSucces()
+    {
+        var actions = new XMLFiles(FileManager);
+        var input = new ConvertTbxToBilingualRequest { File = new FileReference { Name = "Original.tbx" }, SourceLanguage = "de", TargetLanguage = "nl" };
+        var result = actions.ConvertTbxToBilingual(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
     private string GetTestFolderPath()
     {
         var config = new ConfigurationBuilder()

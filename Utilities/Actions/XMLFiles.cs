@@ -24,6 +24,74 @@ namespace Apps.Utilities.Actions
             _fileManagementClient = fileManagementClient;
         }
 
+        [Action("Reduce multilingual glossary to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified language pair")]
+        public async Task<ConvertTextToDocumentResponse> ConvertTbxToBilingual(
+            [ActionParameter] ConvertTbxToBilingualRequest request)
+        {
+            if (request.File == null)
+            {
+                throw new PluginMisconfigurationException("TBX file must be provided.");
+            }
+            if (string.IsNullOrEmpty(request.SourceLanguage) || string.IsNullOrEmpty(request.TargetLanguage))
+            {
+                throw new PluginMisconfigurationException("Both languages to keep must be specified.");
+            }
+
+            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            var doc = XDocument.Load(streamIn);
+            var tbxNs = doc.Root?.GetDefaultNamespace() ?? throw new PluginMisconfigurationException("TBX file is missing a valid namespace.");
+            var xmlNs = XNamespace.Xml;
+
+            var conceptEntries = doc.Descendants(tbxNs + "conceptEntry").ToList();
+
+            foreach (var entry in conceptEntries)
+            {
+                var langSecs = entry.Elements(tbxNs + "langSec").ToList();
+
+                foreach (var langSec in langSecs)
+                {
+                    var lang = langSec.Attribute(xmlNs + "lang")?.Value;
+                    if (string.IsNullOrEmpty(lang) || (lang != request.SourceLanguage && lang != request.TargetLanguage))
+                    {
+                        langSec.Remove();
+                    }
+                }
+
+                var remainingLangs = entry.Elements(tbxNs + "langSec")
+                    .Select(ls => ls.Attribute(xmlNs + "lang")?.Value)
+                    .Where(l => !string.IsNullOrEmpty(l))
+                    .ToList();
+                if (remainingLangs.Count < 2 || !remainingLangs.Contains(request.SourceLanguage) || !remainingLangs.Contains(request.TargetLanguage))
+                {
+                    entry.Remove();
+                }
+            }
+
+            conceptEntries.Where(ce => !ce.HasElements).Remove();
+
+            using var streamOut = new MemoryStream();
+            var settings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                Indent = true,
+                OmitXmlDeclaration = false
+            };
+            using (var writer = XmlWriter.Create(streamOut, settings))
+            {
+                doc.Save(writer);
+            }
+            streamOut.Position = 0;
+
+            var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType ?? "application/xml", request.File.Name);
+
+            return new ConvertTextToDocumentResponse
+            {
+                File = resultFile
+            };
+        }
+
+
+
         [Action("Bump version string", Description = "Bump version string")]
         public async Task<GetXMLPropertyResponse> BumpVersionString([ActionParameter] BumpVersionStringRequest request)
         {
