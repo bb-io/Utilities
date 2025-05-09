@@ -24,8 +24,6 @@ namespace Apps.Utilities.Actions
             _fileManagementClient = fileManagementClient;
         }
 
-
-
         [Action("Reduce multilingual glossary to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified language pair")]
         public async Task<ConvertTextToDocumentResponse> ConvertTbxToBilingual(
             [ActionParameter] ConvertTbxToBilingualRequest request)

@@ -42,6 +42,9 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
 
+### TBX files
+- **Reduce multilingual glossary to bilingual** Convert a multilingual TBX file to bilingual by keeping only the specified language pair.
+
 ### XLIFF files
 
 - **Replace XLIFF source with target** Swap `source` and `target` contents, exchange language attributes, and optionally remove target elements or set a new target language.
