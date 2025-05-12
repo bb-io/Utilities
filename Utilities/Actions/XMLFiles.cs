@@ -38,7 +38,16 @@ namespace Apps.Utilities.Actions
             }
 
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-            var doc = XDocument.Load(streamIn);
+            XDocument doc;
+            try
+            {
+                doc = XDocument.Load(streamIn);
+            }
+            catch (XmlException ex)
+            {
+                throw new PluginMisconfigurationException(
+                    $"File «{request.File.Name}» is not valid TBX/XML: {ex.Message}");
+            }
             var tbxNs = doc.Root?.GetDefaultNamespace() ?? throw new PluginMisconfigurationException("TBX file is missing a valid namespace.");
             var xmlNs = XNamespace.Xml;
 
