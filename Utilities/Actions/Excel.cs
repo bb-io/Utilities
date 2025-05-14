@@ -41,8 +41,15 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             {
                 var sourceCell = worksheet.Cell(row, sourceCol);
                 var destCell = tempSheet.Cell(row, i + 1);
-                destCell.Value = sourceCell.Value;
-                destCell.Style = sourceCell.Style;
+                if (sourceCell.HasRichText)
+                {
+                    destCell = sourceCell;
+                }
+                else 
+                {
+                    destCell.Value = sourceCell.Value;
+                    destCell.Style = sourceCell.Style;
+                }
             }
 
             tempSheet.Column(i + 1).Width = worksheet.Column(sourceCol).Width;
