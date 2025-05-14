@@ -18,20 +18,23 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
 {
     [Action("Redefine Excel columns", Description = "Rearrange the columns of an Excel file according to the specified order.")]
     public async Task<FileReference> ReorderColumns(
-        [ActionParameter][Display("Excel file")] ExcelFile File,
-        [ActionParameter][Display("Sheet number")] int worksheetIndex,
-        [ActionParameter] ExcelColumnOrderRequest columnOrder)
+    [ActionParameter][Display("Excel file")] ExcelFile File,
+    [ActionParameter][Display("Sheet number")] int worksheetIndex,
+    [ActionParameter] ExcelColumnOrderRequest columnOrder)
     {
-        if (columnOrder.ColumnOrder.Any(x => x < 0)) throw new PluginApplicationException("A column identifier must be a positive number.");
+        if (columnOrder.ColumnOrder.Any(x => x < 1))
+            throw new PluginApplicationException("A column identifier must be a positive number.");
+
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
+        var originalSheetName = worksheet.Name;
+
         var usedRange = worksheet.RangeUsed();
         var rowCount = usedRange.RowCount();
-        var colCount = usedRange.ColumnCount();
-
         var tempSheet = workbook.AddWorksheet("Temp");
+
         var newOrder = columnOrder.ColumnOrder.ToList();
 
-        for (int i = 0; i < newOrder.Count ; i++)
+        for (int i = 0; i < newOrder.Count; i++)
         {
             int sourceCol = newOrder[i];
             for (int row = 1; row <= rowCount; row++)
@@ -41,15 +44,16 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
                 destCell.Value = sourceCell.Value;
                 destCell.Style = sourceCell.Style;
             }
+
+            tempSheet.Column(i + 1).Width = worksheet.Column(sourceCol).Width;
         }
 
-        worksheet.Range(1, 1, rowCount, colCount).Clear();
-        tempSheet.Range(1, 1, rowCount, newOrder.Count).CopyTo(workbook.Worksheet(worksheetIndex));
-        
-        worksheet.Workbook.Worksheets.Delete(tempSheet.Name);
+        workbook.Worksheets.Delete(worksheet.Name);
+        tempSheet.Name = originalSheetName;
 
         return await WriteExcel(workbook, File.File.Name);
     }
+
 
     [Action("Remove Excel rows by indexes", Description = "Remove the selected rows from an Excel file.")]
     public async Task<FileReference> RemoveRowsByIndexes(
