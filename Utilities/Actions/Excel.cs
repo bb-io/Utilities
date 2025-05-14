@@ -43,7 +43,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
                 var destCell = tempSheet.Cell(row, i + 1);
                 if (sourceCell.HasRichText)
                 {
-                    destCell = sourceCell;
+                    destCell.CopyFrom(sourceCell);
                 }
                 else 
                 {
