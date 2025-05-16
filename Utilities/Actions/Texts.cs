@@ -159,7 +159,21 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     [Action("Replace using Regex", Description = "Use Regular Expressions to search and replace within text")]
     public string ReplaceRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceInput regex)
     {
-        return Regex.Replace(input.Text, Regex.Unescape(regex.Regex), Regex.Unescape(regex.Replace));
+        if (input == null || input.Text == null)
+            throw new PluginMisconfigurationException("Input text can not be null. Please check your input and try again");
+
+        if (string.IsNullOrEmpty(regex.Regex))
+            return input.Text;
+
+        try
+        {
+            var r = new System.Text.RegularExpressions.Regex(regex.Regex);
+            return r.Replace(input.Text, regex.Replace);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new PluginApplicationException($"Wrong input format “{regex.Regex}” orstring to replace “{regex.Replace}”: {ex.Message}");
+        }
     }
 
     [Action("Trim text", Description = "Trim specified text")]
