@@ -14,6 +14,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using System.Web;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions
 {
@@ -137,6 +138,12 @@ namespace Apps.Utilities.Actions
         [Action("Convert XLIFF to HTML", Description = "Convert XLIFF file (version 1.2) to HTML file")]
         public async Task<ConvertTextToDocumentResponse> ConvertXliffToHtml([ActionParameter] ConvertXliffToHtmlRequest request)
         {
+            string ext = Path.GetExtension(request.File.Name)?.ToLowerInvariant();
+            if (ext != ".xliff" && ext != ".xlf")
+            {
+                throw new PluginMisconfigurationException("Wrong format file: expected XLIFF (.xliff or .xlf), not " + ext);
+            }
+
             XDocument xliffDoc = await LoadXliffDocumentAsync(request.File);
             XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
             HtmlDocument htmlDoc = LoadOriginalHtmlDocument(xliffDoc, ns);
