@@ -186,6 +186,22 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
+    [Action("Insert empty row to an Excel sheet", Description = "Inserts a new empty row at the given index in an Excel worksheet")]
+    public async Task<FileReference> InsertEmptyRowAtIndex(
+    [ActionParameter][Display("Excel file")] ExcelFile File,
+    [ActionParameter][Display("Sheet number")] int worksheetIndex,
+    [ActionParameter] Models.Excel.RowIndexesRequest rowIndexesRequest)
+    {
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
+        
+        foreach (var rowIndex in rowIndexesRequest.RowIndexes)
+        {
+            worksheet.Row(rowIndex).InsertRowsAbove(1);
+        }
+
+        return await WriteExcel(workbook, File.File.Name);
+    }
+
     private async Task<(XLWorkbook Workbook, IXLWorksheet Worksheet)> ReadExcel(FileReference file, int worksheetIndex)
     {
         var stream = new MemoryStream();
