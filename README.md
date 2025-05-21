@@ -70,13 +70,14 @@ This free app provides generic utility actions that can come in useful in any bi
 
 ### XLSX files (spreadsheets)
 
-- **Redefine Excel columns** Rearrange the columns of an Excel file according to the specified order.
-- **Remove Excel rows by indexes** Remove the selected rows from an Excel file.
-- **Remove Excel columns by indexes** Remove the selected columns from an Excel file.
-- **Remove Excel rows by condition** Remove the rows that meet the condition in the specfied column index.
-- **Replace using Regex in Excel row** Apply a regular expression and replace patternt to an Excel row.
-- **Replace using Regex in Excel column** Apply a regular expression and replace patternt to an Excel column.
-- **Insert row to an Excel sheet** Insert a new row at the given index in an Excel worksheet.
+- **Redefine spreadsheet columns** Rearrange the columns of a spreadsheet file according to the specified order.
+- **Remove spreadsheet rows by indexes** Remove the selected rows from a spreadsheet file.
+- **Remove spreadsheet columns by indexes** Remove the selected columns from a spreadsheet file.
+- **Remove spreadsheet rows by condition** Remove the rows that meet the condition in the specfied column index.
+- **Replace using Regex in a spreadsheet row** Apply a regular expression and replace patternt to a spreadsheet row.
+- **Replace using Regex in a spreadsheet column** Apply a regular expression and replace patternt to a spreadsheet column.
+- **Insert row to a spreadsheet** Insert a new row at the given index in a spreadsheet.
+- **Insert empty rows to a spreadsheet** Insert empty rows at the given indexes in a spreadsheet.
 
 ### Texts
 
