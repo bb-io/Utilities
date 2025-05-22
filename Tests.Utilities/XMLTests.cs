@@ -4,6 +4,7 @@ using Apps.Utilities.Models.Texts;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using DocumentFormat.OpenXml.Presentation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using System.Xml;
@@ -445,7 +446,7 @@ public class XMLTests : TestBase
     public async Task ConvertHtmlToXliff_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Starting a flight.html" }, SourceLanguage = "en", TargetLanguage = "de" };
+        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "669571308_original.html" }, SourceLanguage = "it-IT", TargetLanguage = "de" };
         var result = actions.ConvertHtmlToXliff(input);
 
         Console.WriteLine(result);
@@ -456,7 +457,7 @@ public class XMLTests : TestBase
     public async Task ConvertXliffToHtml_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "Global HR Solutions & Employment Tools for Distributed Teams _ Remote.xliff" } };
+        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "669571308_original.xliff" } };
         var result = actions.ConvertXliffToHtml(input);
 
         Console.WriteLine(result);
