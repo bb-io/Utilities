@@ -114,6 +114,40 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
+    [Action("Get spreadsheet row indexes by condition", Description = "Returns the indexes of rows meeting the specified condition")]
+    public async Task<Models.Excel.RowIndexesRequest> GetRowIndexesByCondition(
+       [ActionParameter] ExcelFile File,
+       [ActionParameter][Display("Sheet number")] int worksheetIndex,
+       [ActionParameter][Display("Column letter")] string columnIndex,
+       [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition
+       )
+    {
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
+        var usedRange = worksheet.RangeUsed();
+        var rows = usedRange.RowsUsed().ToList();
+        var rowIndexes = new Models.Excel.RowIndexesRequest();
+
+        foreach (var row in rows)
+        {
+            string value = "";
+            try
+            {
+                value = row.Cell(columnIndex)?.Value.GetText();
+            }
+            catch { }
+            if (condition == "is_empty" && string.IsNullOrEmpty(value))
+            {
+                rowIndexes.RowIndexes.Append(row.RowNumber());
+            }
+            else if (condition == "is_full" && !string.IsNullOrEmpty(value))
+            {
+                rowIndexes.RowIndexes.Append(row.RowNumber());
+            }
+        }
+
+        return rowIndexes;
+    }
+
     [Action("Replace using Regex in a spreadsheet row", Description = "Apply a regular expression and replace pattern to a row in a spreadsheet")]
     public async Task<FileReference> ApplyRegexToRow(
     [ActionParameter]ExcelFile File,
