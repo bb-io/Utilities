@@ -115,7 +115,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     }
 
     [Action("Get spreadsheet row indexes by condition", Description = "Returns the indexes of rows meeting the specified condition")]
-    public async Task<Models.Excel.RowIndexesRequest> GetRowIndexesByCondition(
+    public async Task<List<int>> GetRowIndexesByCondition(
        [ActionParameter] ExcelFile File,
        [ActionParameter][Display("Sheet number")] int worksheetIndex,
        [ActionParameter][Display("Column letter")] string columnIndex,
@@ -125,7 +125,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         var usedRange = worksheet.RangeUsed();
         var rows = usedRange.RowsUsed().ToList();
-        var rowIndexes = new Models.Excel.RowIndexesRequest();
+        var rowIndexes = new List<int>();
 
         foreach (var row in rows)
         {
@@ -137,11 +137,11 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             catch { }
             if (condition == "is_empty" && string.IsNullOrEmpty(value))
             {
-                rowIndexes.RowIndexes.Append(row.RowNumber());
+                rowIndexes.Add(row.RowNumber());
             }
             else if (condition == "is_full" && !string.IsNullOrEmpty(value))
             {
-                rowIndexes.RowIndexes.Append(row.RowNumber());
+                rowIndexes.Add(row.RowNumber());
             }
         }
 
