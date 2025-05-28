@@ -446,7 +446,7 @@ public class XMLTests : TestBase
     public async Task ConvertHtmlToXliff_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "669571308_original.html" }, SourceLanguage = "it-IT", TargetLanguage = "de" };
+        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "669571308.html" }, SourceLanguage = "it-IT", TargetLanguage = "de" };
         var result = actions.ConvertHtmlToXliff(input);
 
         Console.WriteLine(result);
@@ -457,7 +457,7 @@ public class XMLTests : TestBase
     public async Task ConvertXliffToHtml_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "669571308_original.xliff" } };
+        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "669571308.xliff" } };
         var result = actions.ConvertXliffToHtml(input);
 
         Console.WriteLine(result);
