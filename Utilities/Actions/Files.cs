@@ -302,6 +302,7 @@ public class Files : BaseInvocable
             }
         }
 
+
         var file = await _fileManagementClient.UploadAsync(new MemoryStream(contentBytes), contentType, filename);
 
         return new ConvertTextToDocumentResponse { File = file };
