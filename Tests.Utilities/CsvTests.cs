@@ -110,4 +110,20 @@ public class CsvTests : TestBase
             new RowPositionOption { RowPosition=6, InputValues = ["TRW,Nicole Ponkey,Global Purchasing Manager at TRW Automotive,44.197.866.7800,,производитель автозапчастей,29,09,не зацікавлені,Великобритания,Стальная шерсть,,,Интернет,https://www.trwaftermarket.com/ru/,Стальная шерсть,Наташа,"] });
 
     }
+
+
+
+    [TestMethod]
+    public async Task RemoveXlsColumns_works()
+    {
+        var file = new FileReference { Name = "Sample.xlsx" };
+        var csvFile = new ExcelFile { File = file };
+        var action = new Excel(InvocationContext, FileManager);
+        var response = await action.RemoveColumnsByIndexes(
+            csvFile, 
+            1, 
+            new Apps.Utilities.Models.Excel.ColumnIndexesRequest { ColumnIndexes = new List<int> { 1, 4, 5,6 } });
+
+        Assert.IsNotNull(response);
+    }
 }

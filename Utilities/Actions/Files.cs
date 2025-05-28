@@ -247,40 +247,44 @@ public class Files : BaseInvocable
     public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)
     {
         if (!request.File.Name.EndsWith(".zip"))
-        {
             throw new PluginMisconfigurationException("The input file must be a zip.");
-        }
-        var file = await _fileManagementClient.DownloadAsync(request.File);
 
+        var file = await _fileManagementClient.DownloadAsync(request.File);
         var files = new List<FileDto>();
+
         using (var seekableStream = new MemoryStream())
         {
             file.CopyTo(seekableStream);
+            seekableStream.Position = 0;
 
             using (var zip = new ZipFile(seekableStream))
             {
                 foreach (ZipEntry entry in zip)
                 {
-                    if (!entry.CanDecompress)
-                    {
-                        throw new Exception();
-                    }
-
-                    if (entry.IsDirectory)
+                    if (!entry.CanDecompress || entry.IsDirectory)
                         continue;
-                    using (var stream = zip.GetInputStream(entry))
+
+                    using (var entryStream = zip.GetInputStream(entry))
+                    using (var buffer = new MemoryStream())
                     {
-                        var uploadedFile = await _fileManagementClient.UploadAsync(stream, MimeTypes.GetMimeType(entry.Name), entry.Name);
+                        entryStream.CopyTo(buffer);
+                        buffer.Position = 0;
+
+                        var uploadedFile = await _fileManagementClient.UploadAsync(
+                            buffer,
+                            MimeTypes.GetMimeType(entry.Name),
+                            entry.Name
+                        );
                         files.Add(new FileDto { File = uploadedFile });
                     }
                 }
             }
         }
+
         return new MultipleFilesResponse
         {
             Files = files
         };
-
     }
 
     private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType, Encoding encoding, bool includeBom)
@@ -297,6 +301,7 @@ public class Files : BaseInvocable
                 contentBytes = combined;
             }
         }
+
 
         var file = await _fileManagementClient.UploadAsync(new MemoryStream(contentBytes), contentType, filename);
 

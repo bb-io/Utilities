@@ -203,8 +203,9 @@ namespace Apps.Utilities.Actions
         private void ApplyTranslationsToHtml(HtmlDocument htmlDoc, XDocument xliffDoc, XNamespace ns)
         {
             var transUnits = xliffDoc.Descendants(ns + "trans-unit")
-                              .OrderBy(t => (int)t.Attribute("id"))
-                              .ToList();
+                .OrderBy(t => {var raw = (string)t.Attribute("id");
+                    var m = Regex.Match(raw, @"\d+$");
+                    return m.Success ? int.Parse(m.Value) : int.MaxValue;}).ToList();
 
             var titleTransUnit = transUnits.FirstOrDefault(t =>
                                       string.Equals((string)t.Attribute("slug"), "title", StringComparison.OrdinalIgnoreCase) &&
