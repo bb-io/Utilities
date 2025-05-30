@@ -1,4 +1,6 @@
-﻿using Blackbird.Applications.Sdk.Common;
+﻿using Apps.Utilities.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.Utilities.Models.Texts
 {
@@ -18,6 +20,10 @@ namespace Apps.Utilities.Models.Texts
 
         [Display("Replace value to")]
         public IEnumerable<string>? To { get; set; }
+
+        [Display("Regex Flags")]
+        [StaticDataSource(typeof(RegexFlagsSourceHandler))]
+        public string? Flags { get; set; }
 
     }
 }

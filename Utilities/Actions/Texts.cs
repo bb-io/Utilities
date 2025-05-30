@@ -99,14 +99,51 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     [Action("Extract using Regex", Description = "Returns first match from text using input Regex")]
     public string ExtractRegex([ActionParameter] TextDto input, [ActionParameter] RegexInput regex)
     {
+        var regexOptions = GetRegexOptions(regex.Flags);
         if (String.IsNullOrEmpty(regex.Group))
         {
-            return Regex.Match(input.Text, regex.Regex).Value;
+            return Regex.Match(input.Text, regex.Regex, regexOptions).Value;
         }
         else
         {
-            return Regex.Match(input.Text, regex.Regex).Groups[regex.Group].Value;
+            return Regex.Match(input.Text, regex.Regex, regexOptions).Groups[regex.Group].Value;
         }
+    }
+
+    private RegexOptions GetRegexOptions(string? flags)
+    {
+        var options = RegexOptions.None;
+        if (string.IsNullOrEmpty(flags)) return options;
+
+        var flagArray = flags.Split(',').Select(f => f.Trim());
+        foreach (var flag in flagArray)
+        {
+            switch (flag.ToLower())
+            {
+                case "insensitive":
+                    options |= RegexOptions.IgnoreCase;
+                    break;
+                case "multiline":
+                    options |= RegexOptions.Multiline;
+                    break;
+                case "singleline":
+                    options |= RegexOptions.Singleline;
+                    break;
+                case "right to left":
+                    options |= RegexOptions.RightToLeft;
+                    break;
+                case "non-capturing":
+                    options |= RegexOptions.ExplicitCapture;
+                    break;
+                case "no backtracking":
+                    options |= RegexOptions.NonBacktracking;
+                    break;
+                case "extended":
+                    options |= RegexOptions.IgnorePatternWhitespace;
+                    break;
+            }
+        }
+        return options;
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
