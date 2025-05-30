@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="Test_Hubspot.html" source-language="en-us" target-language="JA" datatype="html">
+    <originalFile>&lt;html&gt;&lt;head&gt;&lt;title&gt;Test_Hubspot&lt;/title&gt;&lt;meta name="blackbird-reference-id" content="189442996737"&gt;&lt;meta name="blackbird-content-type" content="blog"&gt;&lt;description&gt;&lt;/description&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;This is a test page. Let's create a powerful sentence.&lt;/p&gt;
+&lt;!--more--&gt;&lt;p&gt;Productivity is the best.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</originalFile>
+  </file>
+  <body>
+    <trans-unit id="1" slug="title" tag="title">
+      <source xml:lang="en-us">Test_Hubspot</source>
+      <target xml:lang="JA">テスト_Hubspot</target>
+    </trans-unit>
+    <trans-unit id="2" slug="body_2" tag="p">
+      <source xml:lang="en-us">This is a test page. Let's create a powerful sentence.</source>
+      <target xml:lang="JA">これはテストページです。力強い文章を作成しましょう。</target>
+    </trans-unit>
+    <trans-unit id="3" slug="body_3" tag="p">
+      <source xml:lang="en-us">Productivity is the best.</source>
+      <target xml:lang="JA">生産性が一番です。</target>
+    </trans-unit>
+  </body>
+</xliff>

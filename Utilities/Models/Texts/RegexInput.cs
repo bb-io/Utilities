@@ -19,5 +19,8 @@ namespace Apps.Utilities.Models.Texts
         [Display("Replace value to")]
         public IEnumerable<string>? To { get; set; }
 
+        [Display("Regex Flags")]
+        public string? Flags { get; set; }
+
     }
 }

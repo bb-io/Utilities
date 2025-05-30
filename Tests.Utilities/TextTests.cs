@@ -74,6 +74,50 @@ public class TextTests : TestBase
         _textActions.SplitStringToArray(new(), new() { Delimiter = ","});
     }
 
+    [TestMethod]
+    public void ExtractRegex_ReturnsFirstMatch()
+    {
+        var result1 = _textActions.ExtractRegex(
+         new TextDto { Text = "Hello World 123" },
+         new RegexInput { Regex = @"\w+" });
+        Console.WriteLine(result1);
+        Assert.AreEqual("Hello", result1, "Should return the first word");
+
+        var result2 = _textActions.ExtractRegex(
+            new TextDto { Text = "HELLO world" },
+            new RegexInput { Regex = @"hello", Flags = "insensitive" }
+        );
+        Console.WriteLine(result2);
+        Assert.AreEqual("HELLO", result2, "Should match case-insensitively");
+
+        var result3 = _textActions.ExtractRegex(
+            new TextDto { Text = "My number is 123-456" },
+            new RegexInput { Regex = @"(\d+)-(\d+)", Group = "2" }
+        );
+        Console.WriteLine(result3);
+        Assert.AreEqual("456", result3, "Should return the second group");
+
+        var result4 = _textActions.ExtractRegex(
+            new TextDto { Text = "Line1\nStartLine2\nLine3" },
+            new RegexInput { Regex = @"^Start\w+", Flags = "multiline" }
+        );
+        Console.WriteLine(result4);
+        Assert.AreEqual("StartLine2", result4, "Should match the start of the second line");
+
+        var result5 = _textActions.ExtractRegex(
+            new TextDto { Text = "Line1\nLine2\nLine3" },
+            new RegexInput { Regex = @".+", Flags = "singleline" }
+        );
+        Console.WriteLine(result5);
+        Assert.AreEqual("Line1\nLine2\nLine3", result5, "Should match across newlines");
+
+        var result6 = _textActions.ExtractRegex(
+            new TextDto { Text = "Hello World" },
+            new RegexInput { Regex = @"\d+" }
+        );
+        Console.WriteLine(result6);
+        Assert.AreEqual("", result6, "Should return empty string when no match is found");
+    }
 
     [TestMethod]
     public void CountWordsInTextFromArray_ReturnsCountWords()
