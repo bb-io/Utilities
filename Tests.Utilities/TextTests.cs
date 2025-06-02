@@ -98,7 +98,7 @@ public class TextTests : TestBase
         Assert.AreEqual("456", result3, "Should return the second group");
 
         var result4 = _textActions.ExtractRegex(
-            new TextDto { Text = "Line1\nStartLine2\nLine3" },
+            new TextDto { Text = "Line1\r\nStartLine2\r\nLine3  " },
             new RegexInput { Regex = @"^Start\w+", Flags = "multiline" }
         );
         Console.WriteLine(result4);
