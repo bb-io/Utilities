@@ -11,5 +11,9 @@ namespace Apps.Utilities.Models.Dates
         [Display("Culture")]
         [StaticDataSource(typeof(CultureSourceHandler))]
         public string? Culture { get; set; }
+
+        [Display("Timezone")]
+        [StaticDataSource(typeof(TimeZoneSourceHandler))]
+        public string? Timezone { get; set; }
     }
 }
