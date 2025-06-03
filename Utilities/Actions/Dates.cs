@@ -3,6 +3,7 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using System.Globalization;
 using Apps.Utilities.Models.Dates;
+using CsvHelper;
 
 namespace Apps.Utilities.Actions;
 
@@ -64,22 +65,25 @@ public class Dates : BaseInvocable
     public DateResponse ConvertTextToDate([ActionParameter] TextToDateRequest input)
     {
         var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
-        var date = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
+        var parsed = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
 
         if (!string.IsNullOrEmpty(input.Timezone))
         {
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
 
-            var dateInSpecifiedZone = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
+            
+            var offset = tz.GetUtcOffset(parsed);
 
-            date = TimeZoneInfo.ConvertTimeToUtc(dateInSpecifiedZone, timeZoneInfo);
+            var dto = new DateTimeOffset(parsed, offset);
+
+            return new DateResponse { Date = dto };
         }
         else
         {
-            date = TimeZoneInfo.ConvertTimeToUtc(date, TimeZoneInfo.Local);
+            var localOffset = TimeZoneInfo.Local.GetUtcOffset(parsed);
+            var dtoLocal = new DateTimeOffset(parsed, localOffset);
+            return new DateResponse { Date = dtoLocal };
         }
-
-        return new DateResponse { Date = date };
     }
 
     private static DateTime AddBusinessDays(DateTime date, int days)

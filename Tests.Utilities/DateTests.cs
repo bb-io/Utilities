@@ -20,8 +20,8 @@ namespace Tests.Utilities
 
             var result =  action.ConvertTextToDate(new TextToDateRequest
             {
-                Text = "6/2/2025 16:00:00",
-                Timezone = "Asia/Hovd",
+                Text = "5/30/2025 21:00:00",
+                Timezone = "Asia/Macau",
             });
 
             Console.WriteLine(result.Date);
