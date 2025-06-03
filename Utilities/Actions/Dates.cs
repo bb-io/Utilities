@@ -4,6 +4,7 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 using System.Globalization;
 using Apps.Utilities.Models.Dates;
 using CsvHelper;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions;
 
@@ -64,25 +65,50 @@ public class Dates : BaseInvocable
     [Action("Convert text to date", Description = "Converts text input to date.")]
     public DateResponse ConvertTextToDate([ActionParameter] TextToDateRequest input)
     {
-        var culture = input.Culture != null
-        ? new CultureInfo(input.Culture)
-        : CultureInfo.InvariantCulture;
+        var culture = !string.IsNullOrEmpty(input.Culture)
+                          ? new CultureInfo(input.Culture!)
+                          : CultureInfo.InvariantCulture;
+
+        if (string.IsNullOrEmpty(input.Text))
+        {
+            throw new PluginMisconfigurationException("Text is required. Please provide a valid date string.");
+        }
+
         var parsed = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
 
         if (!string.IsNullOrEmpty(input.Timezone))
         {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+            TimeZoneInfo tzInfo;
+            try
+            {
+                tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone!);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                throw new PluginMisconfigurationException($"Timezone '{input.Timezone}' not found on the server. Перевірте правильність ID таймзони.");
+            }
+            catch (InvalidTimeZoneException)
+            {
+                throw new PluginMisconfigurationException($"Timezone '{input.Timezone}' є недійсною. Спробуйте іншу або перевірте власний TimeZoneSourceHandler.");
+            }
 
-            var offset = tz.GetUtcOffset(parsed);
+            var offset = tzInfo.GetUtcOffset(parsed);
 
-            var dateUnspecified = DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
+            var dto = new DateTimeOffset(parsed, offset);
 
-            return new DateResponse { Date = dateUnspecified };
+            return new DateResponse
+            {
+                Date = dto
+            };
         }
         else
         {
-            var dateUnspecified = DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
-            return new DateResponse { Date = dateUnspecified };
+            var localOffset = TimeZoneInfo.Local.GetUtcOffset(parsed);
+            var dtoLocal = new DateTimeOffset(parsed, localOffset);
+            return new DateResponse
+            {
+                Date = dtoLocal
+            };
         }
     }
 
