@@ -64,25 +64,25 @@ public class Dates : BaseInvocable
     [Action("Convert text to date", Description = "Converts text input to date.")]
     public DateResponse ConvertTextToDate([ActionParameter] TextToDateRequest input)
     {
-        var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
+        var culture = input.Culture != null
+        ? new CultureInfo(input.Culture)
+        : CultureInfo.InvariantCulture;
         var parsed = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
 
         if (!string.IsNullOrEmpty(input.Timezone))
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
 
-            
             var offset = tz.GetUtcOffset(parsed);
 
-            var dto = new DateTimeOffset(parsed, offset);
+            var dateUnspecified = DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
 
-            return new DateResponse { Date = dto };
+            return new DateResponse { Date = dateUnspecified };
         }
         else
         {
-            var localOffset = TimeZoneInfo.Local.GetUtcOffset(parsed);
-            var dtoLocal = new DateTimeOffset(parsed, localOffset);
-            return new DateResponse { Date = dtoLocal };
+            var dateUnspecified = DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
+            return new DateResponse { Date = dateUnspecified };
         }
     }
 

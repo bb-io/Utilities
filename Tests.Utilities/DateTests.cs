@@ -14,7 +14,7 @@ namespace Tests.Utilities
     public class DateTests : TestBase
     {
         [TestMethod]
-        public async Task ConvertTestToDate_IssSuccess()
+        public async Task ConvertTextToDate_IssSuccess()
         {
             var action = new Dates(InvocationContext);
 
