@@ -69,17 +69,13 @@ public class Dates : BaseInvocable
         if (!string.IsNullOrEmpty(input.Timezone))
         {
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
-
             var dateInSpecifiedZone = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
-
-            date = TimeZoneInfo.ConvertTimeToUtc(dateInSpecifiedZone, timeZoneInfo);
+            return new DateResponse { Date = dateInSpecifiedZone };
         }
         else
         {
-            date = TimeZoneInfo.ConvertTimeToUtc(date, TimeZoneInfo.Local);
+            return new DateResponse { Date = DateTime.SpecifyKind(date, DateTimeKind.Unspecified) };
         }
-
-        return new DateResponse { Date = date };
     }
 
     private static DateTime AddBusinessDays(DateTime date, int days)
