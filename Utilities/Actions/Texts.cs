@@ -110,13 +110,12 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         }
     }
 
-    private RegexOptions GetRegexOptions(string? flags)
+    private RegexOptions GetRegexOptions(IEnumerable<string>? flags)
     {
         var options = RegexOptions.None;
-        if (string.IsNullOrEmpty(flags)) return options;
+        if (flags == null || !flags.Any()) return options;
 
-        var flagArray = flags.Split(',').Select(f => f.Trim());
-        foreach (var flag in flagArray)
+        foreach (var flag in flags.Select(f => f.Trim()))
         {
             switch (flag.ToLower())
             {

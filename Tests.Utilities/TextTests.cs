@@ -78,14 +78,14 @@ public class TextTests : TestBase
     public void ExtractRegex_ReturnsFirstMatch()
     {
         var result1 = _textActions.ExtractRegex(
-         new TextDto { Text = "Hello World 123" },
-         new RegexInput { Regex = @"\w+" });
+            new TextDto { Text = "Hello World 123" },
+            new RegexInput { Regex = @"\w+" });
         Console.WriteLine(result1);
         Assert.AreEqual("Hello", result1, "Should return the first word");
 
         var result2 = _textActions.ExtractRegex(
             new TextDto { Text = "HELLO world" },
-            new RegexInput { Regex = @"hello", Flags = "insensitive" }
+            new RegexInput { Regex = @"hello", Flags = new[] { "insensitive" } }
         );
         Console.WriteLine(result2);
         Assert.AreEqual("HELLO", result2, "Should match case-insensitively");
@@ -99,14 +99,14 @@ public class TextTests : TestBase
 
         var result4 = _textActions.ExtractRegex(
             new TextDto { Text = "Line1\r\nStartLine2\r\nLine3  " },
-            new RegexInput { Regex = @"^Start\w+", Flags = "multiline" }
+            new RegexInput { Regex = @"^Start\w+", Flags = new[] { "multiline" } }
         );
         Console.WriteLine(result4);
         Assert.AreEqual("StartLine2", result4, "Should match the start of the second line");
 
         var result5 = _textActions.ExtractRegex(
             new TextDto { Text = "Line1\nLine2\nLine3" },
-            new RegexInput { Regex = @".+", Flags = "singleline" }
+            new RegexInput { Regex = @".+", Flags = new[] { "singleline" } }
         );
         Console.WriteLine(result5);
         Assert.AreEqual("Line1\nLine2\nLine3", result5, "Should match across newlines");
@@ -117,6 +117,13 @@ public class TextTests : TestBase
         );
         Console.WriteLine(result6);
         Assert.AreEqual("", result6, "Should return empty string when no match is found");
+
+        var result7 = _textActions.ExtractRegex(
+            new TextDto { Text = "HELLO\r\nstartLINE2\r\nLine3" },
+            new RegexInput { Regex = @"^start\w+", Flags = new[] { "insensitive", "multiline" } }
+        );
+        Console.WriteLine(result7);
+        Assert.AreEqual("startLINE2", result7, "Should match case-insensitively at the start of the second line");
     }
 
     [TestMethod]

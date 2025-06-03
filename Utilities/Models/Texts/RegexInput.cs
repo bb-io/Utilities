@@ -23,7 +23,7 @@ namespace Apps.Utilities.Models.Texts
 
         [Display("Regex Flags")]
         [StaticDataSource(typeof(RegexFlagsSourceHandler))]
-        public string? Flags { get; set; }
+        public IEnumerable<string>? Flags { get; set; }
 
     }
 }
