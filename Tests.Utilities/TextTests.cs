@@ -119,11 +119,11 @@ public class TextTests : TestBase
         Assert.AreEqual("", result6, "Should return empty string when no match is found");
 
         var result7 = _textActions.ExtractRegex(
-            new TextDto { Text = "HELLO\r\nstartLINE2\r\nLine3" },
-            new RegexInput { Regex = @"^start\w+", Flags = new[] { "insensitive", "multiline" } }
+            new TextDto { Text = "HELLO WORLD" },
+            new RegexInput { Regex = @"hello\s+world", Flags = new[] { "insensitive", "extended" } }
         );
         Console.WriteLine(result7);
-        Assert.AreEqual("startLINE2", result7, "Should match case-insensitively at the start of the second line");
+        Assert.AreEqual("HELLO WORLD", result7, "Should match case-insensitively with extended flag ignoring whitespace in regex");
     }
 
     [TestMethod]

@@ -63,18 +63,25 @@ public class Dates : BaseInvocable
     [Action("Convert text to date", Description = "Converts text input to date.")]
     public DateResponse ConvertTextToDate([ActionParameter] TextToDateRequest input)
     {
-        var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
-        var date = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
+        try
+        {
+            var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
+            var date = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
 
-        if (!string.IsNullOrEmpty(input.Timezone))
-        {
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
-            var dateInSpecifiedZone = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
-            return new DateResponse { Date = dateInSpecifiedZone };
+            if (!string.IsNullOrEmpty(input.Timezone))
+            {
+                var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+                var dateInSpecifiedZone = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
+                var dateWithOffset = TimeZoneInfo.ConvertTimeToUtc(dateInSpecifiedZone, timeZoneInfo);
+                return new DateResponse { Date = DateTime.SpecifyKind(dateWithOffset, DateTimeKind.Utc) };
+            }
+
+            var localDate = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            return new DateResponse { Date = localDate };
         }
-        else
+        catch (FormatException)
         {
-            return new DateResponse { Date = DateTime.SpecifyKind(date, DateTimeKind.Unspecified) };
+            throw new ArgumentException("Invalid date format provided in the input text.");
         }
     }
 
