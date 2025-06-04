@@ -5,12 +5,12 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Mime;
@@ -242,6 +242,55 @@ public class Files : BaseInvocable
 
         return new CompareContentResults { AreEqual = true };
     }
+
+    [Action("Concatenate text files", Description = "Concatenate multiple text files into one file.")]
+    public async Task<FileDto> ConcatenateFiles(
+    [ActionParameter] MultipleFilesRequest request)
+    {
+        var firstFile = request.Files.FirstOrDefault();
+        var extension = Path.GetExtension(firstFile.Name);
+        var mimeType = firstFile.ContentType;
+
+        var encoding = Encoding.UTF8;
+
+        var outputStream = new MemoryStream();
+
+        using (var outputWriter = new StreamWriter(outputStream, encoding, leaveOpen: true))
+        {
+            foreach (var fileRef in request.Files)
+            {
+                var file = await _fileManagementClient.DownloadAsync(fileRef);
+
+                using (var seekableStream = new MemoryStream())
+                {
+                    await file.CopyToAsync(seekableStream);
+                    seekableStream.Position = 0;
+
+                    using var reader = new StreamReader(seekableStream, encoding, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+
+                    while (!reader.EndOfStream)
+                    {
+                        var line = await reader.ReadLineAsync();
+                        await outputWriter.WriteLineAsync(line);
+                    }
+                }
+            }
+            await outputWriter.FlushAsync();
+        }
+
+        outputStream.Position = 0;
+
+        var uploadedFile = await _fileManagementClient.UploadAsync(
+            outputStream,
+            mimeType,
+            "MergedFile"+extension
+        );
+
+        return new FileDto { File = uploadedFile };
+    }
+
+
+
 
     [Action("Unzip files", Description = "Take a .zip file and unzips it into multiple files")]
     public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)

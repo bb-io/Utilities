@@ -14,14 +14,14 @@ namespace Tests.Utilities
     public class DateTests : TestBase
     {
         [TestMethod]
-        public async Task ConvertTestToDate_IssSuccess()
+        public async Task ConvertTextToDate_IssSuccess()
         {
             var action = new Dates(InvocationContext);
 
             var result =  action.ConvertTextToDate(new TextToDateRequest
             {
-                Text = "6/2/2025 16:00:00",
-                Timezone = "Asia/Hovd",
+                Text = "5/30/2025 21:00:00",
+                Timezone = "Asia/Macau",
             });
 
             Console.WriteLine(result.Date);
