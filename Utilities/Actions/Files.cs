@@ -254,24 +254,31 @@ public class Files : BaseInvocable
         var encoding = Encoding.UTF8;
 
         var outputStream = new MemoryStream();
+
         using (var outputWriter = new StreamWriter(outputStream, encoding, leaveOpen: true))
         {
-            foreach (var file in request.Files)
+            foreach (var fileRef in request.Files)
             {
-                var stream = await _fileManagementClient.DownloadAsync(file);
-                stream.Seek(0, SeekOrigin.Begin);
+                var file = await _fileManagementClient.DownloadAsync(fileRef);
 
-                using var reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
-                while (!reader.EndOfStream)
+                using (var seekableStream = new MemoryStream())
                 {
-                    var line = await reader.ReadLineAsync();
-                    await outputWriter.WriteLineAsync(line);
+                    await file.CopyToAsync(seekableStream);
+                    seekableStream.Position = 0;
+
+                    using var reader = new StreamReader(seekableStream, encoding, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+
+                    while (!reader.EndOfStream)
+                    {
+                        var line = await reader.ReadLineAsync();
+                        await outputWriter.WriteLineAsync(line);
+                    }
                 }
             }
             await outputWriter.FlushAsync();
         }
 
-        outputStream.Seek(0, SeekOrigin.Begin);
+        outputStream.Position = 0;
 
         var uploadedFile = await _fileManagementClient.UploadAsync(
             outputStream,
