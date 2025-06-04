@@ -41,6 +41,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
+- **Concatenate text files** concatenates multiple text files into one file.
 
 ### TBX files
 - **Reduce multilingual glossary to bilingual** Convert a multilingual TBX file to bilingual by keeping only the specified language pair.
