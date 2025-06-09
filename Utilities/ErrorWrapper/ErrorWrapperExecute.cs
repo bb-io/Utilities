@@ -1,9 +1,4 @@
 ﻿using Blackbird.Applications.Sdk.Common.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Apps.Utilities.ErrorWrapper
 {
@@ -17,6 +12,9 @@ namespace Apps.Utilities.ErrorWrapper
             }
             catch (Exception ex)
             {
+                if (fallback != null)
+                    return fallback(ex);
+
                 throw new PluginApplicationException($"Error: {ex.Message}");
             }
         }
