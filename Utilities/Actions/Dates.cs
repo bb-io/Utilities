@@ -76,7 +76,7 @@ public class Dates : BaseInvocable
                 return new DateResponse { Date = DateTime.SpecifyKind(dateWithOffset, DateTimeKind.Utc) };
             }
 
-            var localDate = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            var localDate = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
             return new DateResponse { Date = localDate };
         }
         catch (FormatException)

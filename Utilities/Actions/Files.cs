@@ -1,4 +1,5 @@
-﻿using Apps.Utilities.Models.Files;
+﻿using Apps.Utilities.ErrorWrapper;
+using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Shared;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
@@ -427,19 +428,22 @@ public class Files : BaseInvocable
 
     private static async Task<string> ReadHtmlFile(Stream file)
     {
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-
-        var doc = new HtmlDocument();
-        using (var reader = new StreamReader(memoryStream))
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
         {
-            var htmlContent = await reader.ReadToEndAsync();
-            doc.LoadHtml(htmlContent);
-        }
-        var text = doc.DocumentNode.InnerText;
-        text = Regex.Replace(text, @"\s+", " ").Trim();
-        return text;
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            var doc = new HtmlDocument();
+            using (var reader = new StreamReader(memoryStream))
+            {
+                var htmlContent = await reader.ReadToEndAsync();
+                doc.LoadHtml(htmlContent);
+            }
+
+            var text = doc.DocumentNode.InnerText;
+            return Regex.Replace(text, @"\s+", " ").Trim();
+        });
     }
 
     private static async Task<string> ReadPlaintextFile(Stream file)
@@ -468,20 +472,24 @@ public class Files : BaseInvocable
         await file.CopyToAsync(memoryStream);
         memoryStream.Position = 0;
 
-        var document = PdfDocument.Open(memoryStream);
-        var text = string.Join(" ", document.GetPages().Select(p => p.Text));
-        return text;
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
+        {
+            using var document = PdfDocument.Open(memoryStream);
+            return string.Join(" ", document.GetPages().Select(p => p.Text));
+        });
     }
 
     private static async Task<string> ReadDocxFile(Stream file)
     {
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
 
-        using var document = WordprocessingDocument.Open(memoryStream, false);
-        var text = document.MainDocumentPart.Document.Body.InnerText;
-        return text;
+            using var document = WordprocessingDocument.Open(memoryStream, false);
+            return document.MainDocumentPart.Document.Body.InnerText;
+        });
     }
 
     private static int CountWords(string text)
