@@ -1,8 +1,10 @@
-﻿using Blackbird.Applications.Sdk.Common;
+﻿using Apps.Utilities.Models.Dates;
+using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Newtonsoft.Json;
 using System.Globalization;
-using Apps.Utilities.Models.Dates;
 
 namespace Apps.Utilities.Actions;
 
@@ -17,8 +19,8 @@ public class Dates : BaseInvocable
         var referenceDate = input.Date ?? DateTime.Now;
 
         if (input.BusinessDays.HasValue)
-            referenceDate = AddBusinessDays(referenceDate, (int) input.BusinessDays.Value);
-    
+            referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
+
         return new DateResponse { Date = referenceDate.AddDays(input.AddDays ?? 0).AddHours(input.AddHours ?? 0).AddMinutes(input.AddMinutes ?? 0) };
     }
 
@@ -29,7 +31,7 @@ public class Dates : BaseInvocable
         var month = new DateTime(today.Year, today.Month, 1);
         var first = month.AddMonths(-1);
 
-        return new DateResponse { Date = first};
+        return new DateResponse { Date = first };
     }
 
     [Action("Get last day of previous month", Description = "Generates a date corresponding to the last day of the previous month.")]
@@ -39,11 +41,11 @@ public class Dates : BaseInvocable
         var month = new DateTime(today.Year, today.Month, 1);
         var last = month.AddDays(-1);
 
-        return new DateResponse { Date =  last};
+        return new DateResponse { Date = last };
     }
 
     [Action("Format date", Description = "Formats a date to text according to pre-defined formatting rules and culture")]
-    public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input )
+    public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input)
     {
         return new FormattedDateResponse { FormattedDate = input.Date.ToString(input.Format, input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture) };
     }
@@ -65,23 +67,37 @@ public class Dates : BaseInvocable
     {
         try
         {
-            var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
-            var date = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
+            var culture = !string.IsNullOrEmpty(input.Culture)
+                ? new CultureInfo(input.Culture)
+                : CultureInfo.InvariantCulture;
+
+            var parsed = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
 
             if (!string.IsNullOrEmpty(input.Timezone))
             {
-                var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
-                var dateInSpecifiedZone = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
-                var dateWithOffset = TimeZoneInfo.ConvertTimeToUtc(dateInSpecifiedZone, timeZoneInfo);
-                return new DateResponse { Date = DateTime.SpecifyKind(dateWithOffset, DateTimeKind.Utc) };
+                var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+
+                var unspecified = DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
+
+                var offset = tzInfo.GetUtcOffset(unspecified);
+
+                var dateTimeOffset = new DateTimeOffset(unspecified, offset);
+
+                return new DateResponse { Date = dateTimeOffset };
             }
 
-            var localDate = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
-            return new DateResponse { Date = localDate };
+            var localOffset = TimeZoneInfo.Local.GetUtcOffset(parsed);
+            var localDateTimeOffset = new DateTimeOffset(parsed, localOffset);
+
+            return new DateResponse { Date = localDateTimeOffset };
         }
         catch (FormatException)
         {
-            throw new ArgumentException("Invalid date format provided in the input text.");
+            throw new PluginApplicationException("Invalid date format provided in the input text.");
+        }
+        catch (TimeZoneNotFoundException ex)
+        {
+            throw new PluginApplicationException($"Timezone '{input.Timezone}' not recognized.", ex);
         }
     }
 
