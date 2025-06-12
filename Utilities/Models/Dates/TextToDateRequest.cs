@@ -15,5 +15,9 @@ namespace Apps.Utilities.Models.Dates
         [Display("Timezone")]
         [StaticDataSource(typeof(TimeZoneSourceHandler))]
         public string? Timezone { get; set; }
+
+        [Display("Date format")]
+        [StaticDataSource(typeof(DateFormatSourceHandler))]
+        public string? Format { get; set; }
     }
 }

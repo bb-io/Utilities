@@ -2,7 +2,7 @@
 
 public class DateResponse
 {
-    //public DateTime Date { get; set; }
+    public DateTime Date { get; set; }
 
-    public DateTimeOffset Date { get; set; }
+    //public DateTimeOffset Date { get; set; }
 }

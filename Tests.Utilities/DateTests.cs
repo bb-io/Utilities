@@ -18,11 +18,14 @@ namespace Tests.Utilities
         {
             var action = new Dates(InvocationContext);
 
-            var result =  action.ConvertTextToDate(new TextToDateRequest
+            var request = new TextToDateRequest
             {
                 Text = "5/30/2025 21:00:00",
-                Timezone = "Asia/Macau",
-            });
+                Format = "M/d/yyyy H:mm:ss",
+                Timezone = "Asia/Macau"
+            };
+
+            var result = action.ConvertTextToDate(request);
 
             Console.WriteLine(result.Date);
             Assert.IsNotNull(result);
