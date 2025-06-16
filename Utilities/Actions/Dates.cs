@@ -1,8 +1,11 @@
-﻿using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Invocation;
-using System.Globalization;
+﻿using Apps.Utilities.DataSourceHandlers;
 using Apps.Utilities.Models.Dates;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using Newtonsoft.Json;
+using System.Globalization;
 
 namespace Apps.Utilities.Actions;
 
@@ -17,8 +20,8 @@ public class Dates : BaseInvocable
         var referenceDate = input.Date ?? DateTime.Now;
 
         if (input.BusinessDays.HasValue)
-            referenceDate = AddBusinessDays(referenceDate, (int) input.BusinessDays.Value);
-    
+            referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
+
         return new DateResponse { Date = referenceDate.AddDays(input.AddDays ?? 0).AddHours(input.AddHours ?? 0).AddMinutes(input.AddMinutes ?? 0) };
     }
 
@@ -29,7 +32,7 @@ public class Dates : BaseInvocable
         var month = new DateTime(today.Year, today.Month, 1);
         var first = month.AddMonths(-1);
 
-        return new DateResponse { Date = first};
+        return new DateResponse { Date = first };
     }
 
     [Action("Get last day of previous month", Description = "Generates a date corresponding to the last day of the previous month.")]
@@ -39,11 +42,11 @@ public class Dates : BaseInvocable
         var month = new DateTime(today.Year, today.Month, 1);
         var last = month.AddDays(-1);
 
-        return new DateResponse { Date =  last};
+        return new DateResponse { Date = last };
     }
 
     [Action("Format date", Description = "Formats a date to text according to pre-defined formatting rules and culture")]
-    public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input )
+    public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input)
     {
         return new FormattedDateResponse { FormattedDate = input.Date.ToString(input.Format, input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture) };
     }
@@ -65,23 +68,33 @@ public class Dates : BaseInvocable
     {
         try
         {
-            var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
-            var date = DateTime.Parse(input.Text, culture, DateTimeStyles.None);
+            var culture = !string.IsNullOrEmpty(input.Culture)
+                ? new CultureInfo(input.Culture)
+                : CultureInfo.InvariantCulture;
 
-            if (!string.IsNullOrEmpty(input.Timezone))
+            DateTimeOffset finalResult;
+
+            if (!string.IsNullOrEmpty(input.Format))
             {
-                var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
-                var dateInSpecifiedZone = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
-                var dateWithOffset = TimeZoneInfo.ConvertTimeToUtc(dateInSpecifiedZone, timeZoneInfo);
-                return new DateResponse { Date = DateTime.SpecifyKind(dateWithOffset, DateTimeKind.Utc) };
+                finalResult = ParseWithSpecificFormat(input.Text, input.Format, culture, input.Timezone);
+            }
+            else
+            {
+                finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
-            var localDate = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
-            return new DateResponse { Date = localDate };
+            return new DateResponse { Date = finalResult.DateTime };
         }
-        catch (FormatException)
+        catch (FormatException ex)
         {
-            throw new ArgumentException("Invalid date format provided in the input text.");
+            var formatInfo = !string.IsNullOrEmpty(input.Format)
+                ? $"Expected format: '{input.Format}'. "
+                : "Auto-detection failed. ";
+            throw new PluginApplicationException($"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
+        }
+        catch (TimeZoneNotFoundException ex)
+        {
+            throw new PluginApplicationException($"Timezone '{input.Timezone}' not recognized.", ex);
         }
     }
 
@@ -115,5 +128,77 @@ public class Dates : BaseInvocable
 
         return date.AddDays(extraDays);
 
+    }
+
+
+    private DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
+    {
+        if (format.Contains("zzz") || format.Contains("zz") || format.Contains("z"))
+        {
+            var parsedDto = DateTimeOffset.ParseExact(text, format, culture, DateTimeStyles.None);
+
+            if (!string.IsNullOrEmpty(timezone))
+            {
+                var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+                return TimeZoneInfo.ConvertTime(parsedDto, tzInfo);
+            }
+
+            return parsedDto;
+        }
+        else
+        {
+            var parsed = DateTime.ParseExact(text, format, culture, DateTimeStyles.None);
+            return CreateDateTimeOffset(parsed, timezone);
+        }
+    }
+
+    private DateTimeOffset ParseWithAutoDetection(string text, CultureInfo culture, string timezone)
+    {
+        var formatHandler = new DateFormatSourceHandler();
+        var allFormats = formatHandler.GetData().Select(item => item.Value).ToArray();
+
+        var timezoneFormats = allFormats.Where(f => f.Contains("zzz") || f.Contains("zz") || f.Contains("z")).ToArray();
+        var regularFormats = allFormats.Where(f => !f.Contains("zzz") && !f.Contains("zz") && !f.Contains("z")).ToArray();
+
+        if (DateTimeOffset.TryParseExact(text, timezoneFormats, culture, DateTimeStyles.None, out var parsedWithTz))
+        {
+            if (!string.IsNullOrEmpty(timezone))
+            {
+                var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+                return TimeZoneInfo.ConvertTime(parsedWithTz, tzInfo);
+            }
+            return parsedWithTz;
+        }
+
+
+        if (DateTimeOffset.TryParse(text, culture, DateTimeStyles.None, out var generalParsedDto))
+        {
+            if (!string.IsNullOrEmpty(timezone))
+            {
+                var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+                return TimeZoneInfo.ConvertTime(generalParsedDto, tzInfo);
+            }
+            return generalParsedDto;
+        }
+        if (DateTime.TryParseExact(text, regularFormats, culture, DateTimeStyles.None, out var parsed))
+        {
+            return CreateDateTimeOffset(parsed, timezone);
+        }
+        var lastResort = DateTime.Parse(text, culture, DateTimeStyles.None);
+        return CreateDateTimeOffset(lastResort, timezone);
+    }
+
+    private DateTimeOffset CreateDateTimeOffset(DateTime dateTime, string timezone)
+    {
+        if (!string.IsNullOrEmpty(timezone))
+        {
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+            var unspecified = DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
+            var offset = tzInfo.GetUtcOffset(unspecified);
+            return new DateTimeOffset(unspecified, offset);
+        }
+
+        var localOffset = TimeZoneInfo.Local.GetUtcOffset(dateTime);
+        return new DateTimeOffset(dateTime, localOffset);
     }
 }
