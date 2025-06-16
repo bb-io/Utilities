@@ -125,7 +125,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
                 {
                     if (Regex.IsMatch(record[columnIndex], regex.Regex)) 
                     {
-                        record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, Regex.Unescape(regex.Replace));
+                        record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, regex.Replace);
                     }
                 }
                 else 
@@ -188,7 +188,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
             {
                 if (Regex.IsMatch(records[rowIndex][i], regex.Regex))
                 {
-                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, Regex.Unescape(regex.Replace));
+                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, regex.Replace);
                 }
             }
             else 
