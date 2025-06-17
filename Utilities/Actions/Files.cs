@@ -190,9 +190,16 @@ public class Files : BaseInvocable
         var reader = new StreamReader(fileMemoryStream);
         var text = await reader.ReadToEndAsync();
 
-        text = String.IsNullOrEmpty(request.Group)
-            ? Regex.Match(text, request.Regex).Value
-            : Regex.Match(text, request.Regex).Groups[request.Group].Value;
+        try
+        {
+            text = String.IsNullOrEmpty(request.Group)
+                ? Regex.Match(text, request.Regex).Value
+                : Regex.Match(text, request.Regex).Groups[request.Group].Value;
+        }
+        catch (RegexParseException ex)
+        {
+            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
+        }
 
         return new()
         {
