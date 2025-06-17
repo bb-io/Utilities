@@ -113,5 +113,23 @@ namespace Tests.Utilities
             Assert.IsNotNull(response.Result);
 
         }
+
+        [TestMethod]
+        public async Task ExtractTextFromDocument_ReturnsExpectedText()
+        {
+            var request = new ExtractTextFromDocumentRequest
+            {
+                File = new FileReference { Name = "extract_text_from_document.json" },
+                Regex = @"""workflow_id"":\s*""([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"",\s*",
+                Group = "1"
+            };
+
+            // Act
+            var response = await _fileActions.ExtractTextFromDocument(request);
+
+            // Assert
+            Assert.IsNotNull(response);
+            Assert.AreEqual("e3a1f7d2-8c2b-4e3a-9f1b-7c2e5a1b2c3d", response.ExtractedText);
+        }
     }
 }
