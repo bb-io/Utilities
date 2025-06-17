@@ -83,7 +83,9 @@ public class Dates : BaseInvocable
                 finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
-            var inputDateTime = DateTime.ParseExact(input.Text, input.Format, culture);
+            var inputDateTime = string.IsNullOrEmpty(input.Format)
+                ? DateTime.Parse(input.Text, culture)
+                : DateTime.ParseExact(input.Text, input.Format, culture);
             var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
             var expectedDateTimeOffset = new DateTimeOffset(inputDateTime, tzInfo.GetUtcOffset(inputDateTime));
             var expectedUtc = expectedDateTimeOffset.ToUniversalTime();
