@@ -83,14 +83,26 @@ public class Dates : BaseInvocable
                 finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
-            return new DateResponse { Date = finalResult.DateTime };
+            var inputDateTime = DateTime.ParseExact(input.Text, input.Format, culture);
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+            var expectedDateTimeOffset = new DateTimeOffset(inputDateTime, tzInfo.GetUtcOffset(inputDateTime));
+            var expectedUtc = expectedDateTimeOffset.ToUniversalTime();
+
+            var actualUtc = finalResult.ToUniversalTime();
+
+            var offsetDifference = (expectedUtc - actualUtc).TotalHours;
+
+            var correctedUtc = actualUtc.AddHours(offsetDifference).DateTime;
+
+            return new DateResponse { Date = DateTime.SpecifyKind(correctedUtc, DateTimeKind.Utc) };
         }
         catch (FormatException ex)
         {
             var formatInfo = !string.IsNullOrEmpty(input.Format)
                 ? $"Expected format: '{input.Format}'. "
                 : "Auto-detection failed. ";
-            throw new PluginApplicationException($"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
+            throw new PluginApplicationException(
+                $"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
         }
         catch (TimeZoneNotFoundException ex)
         {
@@ -129,7 +141,6 @@ public class Dates : BaseInvocable
         return date.AddDays(extraDays);
 
     }
-
 
     private DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
     {

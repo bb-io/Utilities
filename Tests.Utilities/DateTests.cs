@@ -20,14 +20,15 @@ namespace Tests.Utilities
 
             var request = new TextToDateRequest
             {
-                Text = "5/30/2025 21:00:00",
+                Text = "6/30/2025 21:00:00",
                 Format = "M/d/yyyy H:mm:ss",
-                Timezone = "Asia/Macau"
+                Timezone = "Asia/Dili"
             };
 
             var result = action.ConvertTextToDate(request);
 
-            Console.WriteLine(result.Date);
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
+            Console.WriteLine(json);
             Assert.IsNotNull(result);
         }
     }
