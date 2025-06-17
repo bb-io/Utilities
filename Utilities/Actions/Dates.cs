@@ -83,6 +83,8 @@ public class Dates : BaseInvocable
                 finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
+            finalResult = AdjustForPlatform(finalResult);
+
             return new DateResponse { Date = finalResult.DateTime };
         }
         catch (FormatException ex)
@@ -90,7 +92,8 @@ public class Dates : BaseInvocable
             var formatInfo = !string.IsNullOrEmpty(input.Format)
                 ? $"Expected format: '{input.Format}'. "
                 : "Auto-detection failed. ";
-            throw new PluginApplicationException($"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
+            throw new PluginApplicationException(
+                $"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
         }
         catch (TimeZoneNotFoundException ex)
         {
@@ -130,6 +133,13 @@ public class Dates : BaseInvocable
 
     }
 
+    private DateTimeOffset AdjustForPlatform(DateTimeOffset clientDateTime)
+    {
+        var localClock = clientDateTime.DateTime;
+        var platformOffset = TimeZoneInfo.Local.GetUtcOffset(localClock);
+        var unspecified = DateTime.SpecifyKind(localClock, DateTimeKind.Unspecified);
+        return new DateTimeOffset(unspecified, platformOffset);
+    }
 
     private DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
     {
