@@ -83,9 +83,18 @@ public class Dates : BaseInvocable
                 finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
-            finalResult = AdjustForPlatform(finalResult);
+            var inputDateTime = DateTime.ParseExact(input.Text, input.Format, culture);
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+            var expectedDateTimeOffset = new DateTimeOffset(inputDateTime, tzInfo.GetUtcOffset(inputDateTime));
+            var expectedUtc = expectedDateTimeOffset.ToUniversalTime();
 
-            return new DateResponse { Date = finalResult.DateTime };
+            var actualUtc = finalResult.ToUniversalTime();
+
+            var offsetDifference = (expectedUtc - actualUtc).TotalHours;
+
+            var correctedUtc = actualUtc.AddHours(offsetDifference).DateTime;
+
+            return new DateResponse { Date = DateTime.SpecifyKind(correctedUtc, DateTimeKind.Utc) };
         }
         catch (FormatException ex)
         {
@@ -131,14 +140,6 @@ public class Dates : BaseInvocable
 
         return date.AddDays(extraDays);
 
-    }
-
-    private DateTimeOffset AdjustForPlatform(DateTimeOffset clientDateTime)
-    {
-        var localClock = clientDateTime.DateTime;
-        var platformOffset = TimeZoneInfo.Local.GetUtcOffset(localClock);
-        var unspecified = DateTime.SpecifyKind(localClock, DateTimeKind.Unspecified);
-        return new DateTimeOffset(unspecified, platformOffset);
     }
 
     private DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
