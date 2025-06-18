@@ -31,5 +31,22 @@ namespace Tests.Utilities
             Console.WriteLine(json);
             Assert.IsNotNull(result);
         }
+
+        [TestMethod]
+        public async Task GenerateDate_IssSuccess()
+        {
+            var action = new Dates(InvocationContext);
+
+            var request = new GenerateDateRequest
+            {
+                Timezone = "Asia/Macau"
+            };
+
+            var result = action.GenerateDate(request);
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
     }
 }

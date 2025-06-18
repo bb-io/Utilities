@@ -457,7 +457,7 @@ public class XMLTests : TestBase
     public async Task ConvertXliffToHtml_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "tests.xliff" } };
+        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "670470817_HtmlToXliff.xliff" } };
         var result = actions.ConvertXliffToHtml(input);
 
         Console.WriteLine(result);

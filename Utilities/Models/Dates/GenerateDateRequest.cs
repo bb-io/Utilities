@@ -1,4 +1,6 @@
-﻿using Blackbird.Applications.Sdk.Common;
+﻿using Apps.Utilities.DataSourceHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.Utilities.Models.Dates;
 
@@ -18,4 +20,8 @@ public class GenerateDateRequest
 
     [Display("Date")]
     public DateTime? Date { get; set; }
+
+    [Display("Timezone")]
+    [StaticDataSource(typeof(TimeZoneSourceHandler))]
+    public string? Timezone { get; set; }
 }
