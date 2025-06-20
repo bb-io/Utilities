@@ -35,21 +35,43 @@ namespace Apps.Utilities.Actions
         [Action("Convert text to number", Description = "Change the type of data")]
         public ConvertTextToNumberResponse ConvertTextToNumber([ActionParameter] string Text)
         {
-            return new ConvertTextToNumberResponse { Number = double.Parse(Text) };
+            if (string.IsNullOrWhiteSpace(Text))
+                throw new PluginMisconfigurationException("Text parameter is null or empty. Please check your inputs and try again");
+
+            var culture = CultureInfo.CurrentCulture;
+
+            if (double.TryParse(Text, NumberStyles.Float | NumberStyles.AllowThousands, culture, out double result))
+            {
+                return new ConvertTextToNumberResponse { Number = double.Parse(Text) };
+            }
+            else
+            {
+                throw new PluginMisconfigurationException($"Couldn't parse given text ({Text}) to number. Please verify you sent a valid number to this action");
+            }
         }
-        
+
         [Action("Convert text to numbers", Description = "Converts a list of numeric strings into a list of numbers. Throws an exception if any value is not a valid number")]
         public ConvertTextsToNumbersResponse ConvertTextsToNumbers([ActionParameter] ConvertTextsToNumbersRequest request)
         {
-            return new ConvertTextsToNumbersResponse { Numbers = request.NumericStrings.Select(text =>
+            if (request?.NumericStrings == null || !request.NumericStrings.Any())
+                throw new PluginMisconfigurationException("NumericStrings parameter is null or empty. Please check your inputs and try again");
+
+            var culture = CultureInfo.CurrentCulture;
+            var numbers = new List<double>();
+
+            foreach (var text in request.NumericStrings)
             {
-                if (double.TryParse(text, CultureInfo.InvariantCulture, out var number))
+                if (double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture, out var number))
                 {
-                    return number;
+                    numbers.Add(number);
                 }
-                
-                throw new PluginMisconfigurationException($"Couldn't parse given text ({text}) to number. Please verify you sent valid numbers to this action");
-            }).ToList()};
+                else
+                {
+                    throw new PluginMisconfigurationException($"Couldn't parse given text ('{text}') to number. Please verify you sent valid numbers to this action");
+                }
+            }
+
+            return new ConvertTextsToNumbersResponse { Numbers = numbers };
         }
     }
 }
