@@ -36,7 +36,7 @@ public class Files : BaseInvocable
     {
         _fileManagementClient = fileManagementClient;
         _logger = logger;
-       // _logger.LogInformation("Files is called.");
+        _logger.LogInformation("Files is called.");
     }
 
     [Action("Get file name information",
