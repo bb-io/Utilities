@@ -9,6 +9,20 @@ namespace Apps.Utilities.Polling;
 [PollingEventList]
 public class PollingList
 {
+    [PollingEvent("On time interval passed", "This event triggers consistently when the configured time interval elapses. Can be used as an alternative to a scheduled trigger.")]
+    public async Task<PollingEventResponse<DateMemory, DateTime>> OnTimeIntervalPassed(PollingEventRequest<DateMemory> request)
+    {
+        return new()
+        {
+            FlyBird = true,
+            Result = DateTime.UtcNow,
+            Memory = new()
+            {
+                LastInteractionDate = DateTime.UtcNow
+            }
+        };
+    }
+
     [PollingEvent("On RSS feed changed", "On a new version of the RSS feed published")]
     public async Task<PollingEventResponse<DateMemory, RssFeedResponse>> OnFeedChanged(
         PollingEventRequest<DateMemory> request, [PollingEventParameter] RssFeedRequest feedInput)
