@@ -8,5 +8,5 @@ public class RegexReplaceInput
     public string Regex { get; set; }
 
     [Display("Replace pattern")]
-    public string Replace { get; set; }
+    public string? Replace { get; set; }
 }

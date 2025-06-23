@@ -204,7 +204,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         try
         {
             var r = new System.Text.RegularExpressions.Regex(regex.Regex);
-            return r.Replace(input.Text, regex.Replace);
+            return r.Replace(input.Text, regex.Replace ?? string.Empty);
         }
         catch (ArgumentException ex)
         {
