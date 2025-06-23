@@ -70,11 +70,24 @@ public class NumbersTests : TestBase
     [TestMethod]
     public Task ConvertTextsToNumbers_EmptyList_ReturnsEmptyList()
     {
-        var input = new List<string>();
+        var input = new List<string>{};
 
         var result = _numberActions.ConvertTextsToNumbers(new() { NumericStrings = input });
 
         Assert.AreEqual(0, result.Numbers.Count());
         return Task.CompletedTask;
+    }
+
+    [TestMethod]
+    public async Task ConvertTextToNumber_IsSuccesst()
+    {
+        var input = new List<string>();
+
+        var result = _numberActions.ConvertTextToNumber("0");
+        
+        var json = Newtonsoft.Json.JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
+        Console.WriteLine(json);
+
+        Assert.IsNotNull(result);
     }
 }

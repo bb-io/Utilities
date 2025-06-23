@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "workflow_id": "e3a1f7d2-8c2b-4e3a-9f1b-7c2e5a1b2c3d",
+    "message_variation_id": "a9d4c2b1-5e6f-4a7b-b2c3-1d2e3f4a5b6c",
+    "step_id": "f1b2c3d4-5a6e-4c7b-8d9e-0a1b2c3d4e5f"
+  },
+  "translation_map": {
+    "subject_line": "Welcome to Acme Platform!",
+    "id_1": "\n\t\tSchedule a demo to get a quick overview, or explore Acme Platform in 3 simple steps.\n\t",
+    "id_2": "Welcome to your free access!",
+    "id_3": "Hi {{${first_name} | default: 'friend'}},<br><br>Alex here, Head of Acme Platform. I'm thrilled for you to try out Acme Platform &#x2014; and can't wait to see how it helps your workflow.<br><br>I'd love to give you a quick walkthrough so you can make the most of your trial &#x2014; feel free to <a style=\"color:#123abc; text-decoration:none;\" target=\"_blank\" href=\"https://calendly.com/alex-acme/30min?lid=placeholder\">book a call with me</a>. If you have any questions, you can reply directly to this email.",
+    "id_5": "Schedule a quick demo",
+    "id_6": "Happy onboarding,<br>Alex <br>Head of Acme Platform",
+    "id_7": "Get started in 3 simple steps",
+    "id_8": "1. Connect your accounts",
+    "id_9": "Start by linking your <a style=\"color:#123abc; text-decoration:none;\" target=\"_blank\" href=\"https://acme.com/platform/app/settings/integrations?lid=placeholder\">CRM and communication tools</a> like Email, Chat, and Support &#x2014; so you have a steady stream of data.",
+    "id_11": "2. Add your projects",
+    "id_12": "Import them via CSV or your project management tool, and add details to help our system understand your needs.",
+    "id_13": "3. Let automation do the work",
+    "id_14": "Review automated suggestions, and approve the ones you want to prioritize to organize your tasks and plans.",
+    "id_15": "Get started with Acme Platform",
+    "id_16": "See all our integrations",
+    "id_17": "\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\tThis email was sent to <a target=\"_blank\" style=\"color:#123abc !important; font-weight:bold; text-decoration:none;\" href=\"mailto:{{${email_address}}}\">{{x_placeholder_email}}</a>.\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<!-- system -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t",
+    "id_19": "Acme Corp, 123 Main St., Suite 100<br>Metropolis, XY&nbsp;12345, Country",
+    "id_20": "\n\t\t\t\t\t\t\t\t\t<a href=\"https://help.acme.com/hc/?lid=placeholder\" style=\"display:inline-block; text-decoration:none !important; -webkit-text-size-adjust:none; font-weight:bold; color:#123abc !important;\" target=\"_blank\">Help Center</a> &nbsp;|&nbsp; <a href=\"https://acme.com/legal/privacy-policy/?lid=placeholder\" style=\"display:inline-block; text-decoration:none !important; -webkit-text-size-adjust:none; font-weight:bold; color:#123abc !important;\" target=\"_blank\">Privacy Policy</a>\n\t\t\t\t\t\t\t\t"
+  }
+}

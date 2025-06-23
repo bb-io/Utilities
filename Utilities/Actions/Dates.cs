@@ -17,12 +17,27 @@ public class Dates : BaseInvocable
     [Action("Generate date", Description = "Generates a date relative to the moment this action is called or relative to a custom date.")]
     public DateResponse GenerateDate([ActionParameter] GenerateDateRequest input)
     {
-        var referenceDate = input.Date ?? DateTime.Now;
+        try
+        {
+            var referenceDate = input.Date ?? DateTime.Now;
 
-        if (input.BusinessDays.HasValue)
-            referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
+            if (input.BusinessDays.HasValue)
+                referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
 
-        return new DateResponse { Date = referenceDate.AddDays(input.AddDays ?? 0).AddHours(input.AddHours ?? 0).AddMinutes(input.AddMinutes ?? 0) };
+            var adjustedDate = referenceDate
+                .AddDays(input.AddDays ?? 0)
+                .AddHours(input.AddHours ?? 0)
+                .AddMinutes(input.AddMinutes ?? 0);
+
+            var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
+
+            var utcDate = dateTimeOffset.UtcDateTime;
+            return new DateResponse { Date = DateTime.SpecifyKind(utcDate, DateTimeKind.Utc) };
+        }
+        catch (TimeZoneNotFoundException ex)
+        {
+            throw new PluginApplicationException($"Timezone '{input.Timezone}' not recognized.", ex);
+        }
     }
 
     [Action("Get first day of previous month", Description = "Generates a date corresponding to the first day of the previous month.")]
@@ -83,14 +98,28 @@ public class Dates : BaseInvocable
                 finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
-            return new DateResponse { Date = finalResult.DateTime };
+            var inputDateTime = string.IsNullOrEmpty(input.Format)
+                ? DateTime.Parse(input.Text, culture)
+                : DateTime.ParseExact(input.Text, input.Format, culture);
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+            var expectedDateTimeOffset = new DateTimeOffset(inputDateTime, tzInfo.GetUtcOffset(inputDateTime));
+            var expectedUtc = expectedDateTimeOffset.ToUniversalTime();
+
+            var actualUtc = finalResult.ToUniversalTime();
+
+            var offsetDifference = (expectedUtc - actualUtc).TotalHours;
+
+            var correctedUtc = actualUtc.AddHours(offsetDifference).DateTime;
+
+            return new DateResponse { Date = DateTime.SpecifyKind(correctedUtc, DateTimeKind.Utc) };
         }
         catch (FormatException ex)
         {
             var formatInfo = !string.IsNullOrEmpty(input.Format)
                 ? $"Expected format: '{input.Format}'. "
                 : "Auto-detection failed. ";
-            throw new PluginApplicationException($"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
+            throw new PluginApplicationException(
+                $"Invalid date format provided in the input text. {formatInfo}Input: '{input.Text}'.", ex);
         }
         catch (TimeZoneNotFoundException ex)
         {
@@ -129,7 +158,6 @@ public class Dates : BaseInvocable
         return date.AddDays(extraDays);
 
     }
-
 
     private DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
     {

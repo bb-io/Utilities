@@ -20,14 +20,32 @@ namespace Tests.Utilities
 
             var request = new TextToDateRequest
             {
-                Text = "5/30/2025 21:00:00",
-                Format = "M/d/yyyy H:mm:ss",
+                Text = "6/30/2025 21:00:00",
+                //Format = "M/d/yyyy H:mm:ss",
                 Timezone = "Asia/Macau"
             };
 
             var result = action.ConvertTextToDate(request);
 
-            Console.WriteLine(result.Date);
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
+            Console.WriteLine(json);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task GenerateDate_IssSuccess()
+        {
+            var action = new Dates(InvocationContext);
+
+            var request = new GenerateDateRequest
+            {
+                Timezone = "Asia/Macau"
+            };
+
+            var result = action.GenerateDate(request);
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(result, Newtonsoft.Json.Formatting.Indented);
+            Console.WriteLine(json);
             Assert.IsNotNull(result);
         }
     }
