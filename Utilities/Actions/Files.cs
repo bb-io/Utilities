@@ -7,9 +7,11 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Vml.Office;
 using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
+using Mammoth;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq.Expressions;
@@ -34,7 +36,7 @@ public class Files : BaseInvocable
     {
         _fileManagementClient = fileManagementClient;
         _logger = logger;
-        _logger.LogInformation("Files is called.");
+       // _logger.LogInformation("Files is called.");
     }
 
     [Action("Get file name information",
@@ -335,6 +337,33 @@ public class Files : BaseInvocable
         {
             Files = files
         };
+    }
+
+    [Action("Convert docx file to html", Description = "Converts a docx file into an html file")]
+    public async Task<ConvertTextToDocumentResponse> ConvertDocxToHtml([ActionParameter] FileDto request)
+    {
+        if (!request.File.Name.EndsWith(".doc") && !request.File.Name.EndsWith(".docx"))
+            throw new PluginMisconfigurationException("The input file must be a doc or docx.");
+
+        var docxInputStream = await _fileManagementClient.DownloadAsync(request.File);
+        var converter = new DocumentConverter();
+        string htmlString = "";
+        try
+        {
+            var result = converter.ConvertToHtml(docxInputStream);
+            htmlString = result.Value;
+        }
+        catch (Exception e)
+        {
+            throw new PluginApplicationException("Conversion failed. Please check your file. Error message: " + e.Message);
+        }
+
+        var htmlBytes = Encoding.UTF8.GetBytes(htmlString);
+        var htmlStream = new MemoryStream(htmlBytes);
+
+        htmlStream.Position = 0;
+        var uploadedFile = await _fileManagementClient.UploadAsync(htmlStream, "text/html", request.File.Name + ".html");
+        return new ConvertTextToDocumentResponse { File = uploadedFile};    
     }
 
     private async Task<ConvertTextToDocumentResponse> ConvertToTextFile(string text, string filename, string contentType, Encoding encoding, bool includeBom)
