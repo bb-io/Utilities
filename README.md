@@ -133,6 +133,7 @@ This free app provides generic utility actions that can come in useful in any bi
 
 ### Rss
 
+- **On time interval passed** triggers consistently when the configured time interval elapses. Can be used as an alternative to a scheduled trigger.
 - **On RSS feed changed** triggers when specified RSS feed received new updates.
 
 ## Feedback
