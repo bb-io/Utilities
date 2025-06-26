@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <Product>Blackbird Utilities</Product>
     <Description>Various utility actions to parse or convert data</Description>
-    <Version>1.6.7</Version>
+    <Version>1.6.8</Version>
     <AssemblyName>Apps.Utilities</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
@@ -36,9 +36,6 @@
     <PackageReference Include="PdfPig" Version="0.1.8" />
     <PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Polling\Models\Request\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\README.md">
