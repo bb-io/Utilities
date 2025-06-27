@@ -445,11 +445,11 @@ namespace Apps.Utilities.Actions
         }
         private string RevertInlineTagsFromXliff(string inlineContent)
         {
-            inlineContent = Regex.Replace(inlineContent, @"<bpt(?:\s+[^>]+)?>\s*([^<]+?)\s*</bpt>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            inlineContent = Regex.Replace(inlineContent, @"<ept(?:\s+[^>]+)?>\s*([^<]+?)\s*</ept>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            inlineContent = Regex.Replace(inlineContent, @"<ph(?:\s+[^>]+)?>\s*([^<]+?)\s*</ph>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            return HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(inlineContent));
+            string decodedContent = HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(inlineContent));
+            decodedContent = Regex.Replace(decodedContent, @"<bpt[^>]*>(.*?)</bpt>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            decodedContent = Regex.Replace(decodedContent, @"<ept[^>]*>(.*?)</ept>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            decodedContent = Regex.Replace(decodedContent, @"<ph[^>]*>(.*?)</ph>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            return decodedContent;
         }
-
     }
 }
