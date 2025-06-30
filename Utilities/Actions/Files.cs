@@ -221,9 +221,10 @@ public class Files : BaseInvocable
             ".txt" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain, encoding, includeBom),
             ".csv" => await ConvertToTextFile(request.Text, filename, "text/csv", encoding, includeBom),
             ".html" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html, encoding, includeBom),
+            ".json" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Application.Json, encoding, includeBom),
             ".doc" or ".docx" =>
                 await ConvertToWordDocument(request.Text, filename, request.Font ?? "Arial", request.FontSize ?? 12),
-            _ => throw new ArgumentException("Can convert to txt, csv, html, doc, or docx file only.")
+            _ => throw new ArgumentException("Can convert to txt, csv, html, json, doc, or docx file only.")
         };
 
         return response;
