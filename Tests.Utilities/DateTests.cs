@@ -39,7 +39,7 @@ namespace Tests.Utilities
 
             var request = new GenerateDateRequest
             {
-                Timezone = "Asia/Macau"
+                BusinessDays = -4
             };
 
             var result = action.GenerateDate(request);
