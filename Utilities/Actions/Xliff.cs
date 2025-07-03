@@ -144,17 +144,30 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("Wrong format file: expected XLIFF (.xliff or .xlf), not " + ext);
             }
 
-            XDocument xliffDoc = await LoadXliffDocumentAsync(request.File);
-            XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
-            HtmlDocument htmlDoc = LoadOriginalHtmlDocument(xliffDoc, ns);
+            try
+            {
 
-            ApplyTranslationsToHtml(htmlDoc, xliffDoc, ns);
+                XDocument xliffDoc = await LoadXliffDocumentAsync(request.File);
+                XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
+                HtmlDocument htmlDoc = LoadOriginalHtmlDocument(xliffDoc, ns);
 
-            string updatedHtml = GetHtmlFromDocument(htmlDoc);
-            MemoryStream streamOut = WriteTextToMemoryStream(updatedHtml);
-            string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
-            var resultFile = await _fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
-            return new ConvertTextToDocumentResponse { File = resultFile };
+                ApplyTranslationsToHtml(htmlDoc, xliffDoc, ns);
+
+                string updatedHtml = GetHtmlFromDocument(htmlDoc);
+                MemoryStream streamOut = WriteTextToMemoryStream(updatedHtml);
+                string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
+                var resultFile = await _fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
+                return new ConvertTextToDocumentResponse { File = resultFile };
+
+            }
+            catch (XmlException ex)
+            {
+                throw new PluginMisconfigurationException($"Invalid XLIFF file: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new PluginApplicationException("Error converting XLIFF to HTML", ex);
+            }
         }
 
         private async Task<XDocument> LoadXliffDocumentAsync(FileReference file)
