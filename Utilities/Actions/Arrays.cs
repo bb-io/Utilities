@@ -65,6 +65,29 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
         return input.Array.ToList()[Position - 1];
     }
 
+    [Action("Get value from matching element (lookup in array)", Description = "Returns the value of a specified property from the first array element where another property exactly matches the given value. Returns empty if no match is found.")]
+    public string Lookup([ActionParameter] ArrayLookupRequest input)
+    {
+        return input.Array
+            .Where(x =>
+            {
+                var lookupProperty = x.GetType().GetProperty(input.LookupPropertyName)
+                    ?? throw new PluginMisconfigurationException($"Property to look for ('{input.LookupPropertyName}') does not exist on the provided element.");
+
+                var lookupPropertyValue = lookupProperty.GetValue(x)?.ToString() ?? string.Empty;
+
+                return lookupPropertyValue == input.LookupPropertyValue;
+            })
+            .Select(x =>
+            {
+                var resultProperty = x.GetType().GetProperty(input.ResultPropertyName)
+                    ?? throw new PluginMisconfigurationException($"Property to return ('{input.ResultPropertyName}') does not exist on the provided element.");
+
+                return resultProperty.GetValue(x)?.ToString() ?? string.Empty;
+            })
+            .FirstOrDefault(string.Empty);
+    }
+
     [Action("Retain specified entries in array", Description = "Returns the array without the entries that were not present in the provided control array")]
     public ArrayResponse ArrayFilter([ActionParameter] ArrayFilterRequest input)
     {

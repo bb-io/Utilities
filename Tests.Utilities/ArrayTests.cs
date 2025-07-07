@@ -9,6 +9,27 @@ namespace Tests.Utilities;
 [TestClass]
 public class ArrayTests : TestBase
 {
+    [TestMethod]
+    public void Lookup_works()
+    {
+        var request = new ArrayLookupRequest
+        {
+            Array =
+            [
+                new { Name = "John", Age = 30 },
+                new { Name = "Jane", Age = 25 },
+                new { Name = "Doe", Age = 40 }
+            ],
+            LookupPropertyName = "Name",
+            LookupPropertyValue = "Jane",
+            ResultPropertyName = "Age"
+        };
+
+        var actions = new Arrays(InvocationContext);
+        var result = actions.Lookup(request);
+
+        Assert.AreEqual("25", result);
+    }
 
     [TestMethod]
     public void Array_intersect_works()
