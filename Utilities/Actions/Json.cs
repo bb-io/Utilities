@@ -36,7 +36,7 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Lookup in JSON")]
+        [Action("Get text value from JSON array (lookup by property)")]
         public async Task<GetJsonPropertyOutput> Lookup([ActionParameter] JsonLookupInput input)
         {
             var jsonObj = await GetParsedJson(input.File);
