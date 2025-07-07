@@ -9,7 +9,6 @@ namespace Tests.Utilities;
 [TestClass]
 public class ArrayTests : TestBase
 {
-
     [TestMethod]
     public void Array_intersect_works()
     {

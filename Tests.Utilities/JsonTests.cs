@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Apps.Utilities.Actions;
+﻿using Apps.Utilities.Actions;
+using Apps.Utilities.Models.Arrays.Request;
 using Apps.Utilities.Models.Json;
 using Microsoft.Extensions.Configuration;
 using Tests.Utilities.Base;
@@ -23,6 +19,7 @@ namespace Tests.Utilities
             if (Directory.Exists(outputDirectory))
                 Directory.Delete(outputDirectory, true);
             Directory.CreateDirectory(outputDirectory);
+
             _jsonActions = new Json(InvocationContext, FileManager);
         }
 
@@ -42,16 +39,35 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
+        public async Task Lookup()
+        {
+            var input = new JsonLookupInput
+            {
+                File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "lookup.json" },
+                LookupArrayPropertyPath = "$.fields",
+                LookupPropertyPath = "$.field_id",
+                LookupPropertyValue = "id1",
+                ResultPropertyPath = "$.field_value"
+            };
+
+            var actions = new Json(InvocationContext, FileManager);
+            var response = await actions.Lookup(input);
+
+            Assert.AreEqual("text value", response.Value);
+        }
+
+        [TestMethod]
         public async Task ChangeJsonValue()
         {
             var action = new Json(InvocationContext, FileManager);
 
-            var response = await action.ChangeJsonProperty(new ChangeJsonPropertyInput
+            await action.ChangeJsonProperty(new ChangeJsonPropertyInput
             {
                 File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "appsettings.json" },
-                PropertyPath = "ConnectionDefinition.apiKey", NewValue = "NewApikey"
+                PropertyPath = "ConnectionDefinition.apiKey",
+                NewValue = "NewApikey"
             });
-            
+
             var check = await action.GetJsonPropertyValue(new GetJsonPropertyInput
             {
                 File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "appsettings.json" },
@@ -60,14 +76,6 @@ namespace Tests.Utilities
 
             Console.WriteLine(check.Value);
             Assert.AreEqual("NewApikey", check.Value);
-        }
-
-        private string GetTestFolderPath()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
-            return config["TestFolder"];
         }
     }
 }

@@ -25,30 +25,10 @@ namespace Apps.Utilities.Actions
         [Action("Get JSON property value")]
         public async Task<GetJsonPropertyOutput> GetJsonPropertyValue([ActionParameter] GetJsonPropertyInput input)
         {
-            var fileStream = await _fileManagementClient.DownloadAsync(input.File);
-            string jsonString;
-            using (var reader = new StreamReader(fileStream))
-            {
-                jsonString = await reader.ReadToEndAsync();
-            }
+            var jsonObj = await GetParsedJson(input.File);
+            JToken? token = jsonObj.SelectToken(input.PropertyPath);
 
-            if (string.IsNullOrWhiteSpace(jsonString))
-            {
-                throw new PluginMisconfigurationException("The file is empty. Please check the input");
-            }
-
-            JObject jsonObj;
-            try
-            {
-                jsonObj = JObject.Parse(jsonString);
-            }
-            catch (JsonReaderException ex)
-            {
-                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check th file input");
-            }
-
-            JToken token = jsonObj.SelectToken(input.PropertyPath);
-            var value = token?.ToObject<string>();
+            var value = token?.Value<string>() ?? string.Empty;
 
             return new GetJsonPropertyOutput
             {
@@ -56,33 +36,29 @@ namespace Apps.Utilities.Actions
             };
         }
 
+        [Action("Get text value from JSON array (lookup by property)")]
+        public async Task<GetJsonPropertyOutput> Lookup([ActionParameter] JsonLookupInput input)
+        {
+            var jsonObj = await GetParsedJson(input.File);
+            JToken? arrayToken = jsonObj.SelectToken(input.LookupArrayPropertyPath);
+            if (arrayToken == null || arrayToken.Type != JTokenType.Array)
+                throw new PluginMisconfigurationException("The specified property does not exist or is not an array.");
+
+            var matchingItem = arrayToken
+                .FirstOrDefault(item => item?.SelectToken(input.LookupPropertyPath)?.ToObject<string>() == input.LookupPropertyValue);
+
+            return new GetJsonPropertyOutput
+            {
+                Value = matchingItem?.SelectToken(input.ResultPropertyPath)?.ToObject<string>() ?? string.Empty
+            };
+        }
 
         [Action("Change JSON property value")]
         public async Task<ChangeJsonPropertyOutput> ChangeJsonProperty([ActionParameter] ChangeJsonPropertyInput input)
         {
-            var fileStream = await _fileManagementClient.DownloadAsync(input.File);
-            string jsonString;
-            using (var reader = new StreamReader(fileStream))
-            {
-                jsonString = await reader.ReadToEndAsync();
-            }
+            var jsonObj = await GetParsedJson(input.File);
+            JToken? tokenToChange = jsonObj.SelectToken(input.PropertyPath);
 
-            if (string.IsNullOrWhiteSpace(jsonString))
-            {
-                throw new PluginMisconfigurationException("The file is empty. Please check the input");
-            }
-
-            JObject jsonObj;
-            try
-            {
-                jsonObj = JObject.Parse(jsonString);
-            }
-            catch (JsonReaderException ex)
-            {
-                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check th file input");
-            }
-
-            JToken tokenToChange = jsonObj.SelectToken(input.PropertyPath);
             if (tokenToChange != null)
             {
                 tokenToChange.Replace(JToken.FromObject(input.NewValue));
@@ -106,6 +82,29 @@ namespace Apps.Utilities.Actions
             {
                 File = updatedFile
             };
+        }
+
+        private async Task<JObject> GetParsedJson(FileReference file)
+        {
+            var fileStream = await _fileManagementClient.DownloadAsync(file);
+
+            string jsonString;
+            using (var reader = new StreamReader(fileStream))
+            {
+                jsonString = await reader.ReadToEndAsync();
+            }
+
+            if (string.IsNullOrWhiteSpace(jsonString))
+                throw new PluginMisconfigurationException("The file is empty. Please check the input.");
+
+            try
+            {
+                return JObject.Parse(jsonString);
+            }
+            catch (JsonReaderException)
+            {
+                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check th file input");
+            }
         }
     }
 }
