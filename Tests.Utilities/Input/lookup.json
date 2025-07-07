@@ -1,0 +1,17 @@
+{
+  "record_id": "asjkasc",
+  "fields": [
+    {
+      "field_id": "id1",
+      "field_name": "field one",
+      "field_type": "text",
+      "field_value": "text value"
+    },
+    {
+      "field_id": "id2",
+      "field_name": "field two",
+      "field_type": "number",
+      "field_value": 10
+    }
+  ]
+}
