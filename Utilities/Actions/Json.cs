@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Apps.Utilities.Actions
 {
-    [ActionList]
+    [ActionList("JSON")]
     public class Json : BaseInvocable
     {
         private readonly IFileManagementClient _fileManagementClient;

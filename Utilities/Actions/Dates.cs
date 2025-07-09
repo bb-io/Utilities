@@ -9,7 +9,7 @@ using System.Globalization;
 
 namespace Apps.Utilities.Actions;
 
-[ActionList]
+[ActionList("Dates")]
 public class Dates : BaseInvocable
 {
     public Dates(InvocationContext context) : base(context) { }

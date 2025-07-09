@@ -24,7 +24,7 @@ using UglyToad.PdfPig;
 
 namespace Apps.Utilities.Actions;
 
-[ActionList]
+[ActionList("Files")]
 public class Files : BaseInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;

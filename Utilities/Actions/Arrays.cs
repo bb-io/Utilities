@@ -7,7 +7,7 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.Utilities.Actions;
 
-[ActionList]
+[ActionList("Arrays")]
 public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
     [Action("Array contains", Description = "Check if array contains a ceratin entry")]

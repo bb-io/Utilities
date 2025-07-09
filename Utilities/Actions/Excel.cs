@@ -13,7 +13,7 @@ using Apps.Utilities.Models.Excel;
 
 namespace Apps.Utilities.Actions;
 
-[ActionList]
+[ActionList("Excel spreadsheets")]
 public class Excel(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : BaseInvocable(invocationContext)
 {
     [Action("Redefine spreadsheet columns", Description = "Rearrange the columns of a spreadsheet file according to the specified order.")]

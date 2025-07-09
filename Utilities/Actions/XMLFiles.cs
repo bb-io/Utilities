@@ -14,7 +14,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.Utilities.Actions
 {
-    [ActionList]
+    [ActionList("XML files")]
     public class XMLFiles
     {
         private readonly IFileManagementClient _fileManagementClient;

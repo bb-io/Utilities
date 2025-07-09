@@ -18,7 +18,7 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions
 {
-    [ActionList]
+    [ActionList("XLIFF")]
     public class Xliff
     {
         private readonly IFileManagementClient _fileManagementClient;
