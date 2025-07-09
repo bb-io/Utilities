@@ -11,7 +11,7 @@ using Apps.Utilities.ErrorWrapper;
 
 namespace Apps.Utilities.Actions
 {
-    [ActionList]
+    [ActionList("Miscellaneous")]
     public class Scraping : BaseInvocable
     {
         private readonly IFileManagementClient _fileManagementClient;

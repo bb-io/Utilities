@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Apps.Utilities.Actions;
 
-[ActionList]
+[ActionList("Texts")]
 public class Texts(InvocationContext context) : BaseInvocable(context)
 {
     [Action("Calculate BLEU score",Description = "Evaluation of the quality of text which has been machine-translated from one natural language to another")]

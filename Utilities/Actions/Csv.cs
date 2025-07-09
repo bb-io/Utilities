@@ -16,7 +16,7 @@ using Apps.Utilities.Models.Csv;
 
 namespace Apps.Utilities.Actions;
 
-[ActionList]
+[ActionList("CSV")]
 public class Csv(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : BaseInvocable(invocationContext)
 {
     [Action("Remove CSV rows", Description = "Remove the selected rows from a CSV file.")]

@@ -5,7 +5,7 @@ using Apps.Utilities.Models.Contexts;
 
 namespace Apps.Utilities.Actions
 {
-    [ActionList]
+    [ActionList("Miscellaneous")]
     public class Contexts : BaseInvocable
     {
         public Contexts(InvocationContext invocationContext) : base(invocationContext)

@@ -7,7 +7,7 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.Utilities.Actions
 {
-    [ActionList]
+    [ActionList("Numbers")]
     public class Numbers
     {
         [Action("Generate range", Description = "Generate a range by providing start and end numbers")]
