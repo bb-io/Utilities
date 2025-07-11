@@ -181,6 +181,11 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
                 var match = Regex.Match(records[rowIndex][i], regex.Regex);
                 if (match != null && match.Success)
                 {
+                    if (!replaceValues.ContainsKey(match.Value))
+                    {
+                        throw new PluginMisconfigurationException($"The matched value '{match.Value}' was not found. " +
+                            "Please ensure all possible matched values are included in the 'From' list.");
+                    }
                     records[rowIndex][i] = Regex.Replace(records[rowIndex][i], match.Value, replaceValues[match.Value]);
                 }
             }
