@@ -93,14 +93,16 @@ public class Files : BaseInvocable
     {
         var extension = Path.GetExtension(file.File.Name);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.File.Name);
-        var filteredCharacters = input.FilterCharacters
-        .Select(c => c.TrimEnd(' '))
-        .Select(Regex.Escape)
-        .ToList();
 
-        foreach (var filteredCharacter in filteredCharacters)
+        if (input.FilterCharacters?.Any() == true)
         {
-            fileNameWithoutExtension = Regex.Replace(fileNameWithoutExtension, filteredCharacter, string.Empty);
+            var escapedChars = input.FilterCharacters
+                .Select(c => Regex.Escape(c.TrimEnd(' ')))
+                .ToArray();
+
+            var pattern = string.Join("|", escapedChars);
+
+            fileNameWithoutExtension = Regex.Replace(fileNameWithoutExtension, pattern, string.Empty);
         }
 
         file.File.Name = fileNameWithoutExtension + extension;
