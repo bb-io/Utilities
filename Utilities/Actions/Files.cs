@@ -14,6 +14,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using Mammoth;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO.Compression;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Mime;
@@ -302,9 +303,6 @@ public class Files : BaseInvocable
         return new FileDto { File = uploadedFile };
     }
 
-
-
-
     [Action("Unzip files", Description = "Take a .zip file and unzips it into multiple files")]
     public async Task<MultipleFilesResponse> UnzipFiles([ActionParameter] FileDto request)
     {
@@ -319,7 +317,7 @@ public class Files : BaseInvocable
             file.CopyTo(seekableStream);
             seekableStream.Position = 0;
 
-            using (var zip = new ZipFile(seekableStream))
+            using (var zip = new ICSharpCode.SharpZipLib.Zip.ZipFile(seekableStream))
             {
                 foreach (ZipEntry entry in zip)
                 {
@@ -348,6 +346,36 @@ public class Files : BaseInvocable
             Files = files
         };
     }
+
+    [Action("Zip files", Description = "Take multiple files and compress them into a single .zip archive")]
+    public async Task<FileDto> ToZipFiles([ActionParameter] FilesToZipRequest request)
+    {
+        if (request.Files == null || !request.Files.Any())
+            throw new PluginMisconfigurationException("No files provided to zip.");
+
+        using var archiveStream = new MemoryStream();
+        using (var zip = new ZipArchive(archiveStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var fileRef in request.Files)
+            {
+                var inputStream = await _fileManagementClient.DownloadAsync(fileRef);
+                var entry = zip.CreateEntry(fileRef.Name, CompressionLevel.Optimal);
+
+                using var entryStream = entry.Open();
+                await inputStream.CopyToAsync(entryStream);
+            }
+        }
+
+        archiveStream.Position = 0;
+        var zipFileDto = await _fileManagementClient.UploadAsync(
+            archiveStream,
+            "application/zip",
+            $"archive_{DateTime.UtcNow:yyyyMMdd_HHmmss}.zip"
+        );
+
+        return new FileDto { File = zipFileDto };
+    }
+
 
     [Action("Convert docx file to html", Description = "Converts a docx file into an html file")]
     public async Task<ConvertTextToDocumentResponse> ConvertDocxToHtml([ActionParameter] FileDto request)
