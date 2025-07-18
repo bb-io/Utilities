@@ -43,6 +43,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Compare file contents** returns whether the content of the given files are equal or not.
 - **Concatenate text files** concatenates multiple text files into one file.
 - **Convert docx to html** converts docx file into html
+- **Zip files** takes multiple files and compresses them into a ZIP archive.
 
 ### TBX files
 - **Reduce multilingual glossary to bilingual** Convert a multilingual TBX file to bilingual by keeping only the specified language pair.

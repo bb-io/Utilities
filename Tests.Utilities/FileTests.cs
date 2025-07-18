@@ -58,6 +58,20 @@ namespace Tests.Utilities
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(()=> _fileActions.UnzipFiles(fileDto));
         }
 
+        [TestMethod]
+        public async Task ToZipFiles_Success()
+        {
+            var file1 = new FileReference { Name = "lookup.json" };
+            var file2 = new FileReference { Name = "multiple_meta.xml" };
+            var file3 = new FileReference { Name = "multiple_namespace.xml" };
+            var response = await _fileActions.ToZipFiles(new FilesToZipRequest
+            {
+                Files = new[]{file1, file2, file3}
+            });
+
+            Assert.IsNotNull(response.File);
+        }
+
 
         [TestMethod]
         public async Task ConvertDocumentToText_ReturnsConvertedText()

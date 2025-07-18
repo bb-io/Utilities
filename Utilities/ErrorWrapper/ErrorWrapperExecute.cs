@@ -18,5 +18,20 @@ namespace Apps.Utilities.ErrorWrapper
                 throw new PluginApplicationException($"Error: {ex.Message}");
             }
         }
+
+        public static T ExecuteSafely<T>(Func<T> operation, Func<Exception, T>? fallback = null)
+        {
+            try
+            {
+                return operation();
+            }
+            catch (Exception ex)
+            {
+                if (fallback != null)
+                    return fallback(ex);
+
+                throw new PluginApplicationException($"Error: {ex.Message}", ex);
+            }
+        }
     }
 }
