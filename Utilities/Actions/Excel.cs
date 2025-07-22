@@ -184,6 +184,11 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     {
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
 
+        if (columnIndex < 1 || columnIndex > worksheet.LastColumnUsed().ColumnNumber())
+        {
+            throw new PluginMisconfigurationException($"Invalid column index: {columnIndex}. Please check your input and try again");
+        }
+
         var regex = new Regex(pattern);
         var column = worksheet.Column(columnIndex);
 
@@ -242,8 +247,13 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         var downloaded = await fileManagementClient.DownloadAsync(file);
         await downloaded.CopyToAsync(stream);
         stream.Position = 0;
-
         var workbook = new XLWorkbook(stream);
+
+        if (worksheetIndex < 1 || worksheetIndex > workbook.Worksheets.Count)
+        {
+            throw new PluginMisconfigurationException($"Invalid worksheet index: {worksheetIndex}. Please check your input and try again");
+        }
+
         var worksheet = workbook.Worksheet(worksheetIndex);
         return (workbook, worksheet);
     }
