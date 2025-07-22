@@ -10,6 +10,7 @@ using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using System.Text.RegularExpressions;
 using Apps.Utilities.Models.Excel;
+using Apps.Utilities.ErrorWrapper;
 
 namespace Apps.Utilities.Actions;
 
@@ -189,7 +190,10 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             throw new PluginMisconfigurationException($"Invalid column index: {columnIndex}. Please check your input and try again");
         }
 
-        var regex = new Regex(pattern);
+        var regex = ErrorWrapperExecute.ExecuteSafely(() =>
+        {
+            return new Regex(pattern);
+        }, ex => throw new PluginMisconfigurationException($"Invalid regular expression pattern: {ex.Message}"));
         var column = worksheet.Column(columnIndex);
 
         foreach (var cell in column.CellsUsed())
