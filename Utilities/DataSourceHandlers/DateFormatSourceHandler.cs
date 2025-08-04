@@ -27,6 +27,12 @@ public class DateFormatSourceHandler : IStaticDataSourceItemHandler
             new DataSourceItem("yyyy-MM-dd HH:mm:ss zzz", "yyyy-MM-dd HH:mm:ss zzz"),
             new DataSourceItem("yyyy-MM-ddTHH:mm:sszzz", "yyyy-MM-ddTHH:mm:sszzz"),
             new DataSourceItem("yyyy-MM-ddTHH:mm:ss.fffzzz", "yyyy-MM-ddTHH:mm:ss.fffzzz"),
+            new DataSourceItem("yyyy-MM-ddTHH:mm:ss.fff", "ISO format with milliseconds"),
+            new DataSourceItem("M/d/yyyy H:mm:ss.fff", "M/d/yyyy H:mm:ss.fff"),
+            new DataSourceItem("MM/dd/yyyy HH:mm:ss.fff", "MM/dd/yyyy HH:mm:ss.fff"),
+            new DataSourceItem("dd/MM/yyyy HH:mm:ss.fff", "dd/MM/yyyy HH:mm:ss.fff"),
+            new DataSourceItem("yyyy-MM-dd HH:mm:ss.fff", "yyyy-MM-dd HH:mm:ss.fff"),
+            new DataSourceItem("yyyy/MM/dd HH:mm:ss.fff", "yyyy/MM/dd HH:mm:ss.fff"),
 
             new DataSourceItem  ("d", "Short date"),
             new DataSourceItem  ("D", "Long date"),
@@ -40,6 +46,7 @@ public class DateFormatSourceHandler : IStaticDataSourceItemHandler
             new DataSourceItem  ("T", "Long time"),
             new DataSourceItem  ("U", "Universal full date/time"),
             new DataSourceItem  ("Y", "Year month")
+            
         };
     }
 }
