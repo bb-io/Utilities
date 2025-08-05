@@ -14,6 +14,9 @@ namespace Apps.Utilities.Models.Json
         public string PropertyPath { get; set; }
 
         [Display("JSON file")]
-        public FileReference File { get; set; }
+        public FileReference? File { get; set; }
+
+        [Display("JSON string")]
+        public string? JsonString { get; set; }
     }
 }

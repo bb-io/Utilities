@@ -25,10 +25,22 @@ namespace Apps.Utilities.Actions
         [Action("Get JSON property value")]
         public async Task<GetJsonPropertyOutput> GetJsonPropertyValue([ActionParameter] GetJsonPropertyInput input)
         {
-            var jsonObj = await GetParsedJson(input.File);
+            if (input.File is null && input.JsonString is null)
+                throw new PluginMisconfigurationException("Either a JSON file or JSON string must be provided");
+
+            JToken jsonObj;
+            if (input.File != null)
+            {
+                jsonObj = await GetParsedJson(input.File);
+            }
+            else
+            {
+                jsonObj = JToken.Parse(input.JsonString);
+            }
+
             JToken? token = jsonObj.SelectToken(input.PropertyPath);
 
-            var value = token?.Value<string>() ?? string.Empty;
+            var value = token?.ToString() ?? string.Empty;
 
             return new GetJsonPropertyOutput
             {
@@ -103,7 +115,7 @@ namespace Apps.Utilities.Actions
             }
             catch (JsonReaderException)
             {
-                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check th file input");
+                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check the file input");
             }
         }
     }
