@@ -20,9 +20,9 @@ namespace Tests.Utilities
 
             var request = new TextToDateRequest
             {
-                Text = "6/30/2025 21:00:00",
-                //Format = "M/d/yyyy H:mm:ss",
-                Timezone = "Asia/Macau"
+                Text = "30/04/2025",
+                Format = "dd/MM/yyyy ",
+                //Timezone = "Asia/Macau"
             };
 
             var result = action.ConvertTextToDate(request);
