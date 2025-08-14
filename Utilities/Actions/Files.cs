@@ -227,7 +227,7 @@ public class Files : BaseInvocable
             ".json" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Application.Json, encoding, includeBom)),
             ".doc" or ".docx" =>
                  await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToWordDocument(request.Text, filename, request.Font ?? "Arial", request.FontSize ?? 12)),
-            _ => throw new ArgumentException("Can convert to txt, csv, html, json, doc, or docx file only.")
+            _ => throw new PluginMisconfigurationException("Can convert to txt, csv, html, json, doc, or docx file only.")
         };
 
         return response;
