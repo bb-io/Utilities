@@ -4,6 +4,7 @@ using Apps.Utilities.Models.Shared;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
+using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Packaging;
@@ -376,6 +377,36 @@ public class Files : BaseInvocable
         return new FileDto { File = zipFileDto };
     }
 
+    [Action("Count file pages", Description = "Counts pages in PDF files and returns total page count.")]
+    public async Task<PageCountResponse> CountPdfPages([ActionParameter] List<FileReference> files)
+    {
+        var response = new PageCountResponse();
+
+        foreach (var fileRef in files)
+        {
+            try
+            {
+                using var stream = await _fileManagementClient.DownloadAsync(fileRef);
+
+                using var pdf = PdfDocument.Open(stream);
+                int pages = pdf.NumberOfPages;
+
+                response.Files.Add(new PageCountResult
+                {
+                    FileName = fileRef.Name,
+                    PageCount = pages
+                });
+
+                response.TotalPages += pages;
+            }
+            catch (Exception ex)
+            {
+                throw new PluginApplicationException($"There was a problem processing file {fileRef.Name}. Error: {ex.Message}");
+            }
+        }
+
+        return response;
+    }
 
     [Action("Convert docx file to html", Description = "Converts a docx file into an html file")]
     public async Task<ConvertTextToDocumentResponse> ConvertDocxToHtml([ActionParameter] FileDto request)
