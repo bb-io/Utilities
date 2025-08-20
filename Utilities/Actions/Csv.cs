@@ -36,8 +36,8 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         [ActionParameter] CsvFile csvFile,
         [ActionParameter] CsvOptions csvOptions,
         [ActionParameter][Display("Column index")] int columnIndex,
-        [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition
-        )
+        [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition,
+        [ActionParameter][Display("Value to compare")] string? targetValue)
     {
         if (columnIndex < 0) throw new PluginApplicationException("A column index must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);
@@ -47,12 +47,34 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
             if (columnIndex >= record.Count) throw new PluginApplicationException("The column index is bigger than the amount of columns.");
             var value = record[columnIndex];
 
-            if (condition == "is_empty" && string.IsNullOrEmpty(value))
+            switch (condition)
             {
-                newRecords.Add(record);
-            } else if (condition == "is_full" && !string.IsNullOrEmpty(value))
-            {
-                newRecords.Add(record);
+                case "is_empty":
+                    if (string.IsNullOrEmpty(value))
+                        newRecords.Add(record);
+                    break;
+
+                case "is_full":
+                    if (!string.IsNullOrEmpty(value))
+                        newRecords.Add(record);
+                    break;
+
+                case "value_equals":
+                    if (String.IsNullOrEmpty(targetValue))
+                        throw new PluginMisconfigurationException("Optional value to compare needs to be filled in when using Value equals or contains conditions");
+                    if (value == targetValue) 
+                        newRecords.Add(record);
+                    break;
+
+                case "value_contains":
+                    if (String.IsNullOrEmpty(targetValue))
+                        throw new PluginMisconfigurationException("Optional value to compare needs to be filled in when using Value equals or contains conditions");
+                    if (value.Contains(targetValue))
+                        newRecords.Add(record);
+                    break;
+
+                default:
+                    throw new PluginApplicationException($"Unsupported condition: {condition}");
             }
         }
         return await WriteCsv(newRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
@@ -73,6 +95,27 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
             newRecords.Add(newColumns);
         }
         return await WriteCsv(newRecords, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
+    }
+
+    [Action("Get CSV rows", Description = "Read a CSV file and return its rows, where each row is a list of cell values.")]
+    public async Task<CsvRowsResponse> GetCsvRows(
+    [ActionParameter] CsvFile csvFile,
+    [ActionParameter] CsvOptions csvOptions
+)
+    {
+        var records = await ReadCsv(csvFile, csvOptions) ?? new List<List<string>>();
+
+        var rows = records.Select((record, index) => new Row
+        {
+            Id = (index + 1).ToString(),
+            Values = record
+        }).ToList();
+
+        return new CsvRowsResponse
+        {
+            Rows = rows,
+            TotalRows = rows.Count
+        };
     }
 
     [Action("Redefine CSV columns", Description = "Rearrange the columns of a CSV file according to the specified order.")]

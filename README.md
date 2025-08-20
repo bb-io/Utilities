@@ -70,6 +70,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Apply regex to CSV column** Apply a regex pattern to a specified column in the CSV file.
 - **Apply regex to CSV row** Apply a regex pattern to a specified row in the CSV file.
 - **Add CSV row** Add a new row at the specified row index to the CSV file
+- **Get CSV rows** Read a CSV file and return its rows, where each row is a list of cell values.
 
 ### XLSX files (spreadsheets)
 

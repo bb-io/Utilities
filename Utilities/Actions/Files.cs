@@ -217,17 +217,17 @@ public class Files : BaseInvocable
         [ActionParameter] ConvertTextToDocumentRequest request)
     {
         var filename = $"{request.Filename}{request.FileExtension}";
-        var (encoding, includeBom) = ResolveEncoding(request.Encoding);
+        var (encoding, includeBom) = ErrorWrapperExecute.ExecuteSafely(() => ResolveEncoding(request.Encoding));
 
         ConvertTextToDocumentResponse response = request.FileExtension.ToLower() switch
         {
-            ".txt" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain, encoding, includeBom),
-            ".csv" => await ConvertToTextFile(request.Text, filename, "text/csv", encoding, includeBom),
-            ".html" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html, encoding, includeBom),
-            ".json" => await ConvertToTextFile(request.Text, filename, MediaTypeNames.Application.Json, encoding, includeBom),
+            ".txt" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain, encoding, includeBom)),
+            ".csv" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, "text/csv", encoding, includeBom)),
+            ".html" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html, encoding, includeBom)),
+            ".json" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Application.Json, encoding, includeBom)),
             ".doc" or ".docx" =>
-                await ConvertToWordDocument(request.Text, filename, request.Font ?? "Arial", request.FontSize ?? 12),
-            _ => throw new ArgumentException("Can convert to txt, csv, html, json, doc, or docx file only.")
+                 await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToWordDocument(request.Text, filename, request.Font ?? "Arial", request.FontSize ?? 12)),
+            _ => throw new PluginMisconfigurationException("Can convert to txt, csv, html, json, doc, or docx file only.")
         };
 
         return response;

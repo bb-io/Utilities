@@ -36,7 +36,7 @@ public class CsvTests : TestBase
         var file = new FileReference { Name = CSV_FILE };
         var csvFile = new CsvFile { File = file };
 
-        var response = await actions.FilterRows(csvFile, new CsvOptions { HasHeader = false }, 0, "is_full");
+        var response = await actions.FilterRows(csvFile, new CsvOptions { HasHeader = false }, 0, "is_full", null);
     }
 
     [TestMethod]
