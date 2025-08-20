@@ -44,6 +44,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Concatenate text files** concatenates multiple text files into one file.
 - **Convert docx to html** converts docx file into html
 - **Zip files** takes multiple files and compresses them into a ZIP archive.
+- **Count file pages** Counts pages in PDF files and returns total page count.
 
 ### TBX files
 - **Reduce multilingual glossary to bilingual** Convert a multilingual TBX file to bilingual by keeping only the specified language pair.
@@ -64,7 +65,7 @@ This free app provides generic utility actions that can come in useful in any bi
 ### CSV files
 
 - **Remove CSV rows** Remove the selected rows from a CSV file. The first row is indexed 0.
-- **Filter CSV rows** Remove the selected rows from a CSV file based on a column condition.
+- **Filter CSV rows** Remove the rows from a CSV file that don't meet a column condition.
 - **Remove CSV columns** Remove the selected columns from a CSV file. The first column is indexed 0.
 - **Redefine CSV columns** Rearrange the columns of a CSV file according to the specified order. 0 being the first column. A value of [1, 1, 2] would indicate that there are 3 columns in the new CSV file. The first two columns would have the value of the original column 1, the third column would have original column 2.
 - **Apply regex to CSV column** Apply a regex pattern to a specified column in the CSV file.
