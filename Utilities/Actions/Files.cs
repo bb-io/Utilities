@@ -37,8 +37,8 @@ public class Files : BaseInvocable
         invocationContext)
     {
         _fileManagementClient = fileManagementClient;
-        _logger = logger;
-        _logger.LogInformation("Files is called.");
+        //_logger = logger;
+        //_logger.LogInformation("Files is called.");
     }
 
     [Action("Get file name information",
@@ -378,17 +378,21 @@ public class Files : BaseInvocable
     }
 
     [Action("Count file pages", Description = "Counts pages in PDF files and returns total page count.")]
-    public async Task<PageCountResponse> CountPdfPages([ActionParameter] List<FileReference> files)
+    public async Task<PageCountResponse> CountPdfPages([ActionParameter] FilesToZipRequest files)
     {
         var response = new PageCountResponse();
 
-        foreach (var fileRef in files)
+        foreach (var fileRef in files.Files)
         {
             try
             {
-                using var stream = await _fileManagementClient.DownloadAsync(fileRef);
+                using var inputStream = await _fileManagementClient.DownloadAsync(fileRef);
 
-                using var pdf = PdfDocument.Open(stream);
+                using var memoryStream = new MemoryStream();
+                await inputStream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+
+                using var pdf = PdfDocument.Open(memoryStream);
                 int pages = pdf.NumberOfPages;
 
                 response.Files.Add(new PageCountResult
