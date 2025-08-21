@@ -276,6 +276,40 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
     }
 
+    [Action("Get CSV column values", Description = "Retrieve all values from a specified column in the CSV file")]
+    public async Task<List<string>> GetColumnValues(
+    [ActionParameter] CsvFile csvFile,
+    [ActionParameter] CsvOptions csvOptions,
+    [ActionParameter][Display("Column index")] int columnIndex,
+    [ActionParameter][Display("Deduplicate values")] bool? deduplicate = null)
+    {
+        var records = await ReadCsv(csvFile, csvOptions);
+
+        if (!records.Any())
+        {
+            return new List<string>();
+        }
+
+        if (columnIndex < 0 || columnIndex >= records.Count)
+        {
+            throw new PluginMisconfigurationException($"Invalid column index '{columnIndex}'. " +
+                $"The file has {records.Count} columns. Index starts at 0.");
+        }
+
+        var columnValues = records
+            .Select(row => row[columnIndex])
+            .ToList();
+
+        if (deduplicate == true)
+        {
+            columnValues = columnValues
+                .Distinct()
+                .ToList();
+        }
+
+        return columnValues;
+    }
+
 
     private CsvConfiguration CreateConfiguration(CsvOptions csvOptions)
     {
