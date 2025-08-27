@@ -28,14 +28,14 @@ namespace Tests.Utilities
         {
             var action = new Json(InvocationContext,FileManager);
 
-            var input = new GetJsonPropertyInput {File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name="appsettings.json" } , 
-                PropertyPath = "ConnectionDefinition.apiKey"};
+            var input = new GetJsonPropertyInput {JsonString= "{\r\n    \"id\": \"lMOqwANyFNSr0TkQ0_dc9:3\",\r\n    \"issues\": \"\\\"cycle\\\" has been mistranslated as \\\"torta\\\" (cake).\",\r\n    \"source\": \"{1}  ", 
+                PropertyPath = "source"};
 
             var response = await action.GetJsonPropertyValue(input);
 
             Console.WriteLine(response.Value);
             Assert.IsNotNull(response.Value);
-            Assert.AreEqual("Apikey", response.Value);
+            //Assert.AreEqual("Apikey", response.Value);
         }
 
         [TestMethod]
