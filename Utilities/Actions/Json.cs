@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Apps.Utilities.ErrorWrapper;
 using Apps.Utilities.Models.Json;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
@@ -31,11 +32,11 @@ namespace Apps.Utilities.Actions
             JToken jsonObj;
             if (input.File != null)
             {
-                jsonObj = await GetParsedJson(input.File);
+                jsonObj = await ErrorWrapperExecute.ExecuteSafely(()=> GetParsedJson(input.File));
             }
             else
             {
-                jsonObj = JToken.Parse(input.JsonString);
+                jsonObj = ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString));
             }
 
             JToken? token = jsonObj.SelectToken(input.PropertyPath);
