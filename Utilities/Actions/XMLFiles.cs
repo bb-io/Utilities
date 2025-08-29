@@ -60,7 +60,9 @@ namespace Apps.Utilities.Actions
                 foreach (var langSec in langSecs)
                 {
                     var lang = langSec.Attribute(xmlNs + "lang")?.Value;
-                    if (string.IsNullOrEmpty(lang) || (lang != request.SourceLanguage && lang != request.TargetLanguage))
+                    if (string.IsNullOrEmpty(lang) ||
+                    (!string.Equals(lang, request.SourceLanguage, StringComparison.OrdinalIgnoreCase) &&
+                     !string.Equals(lang, request.TargetLanguage, StringComparison.OrdinalIgnoreCase)))
                     {
                         langSec.Remove();
                     }
@@ -70,7 +72,9 @@ namespace Apps.Utilities.Actions
                     .Select(ls => ls.Attribute(xmlNs + "lang")?.Value)
                     .Where(l => !string.IsNullOrEmpty(l))
                     .ToList();
-                if (remainingLangs.Count < 2 || !remainingLangs.Contains(request.SourceLanguage) || !remainingLangs.Contains(request.TargetLanguage))
+                if (remainingLangs.Count < 2 ||
+                !remainingLangs.Any(l => string.Equals(l, request.SourceLanguage, StringComparison.OrdinalIgnoreCase)) ||
+                !remainingLangs.Any(l => string.Equals(l, request.TargetLanguage, StringComparison.OrdinalIgnoreCase)))
                 {
                     entry.Remove();
                 }
@@ -81,7 +85,7 @@ namespace Apps.Utilities.Actions
             using var streamOut = new MemoryStream();
             var settings = new XmlWriterSettings
             {
-                Encoding = Encoding.UTF8,
+                Encoding = new UTF8Encoding(false), 
                 Indent = true,
                 OmitXmlDeclaration = false
             };
