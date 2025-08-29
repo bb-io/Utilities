@@ -81,7 +81,7 @@ namespace Apps.Utilities.Actions
             using var streamOut = new MemoryStream();
             var settings = new XmlWriterSettings
             {
-                Encoding = Encoding.UTF8,
+                Encoding = new UTF8Encoding(false), 
                 Indent = true,
                 OmitXmlDeclaration = false
             };
