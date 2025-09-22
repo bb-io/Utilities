@@ -22,6 +22,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml.Linq;
 using UglyToad.PdfPig;
 
 namespace Apps.Utilities.Actions;
@@ -377,7 +378,7 @@ public class Files : BaseInvocable
         return new FileDto { File = zipFileDto };
     }
 
-    [Action("Count file pages", Description = "Counts pages in PDF files and returns total page count.")]
+    [Action("Count file pages", Description = "Counts pages in PDF and DOCX files and returns total page count.")]
     public async Task<PageCountResponse> CountPdfPages([ActionParameter] FilesToZipRequest files)
     {
         var response = new PageCountResponse();
@@ -386,14 +387,22 @@ public class Files : BaseInvocable
         {
             try
             {
-                using var inputStream = await _fileManagementClient.DownloadAsync(fileRef);
-
+                await using var inputStream = await _fileManagementClient.DownloadAsync(fileRef);
                 using var memoryStream = new MemoryStream();
                 await inputStream.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
 
-                using var pdf = PdfDocument.Open(memoryStream);
-                int pages = pdf.NumberOfPages;
+                var ext = Path.GetExtension(fileRef.Name)?.ToLowerInvariant();
+                int pages = ext switch
+                {
+                    ".pdf" => GetPdfPages(memoryStream),
+                    ".docx" => GetDocxPages(memoryStream)
+                               ?? throw new PluginApplicationException(
+                                   $"Unable to determine page count for {fileRef.Name}. " +
+                                   $"The DOCX doesn't contain the built-in Pages property. " +
+                                   $"Open & re-save in Word or convert to PDF, then try again."),
+                    _ => throw new PluginApplicationException($"Unsupported file type for {fileRef.Name}. Only PDF and DOCX are supported.")
+                };
 
                 response.Files.Add(new PageCountResult
                 {
@@ -410,6 +419,30 @@ public class Files : BaseInvocable
         }
 
         return response;
+    }
+
+    private static int GetPdfPages(Stream stream)
+    {
+        stream.Position = 0;
+        using var pdf = PdfDocument.Open(stream);
+        return pdf.NumberOfPages;
+    }
+
+    private static int? GetDocxPages(Stream stream)
+    {
+        stream.Position = 0;
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+        var appXml = archive.GetEntry("docProps/app.xml");
+        if (appXml == null) return null;
+
+        using var appStream = appXml.Open();
+        var xdoc = XDocument.Load(appStream);
+
+        XNamespace ep = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties";
+        var pagesElem = xdoc.Root?.Element(ep + "Pages");
+        if (pagesElem == null) return null;
+
+        return int.TryParse(pagesElem.Value, out var pages) ? pages : null;
     }
 
     [Action("Convert docx file to html", Description = "Converts a docx file into an html file")]
