@@ -113,6 +113,27 @@ namespace Tests.Utilities
             Assert.IsFalse(response.AreEqual);
         }
 
+        [TestMethod]
+        public async Task Count_file_Pages_IsSuccess()
+        {
+            var files = new[]
+            {
+                new FileReference { Name = "test.docx" },
+            };
+
+            var request = new FilesToZipRequest
+            {
+                Files = files
+            };
+
+            var response = await _fileActions.CountPdfPages(request);
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);
+            Console.WriteLine(json);
+
+            Assert.IsNotNull(response);
+        }
+
 
         [TestMethod]
         public async Task Convert_Text_To_File_returns_true()
