@@ -214,7 +214,7 @@ public class Files : BaseInvocable
         };
     }
 
-    [Action("Convert text to document", Description = "Convert text to txt, doc or docx document.")]
+    [Action("Convert text to document", Description = "Convert text to txt, html, json, csv, doc or docx document.")]
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
         [ActionParameter] ConvertTextToDocumentRequest request)
     {
