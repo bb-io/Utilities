@@ -13,7 +13,8 @@ namespace Apps.Utilities.DataSourceHandlers
                 ".doc",
                 ".docx",
                 ".html",
-                ".json"
+                ".json",
+                ".csv"
             };
 
             return extension.Select(x=> new DataSourceItem

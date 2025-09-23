@@ -93,7 +93,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Extract using Regex** returns the first match from the provided text using a Regular Expression as input.
 - **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
 - **Replace using Regex** use Regular Expressions to search and replace within text
-- **Convert text to document** Converts text to txt, doc or docx document.
+- **Convert text to document** Convert text to txt, html, json, csv, doc or docx document.
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
