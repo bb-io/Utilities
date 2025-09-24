@@ -19,15 +19,50 @@ public class Dates : BaseInvocable
     {
         try
         {
+            bool hasRelativeTime = input.AddHours.HasValue || input.AddMinutes.HasValue;
+            bool hasFixedTime = !string.IsNullOrWhiteSpace(input.FixedTime);
+
+            if (hasFixedTime && hasRelativeTime)
+            {
+                throw new PluginMisconfigurationException("Only one of 'Set time' or 'Add hours/minutes' should be provided, not both.");
+            }
+
+            TimeSpan? fixedTimeSpan = null;
+            if (hasFixedTime)
+            {
+                if (!TimeSpan.TryParse(input.FixedTime, out var parsedTime))
+                {
+                    throw new PluginMisconfigurationException("Set time must be in a valid HH:mm format (e.g., '14:30').");
+                }
+
+                fixedTimeSpan = parsedTime;
+            }
+
             var referenceDate = input.Date ?? DateTime.Now;
 
             if (input.BusinessDays.HasValue)
                 referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
 
             var adjustedDate = referenceDate
-                .AddDays(input.AddDays ?? 0)
-                .AddHours(input.AddHours ?? 0)
-                .AddMinutes(input.AddMinutes ?? 0);
+                .AddDays(input.AddDays ?? 0);
+
+            if (fixedTimeSpan.HasValue)
+            {
+                adjustedDate = new DateTime(
+                    adjustedDate.Year,
+                    adjustedDate.Month,
+                    adjustedDate.Day,
+                    fixedTimeSpan.Value.Hours,
+                    fixedTimeSpan.Value.Minutes,
+                    0
+                );
+            }
+            else
+            {
+                adjustedDate = adjustedDate
+                    .AddHours(input.AddHours ?? 0)
+                    .AddMinutes(input.AddMinutes ?? 0);
+            }
 
             var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
 
