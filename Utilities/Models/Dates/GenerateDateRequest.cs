@@ -25,6 +25,6 @@ public class GenerateDateRequest
     [StaticDataSource(typeof(TimeZoneSourceHandler))]
     public string? Timezone { get; set; }
 
-    [Display("Set time (HH:mm)")]
-    public TimeSpan? FixedTime { get; set; }
+    [Display("Set time (HH:mm)", Description = "standard 24-hour format like \"HH:mm\" (e.g., \"14:30\")")]
+    public string? FixedTime { get; set; }
 }

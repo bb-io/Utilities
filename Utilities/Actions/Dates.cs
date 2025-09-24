@@ -19,9 +19,23 @@ public class Dates : BaseInvocable
     {
         try
         {
-            if (input.FixedTime.HasValue && (input.AddHours.HasValue || input.AddMinutes.HasValue))
+            bool hasRelativeTime = input.AddHours.HasValue || input.AddMinutes.HasValue;
+            bool hasFixedTime = !string.IsNullOrWhiteSpace(input.FixedTime);
+
+            if (hasFixedTime && hasRelativeTime)
             {
                 throw new PluginMisconfigurationException("Only one of 'Set time' or 'Add hours/minutes' should be provided, not both.");
+            }
+
+            TimeSpan? fixedTimeSpan = null;
+            if (hasFixedTime)
+            {
+                if (!TimeSpan.TryParse(input.FixedTime, out var parsedTime))
+                {
+                    throw new PluginMisconfigurationException("Set time must be in a valid HH:mm format (e.g., '14:30').");
+                }
+
+                fixedTimeSpan = parsedTime;
             }
 
             var referenceDate = input.Date ?? DateTime.Now;
@@ -32,14 +46,14 @@ public class Dates : BaseInvocable
             var adjustedDate = referenceDate
                 .AddDays(input.AddDays ?? 0);
 
-            if (input.FixedTime.HasValue)
+            if (fixedTimeSpan.HasValue)
             {
                 adjustedDate = new DateTime(
                     adjustedDate.Year,
                     adjustedDate.Month,
                     adjustedDate.Day,
-                    input.FixedTime.Value.Hours,
-                    input.FixedTime.Value.Minutes,
+                    fixedTimeSpan.Value.Hours,
+                    fixedTimeSpan.Value.Minutes,
                     0
                 );
             }
