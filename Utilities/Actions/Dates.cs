@@ -19,15 +19,36 @@ public class Dates : BaseInvocable
     {
         try
         {
+            if (input.FixedTime.HasValue && (input.AddHours.HasValue || input.AddMinutes.HasValue))
+            {
+                throw new PluginMisconfigurationException("Only one of 'Set time' or 'Add hours/minutes' should be provided, not both.");
+            }
+
             var referenceDate = input.Date ?? DateTime.Now;
 
             if (input.BusinessDays.HasValue)
                 referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
 
             var adjustedDate = referenceDate
-                .AddDays(input.AddDays ?? 0)
-                .AddHours(input.AddHours ?? 0)
-                .AddMinutes(input.AddMinutes ?? 0);
+                .AddDays(input.AddDays ?? 0);
+
+            if (input.FixedTime.HasValue)
+            {
+                adjustedDate = new DateTime(
+                    adjustedDate.Year,
+                    adjustedDate.Month,
+                    adjustedDate.Day,
+                    input.FixedTime.Value.Hours,
+                    input.FixedTime.Value.Minutes,
+                    0
+                );
+            }
+            else
+            {
+                adjustedDate = adjustedDate
+                    .AddHours(input.AddHours ?? 0)
+                    .AddMinutes(input.AddMinutes ?? 0);
+            }
 
             var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
 
