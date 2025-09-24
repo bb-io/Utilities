@@ -108,6 +108,68 @@ namespace Apps.Utilities.Actions
             return new ConvertTextToDocumentResponse { File = resultFile };
         }
 
+        [Action("Confirm and lock final targets", Description = "Set confirmed and locked attributes to 1 for translation units with target state 'final', and remove the target state attribute in mxliff files.")]
+        public async Task<ConvertTextToDocumentResponse> ConfirmAndLockFinalTargets([ActionParameter] ConvertTextToDocumentResponse request)
+        {
+            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+            XNamespace ns = doc.Root.GetDefaultNamespace();
+            XNamespace mNs = "http://www.memsource.com/mxlf/2.0";
+
+            var transUnits = doc.Descendants(ns + "trans-unit").ToList();
+
+            foreach (var transUnit in transUnits)
+            {
+                var targetElement = transUnit.Element(ns + "target");
+                if (targetElement == null) continue;
+
+                var stateAttr = targetElement.Attribute("state");
+                if (stateAttr != null && stateAttr.Value == "final")
+                {
+                    var confirmedAttr = transUnit.Attribute(mNs + "confirmed");
+                    if (confirmedAttr != null)
+                    {
+                        confirmedAttr.Value = "1";
+                    }
+                    else
+                    {
+                        transUnit.Add(new XAttribute(mNs + "confirmed", "1"));
+                    }
+
+                    var lockedAttr = transUnit.Attribute(mNs + "locked");
+                    if (lockedAttr != null)
+                    {
+                        lockedAttr.Value = "1";
+                    }
+                    else
+                    {
+                        transUnit.Add(new XAttribute(mNs + "locked", "1"));
+                    }
+
+                    stateAttr.Remove();
+                }
+            }
+
+            using var streamOut = new MemoryStream();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                Indent = true,
+                NewLineHandling = NewLineHandling.Replace
+            };
+            using (var writer = XmlWriter.Create(streamOut, settings))
+            {
+                doc.Save(writer);
+            }
+
+            streamOut.Position = 0;
+            var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
+
+            return new ConvertTextToDocumentResponse
+            {
+                File = resultFile
+            };
+        }
 
         [Action("Convert HTML to XLIFF", Description = "Convert HTML file to XLIFF 1.2 format")]
         public async Task<ConvertTextToDocumentResponse> ConvertHtmlToXliff([ActionParameter] ConvertHtmlToXliffRequest request)
