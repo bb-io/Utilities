@@ -45,6 +45,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert docx to html** converts docx file into html
 - **Zip files** takes multiple files and compresses them into a ZIP archive.
 - **Count file pages** Counts pages in PDF and DOCX files and returns total page count.
+- **Convert HTML file to DOCX** 
 
 ### TBX files
 - **Reduce multilingual glossary to bilingual** Convert a multilingual TBX file to bilingual by keeping only the specified language pair.

@@ -379,7 +379,7 @@ public class Files : BaseInvocable
         return new FileDto { File = zipFileDto };
     }
 
-    [Action("Convert html file to docx", Description = "Converts an html file into a docx file")]
+    [Action("Convert HTML file to DOCX", Description = "Converts an html file into a docx file")]
     public async Task<ConvertTextToDocumentResponse> ConvertHtmlToDocx([ActionParameter] FileDto request)
     {
         if (!request.File.Name.EndsWith(".html") && !request.File.Name.EndsWith(".htm"))
