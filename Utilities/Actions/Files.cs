@@ -15,7 +15,6 @@ using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Mammoth;
 using Microsoft.Extensions.Logging;
-using OpenXmlPowerTools;
 using System;
 using System.IO.Compression;
 using System.Linq.Expressions;
