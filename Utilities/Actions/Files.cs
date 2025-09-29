@@ -7,6 +7,7 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Vml.Office;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -14,6 +15,7 @@ using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Mammoth;
 using Microsoft.Extensions.Logging;
+using OpenXmlPowerTools;
 using System;
 using System.IO.Compression;
 using System.Linq.Expressions;
@@ -376,6 +378,48 @@ public class Files : BaseInvocable
         );
 
         return new FileDto { File = zipFileDto };
+    }
+
+    [Action("Convert html file to docx", Description = "Converts an html file into a docx file")]
+    public async Task<ConvertTextToDocumentResponse> ConvertHtmlToDocx([ActionParameter] FileDto request)
+    {
+        if (!request.File.Name.EndsWith(".html") && !request.File.Name.EndsWith(".htm"))
+            throw new PluginMisconfigurationException("The input file must be an html file.");
+
+        var htmlInputStream = await _fileManagementClient.DownloadAsync(request.File);
+        string htmlString;
+        using (var reader = new StreamReader(htmlInputStream))
+        {
+            htmlString = await reader.ReadToEndAsync();
+        }
+
+        try
+        {
+            using var memStream = new MemoryStream();
+
+            using (var wordDoc = WordprocessingDocument.Create(memStream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
+            {
+                var mainPart = wordDoc.AddMainDocumentPart();
+                mainPart.Document = new Document(new Body());
+
+                var converter = new HtmlToOpenXml.HtmlConverter(mainPart);
+                var paragraphs = converter.Parse(htmlString);
+                var body = mainPart.Document.Body;
+                foreach (var p in paragraphs)
+                    body.Append(p);
+
+                mainPart.Document.Save();
+            }
+
+            memStream.Position = 0;
+            var uploadedFile = await _fileManagementClient.UploadAsync(memStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", request.File.Name + ".docx");
+
+            return new ConvertTextToDocumentResponse { File = uploadedFile };
+        }
+        catch (Exception e)
+        {
+            throw new PluginApplicationException("Conversion failed. Error message: " + e.Message);
+        }
     }
 
     [Action("Count file pages", Description = "Counts pages in PDF and DOCX files and returns total page count.")]
