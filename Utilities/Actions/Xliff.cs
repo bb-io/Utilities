@@ -171,6 +171,105 @@ namespace Apps.Utilities.Actions
             };
         }
 
+        [Action("Add notes to XLIFF non-final segments",
+        Description = "Adds a note with optional details to each segment that is not in state='final'.")]
+        public async Task<FileDto> AddNoteToXLIFFfile(
+        [ActionParameter] FileDto request,
+        [ActionParameter][Display("Add segment state to note")] bool? addState = true,
+        [ActionParameter][Display("Add quality score to note")] bool? addQualityScore = true,
+        [ActionParameter][Display("Add context segments to note")] bool? addContext = true)
+        {
+            XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
+            XNamespace its = "http://www.w3.org/2005/11/its";
+
+            XDocument doc;
+            using (var stream = await _fileManagementClient.DownloadAsync(request.File))
+            {
+                doc = XDocument.Load(stream);
+            }
+
+            var allSegments = doc.Descendants(ns + "segment").ToList();
+
+            for (int i = 0; i < allSegments.Count; i++)
+            {
+                var segment = allSegments[i];
+                var state = (string)segment.Attribute("state");
+
+                if (string.Equals(state, "final", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var unit = segment.Ancestors(ns + "unit").FirstOrDefault();
+                if (unit == null) continue;
+
+                string qualityScore = (string)unit.Attribute(its + "locQualityRatingScore");
+
+                var noteContent = new StringBuilder();
+
+                if (addState.HasValue && addState.Value)
+                    noteContent.AppendLine($"State: {state}");
+
+                if (addQualityScore.HasValue && addQualityScore.Value && !string.IsNullOrEmpty(qualityScore))
+                    noteContent.AppendLine($"Quality score: {qualityScore}");
+
+                if (addContext.HasValue && addContext.Value)
+                {
+                    var prevSegments = allSegments
+                        .Skip(Math.Max(0, i - 3))
+                        .Take(i - Math.Max(0, i - 3))
+                        .ToList();
+
+                    var nextSegments = allSegments
+                        .Skip(i + 1)
+                        .Take(3)
+                        .ToList();
+
+                    string GetText(XElement seg, string elementName) =>
+                        (string)seg.Element(ns + elementName) ?? string.Empty;
+
+                    noteContent.AppendLine("Context:");
+
+                    if (prevSegments.Any())
+                    {
+                        noteContent.AppendLine("Previous sources:");
+                        noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "source"))));
+
+                        noteContent.AppendLine("Previous targets:");
+                        noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "target"))));
+                    }
+
+                    if (nextSegments.Any())
+                    {
+                        noteContent.AppendLine("Following sources:");
+                        noteContent.AppendLine(string.Join(" ", nextSegments.Select(s => GetText(s, "source"))));
+
+                        noteContent.AppendLine("Following targets:");
+                        noteContent.AppendLine(string.Join(" ", nextSegments.Select(s => GetText(s, "target"))));
+                    }
+                }
+
+                if (noteContent.Length > 0)
+                {
+                    var notesElement = segment.Element(ns + "notes");
+                    if (notesElement == null)
+                    {
+                        notesElement = new XElement(ns + "notes");
+                        segment.Add(notesElement);
+                    }
+
+                    notesElement.Add(new XElement(ns + "note", noteContent.ToString().Trim()));
+                }
+            }
+
+            var outStream = new MemoryStream();
+            doc.Save(outStream);
+            outStream.Position = 0;
+            var resultFile = await _fileManagementClient.UploadAsync(outStream, "application/xml", request.File.Name);
+            return new FileDto
+            {
+                File = resultFile
+            };
+        }
+
         [Action("Convert HTML to XLIFF", Description = "Convert HTML file to XLIFF 1.2 format")]
         public async Task<ConvertTextToDocumentResponse> ConvertHtmlToXliff([ActionParameter] ConvertHtmlToXliffRequest request)
         {
