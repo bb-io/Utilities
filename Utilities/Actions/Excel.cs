@@ -159,7 +159,16 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
     {
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
 
-        var regex = new Regex(pattern);
+        Regex regex;
+        try
+        {
+            regex = new Regex(pattern);
+        }
+        catch (RegexParseException ex)
+        {
+            throw new PluginMisconfigurationException($"Invalid regular expression pattern: {ex.Message}");
+        }
+
         var row = worksheet.Row(rowIndex);
 
         foreach (var cell in row.CellsUsed())
@@ -167,8 +176,15 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             if (cell.DataType == XLDataType.Text || cell.DataType == XLDataType.Number)
             {
                 var originalValue = cell.GetString();
-                var newValue = regex.Replace(originalValue, replacement);
-                cell.Value = newValue;
+                try
+                {
+                    var newValue = regex.Replace(originalValue, replacement);
+                    cell.Value = newValue;
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new PluginMisconfigurationException($"Invalid replacement pattern: {ex.Message}");
+                }
             }
         }
 
@@ -201,8 +217,15 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             if (cell.DataType == XLDataType.Text || cell.DataType == XLDataType.Number)
             {
                 var originalValue = cell.GetString();
-                var newValue = regex.Replace(originalValue, replacement);
-                cell.Value = newValue;
+                try
+                {
+                    var newValue = regex.Replace(originalValue, replacement);
+                    cell.Value = newValue;
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new PluginMisconfigurationException($"Invalid replacement pattern: {ex.Message}");
+                }
             }
         }
 

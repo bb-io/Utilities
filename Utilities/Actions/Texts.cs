@@ -124,7 +124,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
 
                     if (!match.Groups.ContainsKey(regex.Group))
                     {
-                        throw new PluginApplicationException($"Group '{regex.Group}' not found in the regex pattern");
+                        throw new PluginMisconfigurationException($"Group '{regex.Group}' not found in the regex pattern");
                     }
                     return match.Groups[regex.Group].Value;
                 },

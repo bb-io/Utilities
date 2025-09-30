@@ -175,6 +175,10 @@ public class Files : BaseInvocable
         {
             replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
         }
+        catch (RegexParseException ex)
+        {
+            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
+        }
         catch (Exception e)
         {
             throw new PluginApplicationException(e.Message);
