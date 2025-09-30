@@ -229,19 +229,19 @@ namespace Apps.Utilities.Actions
 
                     if (prevSegments.Any())
                     {
-                        noteContent.AppendLine("&lt;strong&gt;Previous sources:&lt;/strong&gt;");
+                        noteContent.AppendLine("<strong>Previous sources:</strong>");
                         noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "source"))));
 
-                        noteContent.AppendLine("Previous targets:");
+                        noteContent.AppendLine("<strong>Previous targets:</strong>");
                         noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "target"))));
                     }
 
                     if (nextSegments.Any())
                     {
-                        noteContent.AppendLine("Following sources:");
+                        noteContent.AppendLine("<strong>Following sources:</strong>");
                         noteContent.AppendLine(string.Join(" ", nextSegments.Select(s => GetText(s, "source"))));
 
-                        noteContent.AppendLine("Following targets:");
+                        noteContent.AppendLine("<strong>Following targets:</strong>");
                         noteContent.AppendLine(string.Join(" ", nextSegments.Select(s => GetText(s, "target"))));
                     }
                 }
