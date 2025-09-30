@@ -243,10 +243,16 @@ namespace Apps.Utilities.Actions
                         if (prevUnits.Any())
                         {
                             noteContent.AppendLine("Previous sources:");
-                            noteContent.AppendLine(string.Join(" ", prevUnits.Select(u => u.GetSource().GetPlainText())));
+                            prevUnits
+                                .Select(u => u.GetSource().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
+
                             noteContent.AppendLine();
+
                             noteContent.AppendLine("Previous targets:");
-                            noteContent.AppendLine(string.Join(" ", prevUnits.Select(u => u.GetTarget().GetPlainText())));
+                            prevUnits
+                                .Select(u => u.GetTarget().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
                         }
 
                         if (prevUnits.Any() && nextUnits.Any())
@@ -255,10 +261,16 @@ namespace Apps.Utilities.Actions
                         if (nextUnits.Any())
                         {
                             noteContent.AppendLine("Following sources:");
-                            noteContent.AppendLine(string.Join(" ", nextUnits.Select(u => u.GetSource().GetPlainText())));
+                            nextUnits
+                                .Select(u => u.GetSource().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
+
                             noteContent.AppendLine();
+
                             noteContent.AppendLine("Following targets:");
-                            noteContent.AppendLine(string.Join(" ", nextUnits.Select(u => u.GetTarget().GetPlainText())));
+                            nextUnits
+                                .Select(u => u.GetTarget().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
                         }
 
                         if (noteContent.Length > 0)
