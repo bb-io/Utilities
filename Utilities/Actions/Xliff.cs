@@ -235,21 +235,16 @@ namespace Apps.Utilities.Actions
                             .Take(request.SurroundingUnitsToInclude.Value)
                             .ToList();
 
-                        if (prevUnits.Any() || nextUnits.Any())
-                            noteContent.AppendLine("Context:");
-                        else
-                            noteContent.AppendLine("No surrounding units found.");
-
                         if (prevUnits.Any())
                         {
-                            noteContent.AppendLine("Previous sources:");
+                            noteContent.AppendLine("Previous source text:");
                             prevUnits
                                 .Select(u => u.GetSource().GetPlainText()).Distinct()
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
 
                             noteContent.AppendLine();
 
-                            noteContent.AppendLine("Previous targets:");
+                            noteContent.AppendLine("Previous target text:");
                             prevUnits
                                 .Select(u => u.GetTarget().GetPlainText()).Distinct()
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
@@ -260,14 +255,14 @@ namespace Apps.Utilities.Actions
 
                         if (nextUnits.Any())
                         {
-                            noteContent.AppendLine("Following sources:");
+                            noteContent.AppendLine("Following source text:");
                             nextUnits
                                 .Select(u => u.GetSource().GetPlainText()).Distinct()
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
 
                             noteContent.AppendLine();
 
-                            noteContent.AppendLine("Following targets:");
+                            noteContent.AppendLine("Following target text:");
                             nextUnits
                                 .Select(u => u.GetTarget().GetPlainText()).Distinct()
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
