@@ -171,7 +171,7 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Add notes to XLIFF non-final segments",  Description = "Adds a note with optional details to each unit if any of its segments are not in state='final'.")]
+        [Action("Add context notes to XLIFF",  Description = "Adds a note with optional details to each unit if any of its segments are not in state='final'.")]
         public async Task<FileDto> AddNoteToXLIFFfile(
      [ActionParameter] FileDto request,
      [ActionParameter][Display("Add segment state to note")] bool? addState = true,
@@ -205,10 +205,10 @@ namespace Apps.Utilities.Actions
                 var noteContent = new StringBuilder();
 
                 if (addState == true)
-                    noteContent.AppendLine($"State: {state}");
+                    noteContent.AppendLine($"<strong>State:</strong> {state}");
 
                 if (addQualityScore == true && !string.IsNullOrEmpty(qualityScore))
-                    noteContent.AppendLine($"Quality score: {qualityScore}");
+                    noteContent.AppendLine($"<strong>Quality score:</strong> {qualityScore}");
 
                 if (addContext == true)
                 {
@@ -225,7 +225,7 @@ namespace Apps.Utilities.Actions
                     string GetText(XElement seg, string elementName) =>
                         (string)seg.Element(ns + elementName) ?? string.Empty;
 
-                    noteContent.AppendLine("Context:");
+                    noteContent.AppendLine("<u>Context:</u>");
 
                     if (prevSegments.Any())
                     {
