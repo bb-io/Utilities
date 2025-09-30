@@ -176,24 +176,18 @@ namespace Apps.Utilities.Actions
         public async Task<FileDto> AddNoteToXliff([ActionParameter] AddNoteToXliffRequest request)
         {
             request.RawStatesToProcess ??= [SegmentStateHelper.Serialize(SegmentState.Initial), SegmentStateHelper.Serialize(SegmentState.Translated), SegmentStateHelper.Serialize(SegmentState.Reviewed)];
-            request.RawStatesToNote ??= [SegmentStateHelper.Serialize(SegmentState.Final)];
-            request.NeighbouringUnitsToInclude ??= 3;
+            request.SurroundingUnitsToInclude ??= 3;
             request.IncludeSegmentState ??= true;
             request.IncludeQualityScore ??= true;
-            request.IncludeNeigboringUnits ??= true;
+            request.IncludeSurroundingUnits ??= true;
 
             var statesToProcess = request.RawStatesToProcess
                 .Select(SegmentStateHelper.ToSegmentState)
                 .Where(s => s.HasValue)
                 .Select(s => s.Value)
                 .ToList();
-            var statesToNote = request.RawStatesToNote
-                .Select(SegmentStateHelper.ToSegmentState)
-                .Where(s => s.HasValue)
-                .Select(s => s.Value)
-                .ToList();
 
-            if (!statesToProcess.Any() || !statesToNote.Any())
+            if (request.IncludeSurroundingUnits == true && !statesToProcess.Any())
                 throw new PluginMisconfigurationException("At least one segment state must be specified in both 'Segment states to add notes into' and 'Segment states to be added as note'.");
 
             var originalXliffStream = await _fileManagementClient.DownloadAsync(request.File);
@@ -227,9 +221,9 @@ namespace Apps.Utilities.Actions
                 {
                     var noteContent = new StringBuilder();
 
-                    if (request.IncludeNeigboringUnits == true)
+                    if (request.IncludeSurroundingUnits == true)
                     {
-                        int start = Math.Max(0, currentUnitIndex - request.NeighbouringUnitsToInclude.Value);
+                        int start = Math.Max(0, currentUnitIndex - request.SurroundingUnitsToInclude.Value);
 
                         var prevUnits = units
                             .Skip(start)
@@ -238,25 +232,31 @@ namespace Apps.Utilities.Actions
 
                         var nextUnits = units
                             .Skip(currentUnitIndex + 1)
-                            .Take(request.NeighbouringUnitsToInclude.Value)
+                            .Take(request.SurroundingUnitsToInclude.Value)
                             .ToList();
 
-                        noteContent.AppendLine("Context:");
+                        if (prevUnits.Any() || nextUnits.Any())
+                            noteContent.AppendLine("Context:");
+                        else
+                            noteContent.AppendLine("No surrounding units found.");
 
                         if (prevUnits.Any())
                         {
                             noteContent.AppendLine("Previous sources:");
                             noteContent.AppendLine(string.Join(" ", prevUnits.Select(u => u.GetSource().GetPlainText())));
-
+                            noteContent.AppendLine();
                             noteContent.AppendLine("Previous targets:");
                             noteContent.AppendLine(string.Join(" ", prevUnits.Select(u => u.GetTarget().GetPlainText())));
                         }
+
+                        if (prevUnits.Any() && nextUnits.Any())
+                            noteContent.AppendLine();
 
                         if (nextUnits.Any())
                         {
                             noteContent.AppendLine("Following sources:");
                             noteContent.AppendLine(string.Join(" ", nextUnits.Select(u => u.GetSource().GetPlainText())));
-
+                            noteContent.AppendLine();
                             noteContent.AppendLine("Following targets:");
                             noteContent.AppendLine(string.Join(" ", nextUnits.Select(u => u.GetTarget().GetPlainText())));
                         }
