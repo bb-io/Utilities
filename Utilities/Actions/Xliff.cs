@@ -172,113 +172,15 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Add context notes to XLIFF",  Description = "Adds a note with optional details to each unit if any of its segments are not in state='final'.")]
-        public async Task<FileDto> AddNoteToXLIFFfile(
-     [ActionParameter] FileDto request,
-     [ActionParameter][Display("Add segment state to note")] bool? addState = true,
-     [ActionParameter][Display("Add quality score to note")] bool? addQualityScore = true,
-     [ActionParameter][Display("Add context segments to note")] bool? addContext = true)
-        {
-            XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
-            XNamespace its = "http://www.w3.org/2005/11/its";
-
-            XDocument doc;
-            using (var stream = await _fileManagementClient.DownloadAsync(request.File))
-            {
-                doc = XDocument.Load(stream);
-            }
-
-            var allSegments = doc.Descendants(ns + "segment").ToList();
-
-            for (int i = 0; i < allSegments.Count; i++)
-            {
-                var segment = allSegments[i];
-                var state = (string)segment.Attribute("state");
-
-                if (string.Equals(state, "final", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                var unit = segment.Ancestors(ns + "unit").FirstOrDefault();
-                if (unit == null) continue;
-
-                string qualityScore = (string)unit.Attribute(its + "locQualityRatingScore");
-
-                var noteContent = new StringBuilder();
-
-                if (addState == true)
-                    noteContent.AppendLine($"<strong>State:</strong> {state}");
-
-                if (addQualityScore == true && !string.IsNullOrEmpty(qualityScore))
-                    noteContent.AppendLine($"<strong>Quality score:</strong> {qualityScore}");
-
-                if (addContext == true)
-                {
-                    var prevSegments = allSegments
-                        .Skip(Math.Max(0, i - 3))
-                        .Take(i - Math.Max(0, i - 3))
-                        .ToList();
-
-                    var nextSegments = allSegments
-                        .Skip(i + 1)
-                        .Take(3)
-                        .ToList();
-
-                    string GetText(XElement seg, string elementName) =>
-                        (string)seg.Element(ns + elementName) ?? string.Empty;
-
-                    noteContent.AppendLine("<u>Context:</u>");
-
-                    if (prevSegments.Any())
-                    {
-                        noteContent.AppendLine("<strong>Previous sources:</strong>");
-                        noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "source"))));
-
-                        noteContent.AppendLine("<strong>Previous targets:</strong>");
-                        noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "target"))));
-                    }
-
-                    if (nextSegments.Any())
-                    {
-                        noteContent.AppendLine("<strong>Following sources:</strong>");
-                        noteContent.AppendLine(string.Join(" ", nextSegments.Select(s => GetText(s, "source"))));
-
-                        noteContent.AppendLine("<strong>Following targets:</strong>");
-                        noteContent.AppendLine(string.Join(" ", nextSegments.Select(s => GetText(s, "target"))));
-                    }
-                }
-
-                if (noteContent.Length > 0)
-                {
-                    var notesElement = unit.Element(ns + "notes");
-                    if (notesElement == null)
-                    {
-                        notesElement = new XElement(ns + "notes");
-                        unit.Add(notesElement);
-                    }
-
-                    notesElement.Add(new XElement(ns + "note", noteContent.ToString().Trim()));
-                }
-            }
-
-            var outStream = new MemoryStream();
-            doc.Save(outStream);
-            outStream.Position = 0;
-            var resultFile = await _fileManagementClient.UploadAsync(outStream, "application/xml", request.File.Name);
-            return new FileDto
-            {
-                File = resultFile
-            };
-        }
-
-        [Action("Add context notes to XLIFF (unit level)", Description = "Adds a note with optional details to each unit if any of its segments are not in state='final'.")]
+        [Action("Add context notes to XLIFF", Description = "Adds notes with optional context to units containing segments not in 'final' state.")]
         public async Task<FileDto> AddNoteToXliff([ActionParameter] AddNoteToXliffRequest request)
         {
             request.RawStatesToProcess ??= [SegmentStateHelper.Serialize(SegmentState.Initial), SegmentStateHelper.Serialize(SegmentState.Translated), SegmentStateHelper.Serialize(SegmentState.Reviewed)];
             request.RawStatesToNote ??= [SegmentStateHelper.Serialize(SegmentState.Final)];
             request.NeighbouringUnitsToInclude ??= 3;
-            request.AddSegmentState ??= true;
-            request.AddQualityScore ??= true;
-            request.AddContext ??= true;
+            request.IncludeSegmentState ??= true;
+            request.IncludeQualityScore ??= true;
+            request.IncludeNeigboringUnits ??= true;
 
             var statesToProcess = request.RawStatesToProcess
                 .Select(SegmentStateHelper.ToSegmentState)
@@ -325,7 +227,7 @@ namespace Apps.Utilities.Actions
                 {
                     var noteContent = new StringBuilder();
 
-                    if (request.AddContext == true)
+                    if (request.IncludeNeigboringUnits == true)
                     {
                         int start = Math.Max(0, currentUnitIndex - request.NeighbouringUnitsToInclude.Value);
 
@@ -363,7 +265,7 @@ namespace Apps.Utilities.Actions
                             noteContent.AppendLine();
                     }
 
-                    if (request.AddSegmentState == true)
+                    if (request.IncludeSegmentState == true)
                     {
                         var stateSerialized = segment.State is not null
                             ? SegmentStateHelper.Serialize(segment.State.Value)
@@ -371,7 +273,7 @@ namespace Apps.Utilities.Actions
                         noteContent.AppendLine($"State: {stateSerialized}");
                     }
 
-                    if (request.AddQualityScore == true && unit.Quality.Score is not null)
+                    if (request.IncludeQualityScore == true && unit.Quality.Score is not null)
                         noteContent.AppendLine($"Quality score: {unit.Quality.Score:F0}");
 
                     if (noteContent.Length == 0)

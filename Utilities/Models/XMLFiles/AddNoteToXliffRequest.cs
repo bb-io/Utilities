@@ -9,23 +9,23 @@ public class AddNoteToXliffRequest
 {
     public FileReference File { get; set; } = new();
 
-    [Display("Segment states to add notes into (all except 'final' by default)")]
+    [Display("Segment states to add notes to (all except 'final' by default)")]
     [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]
     public IEnumerable<string>? RawStatesToProcess { get; set; }
 
-    [Display("Segment states to be added as note ('final' by default)")]
+    [Display("Segment states to include as notes ('final' by default)")]
     [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]
     public IEnumerable<string>? RawStatesToNote { get; set; }
 
-    [Display("Previous and following units to include (default 3)", Description = "Specify how many units to include on each side. Only units with at least one segment to note  will be included")]
+    [Display("Include neighboring units in note")]
+    public bool? IncludeNeigboringUnits { get; set; }
+
+    [Display("Number of neighboring units to include on each side (default 3)")]
     public int? NeighbouringUnitsToInclude { get; set; }
 
-    [Display("Add segment state to note")]
-    public bool? AddSegmentState { get; set; }
+    [Display("Include segment state in note")]
+    public bool? IncludeSegmentState { get; set; }
 
-    [Display("Add quality score to note")]
-    public bool? AddQualityScore { get; set; }
-
-    [Display("Add context segments to note")]
-    public bool? AddContext { get; set; }
+    [Display("Include quality score in note")]
+    public bool? IncludeQualityScore { get; set; }
 }
