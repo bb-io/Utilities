@@ -171,13 +171,12 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Add notes to XLIFF non-final segments",
-        Description = "Adds a note with optional details to each segment that is not in state='final'.")]
+        [Action("Add notes to XLIFF non-final segments",  Description = "Adds a note with optional details to each unit if any of its segments are not in state='final'.")]
         public async Task<FileDto> AddNoteToXLIFFfile(
-        [ActionParameter] FileDto request,
-        [ActionParameter][Display("Add segment state to note")] bool? addState = true,
-        [ActionParameter][Display("Add quality score to note")] bool? addQualityScore = true,
-        [ActionParameter][Display("Add context segments to note")] bool? addContext = true)
+     [ActionParameter] FileDto request,
+     [ActionParameter][Display("Add segment state to note")] bool? addState = true,
+     [ActionParameter][Display("Add quality score to note")] bool? addQualityScore = true,
+     [ActionParameter][Display("Add context segments to note")] bool? addContext = true)
         {
             XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
             XNamespace its = "http://www.w3.org/2005/11/its";
@@ -205,13 +204,13 @@ namespace Apps.Utilities.Actions
 
                 var noteContent = new StringBuilder();
 
-                if (addState.HasValue && addState.Value)
+                if (addState == true)
                     noteContent.AppendLine($"State: {state}");
 
-                if (addQualityScore.HasValue && addQualityScore.Value && !string.IsNullOrEmpty(qualityScore))
+                if (addQualityScore == true && !string.IsNullOrEmpty(qualityScore))
                     noteContent.AppendLine($"Quality score: {qualityScore}");
 
-                if (addContext.HasValue && addContext.Value)
+                if (addContext == true)
                 {
                     var prevSegments = allSegments
                         .Skip(Math.Max(0, i - 3))
@@ -230,7 +229,7 @@ namespace Apps.Utilities.Actions
 
                     if (prevSegments.Any())
                     {
-                        noteContent.AppendLine("Previous sources:");
+                        noteContent.AppendLine("&lt;strong&gt;Previous sources:&lt;/strong&gt;");
                         noteContent.AppendLine(string.Join(" ", prevSegments.Select(s => GetText(s, "source"))));
 
                         noteContent.AppendLine("Previous targets:");
@@ -249,11 +248,11 @@ namespace Apps.Utilities.Actions
 
                 if (noteContent.Length > 0)
                 {
-                    var notesElement = segment.Element(ns + "notes");
+                    var notesElement = unit.Element(ns + "notes");
                     if (notesElement == null)
                     {
                         notesElement = new XElement(ns + "notes");
-                        segment.Add(notesElement);
+                        unit.Add(notesElement);
                     }
 
                     notesElement.Add(new XElement(ns + "note", noteContent.ToString().Trim()));
