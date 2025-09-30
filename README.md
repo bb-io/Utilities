@@ -55,6 +55,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Replace XLIFF source with target** Swap `source` and `target` contents, exchange language attributes, and optionally remove target elements or set a new target language.
 - **Convert HTML to XLIFF** Convert HTML file to XLIFF 1.2 format
 - **Convert XLIFF to HTML** Convert XLIFF file (version 1.2) to HTML file
+- **Add context notes to XLIFF** Add final segments as notes to translated segments in an XLIFF file. When only translated segments are imported into a CAT tool, the source of each segment remains available to reviewers.
 
 ### XML files
 

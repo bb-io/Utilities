@@ -3,11 +3,7 @@ using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml;
 using Blackbird.Applications.Sdk.Common.Files;
@@ -15,6 +11,11 @@ using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using System.Web;
 using Blackbird.Applications.Sdk.Common.Exceptions;
+using Blackbird.Filters.Transformations;
+using Blackbird.Filters.Enums;
+using Blackbird.Filters.Xliff.Xliff2;
+using Blackbird.Filters.Extensions;
+using Blackbird.Filters.Xliff.Xliff1;
 
 namespace Apps.Utilities.Actions
 {
@@ -168,6 +169,141 @@ namespace Apps.Utilities.Actions
             return new ConvertTextToDocumentResponse
             {
                 File = resultFile
+            };
+        }
+
+        [Action("Add context notes to XLIFF", Description = "Adds notes with optional context to units containing segments not in 'final' state.")]
+        public async Task<FileDto> AddNoteToXliff([ActionParameter] AddNoteToXliffRequest request)
+        {
+            request.RawStatesToProcess ??= [SegmentStateHelper.Serialize(SegmentState.Initial), SegmentStateHelper.Serialize(SegmentState.Translated), SegmentStateHelper.Serialize(SegmentState.Reviewed)];
+            request.SurroundingUnitsToInclude ??= 3;
+            request.IncludeSegmentState ??= true;
+            request.IncludeQualityScore ??= true;
+            request.IncludeSurroundingUnits ??= true;
+
+            var statesToProcess = request.RawStatesToProcess
+                .Select(SegmentStateHelper.ToSegmentState)
+                .Where(s => s.HasValue)
+                .Select(s => s.Value)
+                .ToList();
+
+            if (request.IncludeSurroundingUnits == true && !statesToProcess.Any())
+                throw new PluginMisconfigurationException("At least one segment state must be specified in both 'Segment states to add notes into' and 'Segment states to be added as note'.");
+
+            var originalXliffStream = await _fileManagementClient.DownloadAsync(request.File);
+            var originalXliff = await originalXliffStream.ReadString();
+
+            if (!Xliff2Serializer.TryGetXliffVersion(originalXliff, out var originalXliffVersion))
+                throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            Func<Transformation, string> xliffSerializer = originalXliffVersion switch
+            {
+                "1.2" => t => Xliff1Serializer.Serialize(t),
+                ['2', ..] => t => Xliff2Serializer.Serialize(t, Xliff2VersionHelper.ToXliff2Version(originalXliffVersion) ?? throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported.")),
+                _ => throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported."),
+            };
+
+            var transformation = Transformation.Parse(originalXliff, request.File.Name)
+                ?? throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
+
+            var units = transformation.GetUnits()
+                .Where(u => u.Segments.Any(s => statesToProcess.Contains(s.State ?? SegmentState.Initial)))
+                .ToList();
+
+            for ( var currentUnitIndex = 0; currentUnitIndex < units.Count; currentUnitIndex++ )
+            { 
+                var unit = units[currentUnitIndex];
+
+                if (!unit.Segments.Any(s => statesToProcess.Contains(s.State ?? SegmentState.Initial)))
+                    continue;
+
+                foreach (var segment in unit.Segments.Where(s => statesToProcess.Contains(s.State ?? SegmentState.Initial)))
+                {
+                    var noteContent = new StringBuilder();
+
+                    if (request.IncludeSurroundingUnits == true)
+                    {
+                        int start = Math.Max(0, currentUnitIndex - request.SurroundingUnitsToInclude.Value);
+
+                        var prevUnits = units
+                            .Skip(start)
+                            .Take(currentUnitIndex - start)
+                            .ToList();
+
+                        var nextUnits = units
+                            .Skip(currentUnitIndex + 1)
+                            .Take(request.SurroundingUnitsToInclude.Value)
+                            .ToList();
+
+                        if (prevUnits.Any())
+                        {
+                            noteContent.AppendLine("Previous source text:");
+                            prevUnits
+                                .Select(u => u.GetSource().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
+
+                            noteContent.AppendLine();
+
+                            noteContent.AppendLine("Previous target text:");
+                            prevUnits
+                                .Select(u => u.GetTarget().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
+                        }
+
+                        if (prevUnits.Any() && nextUnits.Any())
+                            noteContent.AppendLine();
+
+                        if (nextUnits.Any())
+                        {
+                            noteContent.AppendLine("Following source text:");
+                            nextUnits
+                                .Select(u => u.GetSource().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
+
+                            noteContent.AppendLine();
+
+                            noteContent.AppendLine("Following target text:");
+                            nextUnits
+                                .Select(u => u.GetTarget().GetPlainText()).Distinct()
+                                .ToList().ForEach(t => noteContent.AppendLine(t));
+                        }
+
+                        if (noteContent.Length > 0)
+                            noteContent.AppendLine();
+                    }
+
+                    if (request.IncludeSegmentState == true)
+                    {
+                        var stateSerialized = segment.State is not null
+                            ? SegmentStateHelper.Serialize(segment.State.Value)
+                            : "empty";
+                        noteContent.AppendLine($"State: {stateSerialized}");
+                    }
+
+                    if (request.IncludeQualityScore == true && unit.Quality.Score is not null)
+                        noteContent.AppendLine($"Quality score: {unit.Quality.Score:F0}");
+
+                    if (noteContent.Length == 0)
+                        continue;
+
+                    var note = new Note(noteContent.ToString());
+
+                    if (segment.Id is not null)
+                        note.Reference = segment.Id;
+
+                    if (note.Reference is null && unit.Notes.Any(n => n.Text == note.Text && n.Reference is null))
+                        continue;
+
+                    unit.Notes.Add(note);
+                }
+            }
+
+            var processedXliff = xliffSerializer(transformation);
+            var processedXliffStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
+
+            return new FileDto
+            {
+                File = await _fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name)
             };
         }
 
