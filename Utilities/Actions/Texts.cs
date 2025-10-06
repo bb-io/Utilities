@@ -9,6 +9,7 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using System.Text;
 using Apps.Utilities.ErrorWrapper;
+using Apps.Utilities.Utils;
 
 namespace Apps.Utilities.Actions;
 
@@ -109,7 +110,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
             throw new PluginMisconfigurationException("Regex pattern cannot be null or empty");
         }
 
-        var regexOptions = GetRegexOptions(regex.Flags);
+        var regexOptions = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
         return  ErrorWrapperExecute.ExecuteSafely(
                 () =>
                 {
@@ -130,41 +131,6 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
                 },
                 ex => ex is PluginMisconfigurationException ? $"Invalid regex pattern: {ex.Message}" : $"Unexpected error: {ex.Message}"
             );
-    }
-
-    private RegexOptions GetRegexOptions(IEnumerable<string>? flags)
-    {
-        var options = RegexOptions.None;
-        if (flags == null || !flags.Any()) return options;
-
-        foreach (var flag in flags.Select(f => f.Trim()))
-        {
-            switch (flag.ToLower())
-            {
-                case "insensitive":
-                    options |= RegexOptions.IgnoreCase;
-                    break;
-                case "multiline":
-                    options |= RegexOptions.Multiline;
-                    break;
-                case "singleline":
-                    options |= RegexOptions.Singleline;
-                    break;
-                case "right to left":
-                    options |= RegexOptions.RightToLeft;
-                    break;
-                case "non-capturing":
-                    options |= RegexOptions.ExplicitCapture;
-                    break;
-                case "no backtracking":
-                    options |= RegexOptions.NonBacktracking;
-                    break;
-                case "extended":
-                    options |= RegexOptions.IgnorePatternWhitespace;
-                    break;
-            }
-        }
-        return options;
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]
@@ -261,7 +227,6 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
 
         return result;
     }
-
 
     [Action("Concatenate Strings", Description = "Concatenate Strings")]
     public string ConcatenateStrings([ActionParameter] ConcatenateStringsInput input)
