@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.2" version="2.2" srcLang="en" trgLang="ko">
+  <file id="f1">
+    <unit id="u1">
+      <segment state="translated">
+        <source>San Diego Surf Spots</source>
+        <target>샌디에이고 서핑 명소</target>
+      </segment>
+      <segment state="translated">
+        <source>Best beach breaks</source>
+        <target>최고의 해변 휴양지</target>
+      </segment>
+      <segment state="translated">
+        <source>Discover amazing waves</source>
+        <target>놀라운 파도를 발견하세요</target>
+      </segment>
+    </unit>
+    <unit id="u2">
+      <segment state="final">
+        <source>From Ocean Beach to La Jolla</source>
+        <target>오션 비치에서 라호야까지</target>
+      </segment>
+      <segment state="final">
+        <source>Perfect for all skill levels</source>
+        <target>모든 기술 수준에 완벽</target>
+      </segment>
+    </unit>
+    <unit id="u3">
+      <segment state="final">
+        <source>Explore the surf scene</source>
+        <target>서핑 현장을 탐험하세요</target>
+      </segment>
+      <segment state="final">
+        <source>Beautiful coastal locations</source>
+        <target>아름다운 해안 지역</target>
+      </segment>
+      <segment state="final">
+        <source>Year-round surfing</source>
+        <target>연중 서핑</target>
+      </segment>
+    </unit>
+    <unit id="u4">
+      <segment state="final">
+        <source>By Justin Barr</source>
+        <target>저스틴 바</target>
+      </segment>
+      <segment state="final">
+        <source>Professional surfer and writer</source>
+        <target>프로 서퍼 및 작가</target>
+      </segment>
+    </unit>
+    <unit id="u5">
+      <segment state="translated">
+        <source>Beach Walking</source>
+        <target>해변 산책</target>
+      </segment>
+      <segment state="translated">
+        <source>Enjoy the coastline</source>
+        <target>해안선을 즐기세요</target>
+      </segment>
+      <segment state="translated">
+        <source>Scenic ocean views</source>
+        <target>경치 좋은 바다 전망</target>
+      </segment>
+    </unit>
+    <unit id="u6">
+      <segment state="final">
+        <source>Ceramic Artist</source>
+        <target>세라믹 아티스트</target>
+      </segment>
+      <segment state="final">
+        <source>Creating beautiful pottery</source>
+        <target>아름다운 도자기 제작</target>
+      </segment>
+    </unit>
+    <unit id="u7">
+      <segment state="final">
+        <source>Rock Climber</source>
+        <target>암벽 등반가</target>
+      </segment>
+      <segment state="final">
+        <source>Scaling new heights</source>
+        <target>새로운 높이로 오르기</target>
+      </segment>
+      <segment state="final">
+        <source>Adventure enthusiast</source>
+        <target>모험 애호가</target>
+      </segment>
+    </unit>
+    <unit id="u8">
+      <segment state="final">
+        <source>Writer</source>
+        <target>작가</target>
+      </segment>
+      <segment state="final">
+        <source>Sharing stories and experiences</source>
+        <target>이야기와 경험 공유</target>
+      </segment>
+    </unit>
+    <unit id="u9">
+      <segment state="translated">
+        <source>Sign Out</source>
+        <target>로그아웃</target>
+      </segment>
+      <segment state="translated">
+        <source>Exit your account</source>
+        <target>계정 종료</target>
+      </segment>
+      <segment state="translated">
+        <source>See you next time</source>
+        <target>다음에 또 만나요</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

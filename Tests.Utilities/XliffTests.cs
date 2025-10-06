@@ -16,6 +16,7 @@ public class XliffTests: TestBase
     [DataRow("contentful.html.xlf")]
     [DataRow("estimated-contentful.html.xlf")]
     [DataRow("estimated-v22-sample.xlf")]
+    [DataRow("estimated-file.xliff")]
     public async Task AddNoteToXliff_Works(string testFileName)
     {
         var request = new AddNoteToXliffRequest
