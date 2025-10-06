@@ -180,5 +180,37 @@ namespace Tests.Utilities
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
                 async () => await _fileActions.ExtractTextFromDocument(request));
         }
+
+        [TestMethod]
+        public async Task FilterFileNamesByRegex_IsSuccess()
+        {
+            var files = new FilesToZipRequest
+            {
+                Files = new[]
+                {
+                    new FileReference { Name = "Starting a flight1.xliff" },
+                    new FileReference { Name = "test.html" },
+                    new FileReference { Name = "namespace.xml" },
+                    new FileReference { Name = "testReg.csv" },
+                    new FileReference { Name = "test1.xliff" },
+                    new FileReference { Name = "testReg.xlsx" }
+                }
+            };
+            //var request = new RegexInput
+            //{
+            //    Regex = @"\.(?:xlsx|xml|xliff)$"
+            //};
+
+            var request = new RegexInput
+            {
+                Regex = @"^test",
+                Flags = new List<string> { "insensitive" }
+            };
+            var response = await _fileActions.FilterFileNamesByRegex(files,request);
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(response);
+            Console.WriteLine(json);
+            Assert.IsNotNull(response);
+        }
     }
 }
