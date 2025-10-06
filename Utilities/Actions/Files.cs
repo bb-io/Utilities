@@ -427,40 +427,6 @@ public class Files : BaseInvocable
         }
     }
 
-    [Action("Filter files by name using Regex", Description = "Filters an array of files by file name using a regex. Returns the matching file names (with extensions).")]
-    public async Task<ExtractFilesArrayResponse> FilterFileNamesByRegex([ActionParameter] FilesToZipRequest request, [ActionParameter] RegexInput regex)
-    {
-        if (request?.Files == null || !request.Files.Any())
-            throw new PluginMisconfigurationException("No files provided.");
-        if (regex == null || string.IsNullOrWhiteSpace(regex.Regex))
-            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty.");
-
-        var options = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
-        var r = new Regex(regex.Regex, options);
-
-        var names = request.Files.Select(f => f.Name);
-        var result = new List<string>();
-
-        foreach (var name in names)
-        {
-            var m = r.Match(name);
-            if (!m.Success) continue;
-
-            if (string.IsNullOrWhiteSpace(regex.Group))
-            {
-                result.Add(name);
-            }
-            else
-            {
-                if (!m.Groups.ContainsKey(regex.Group))
-                    throw new PluginMisconfigurationException($"Group '{regex.Group}' not found in the regex pattern");
-                result.Add(m.Groups[regex.Group].Value);
-            }
-        }
-
-        return new ExtractFilesArrayResponse { Files = result };
-    }
-
     [Action("Count file pages", Description = "Counts pages in PDF and DOCX files and returns total page count.")]
     public async Task<PageCountResponse> CountPdfPages([ActionParameter] FilesToZipRequest files)
     {

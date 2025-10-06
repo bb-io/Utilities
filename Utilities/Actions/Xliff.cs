@@ -2,20 +2,21 @@
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using System.Text;
-using System.Xml.Linq;
-using System.Xml;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Blackbird.Filters.Content;
+using Blackbird.Filters.Enums;
+using Blackbird.Filters.Extensions;
+using Blackbird.Filters.Transformations;
+using Blackbird.Filters.Xliff.Xliff1;
+using Blackbird.Filters.Xliff.Xliff2;
 using HtmlAgilityPack;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using Blackbird.Applications.Sdk.Common.Exceptions;
-using Blackbird.Filters.Transformations;
-using Blackbird.Filters.Enums;
-using Blackbird.Filters.Xliff.Xliff2;
-using Blackbird.Filters.Extensions;
-using Blackbird.Filters.Xliff.Xliff1;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Apps.Utilities.Actions
 {
@@ -184,7 +185,7 @@ namespace Apps.Utilities.Actions
             var statesToProcess = request.RawStatesToProcess
                 .Select(SegmentStateHelper.ToSegmentState)
                 .Where(s => s.HasValue)
-                .Select(s => s.Value)
+                .Select(s => s!.Value)
                 .ToList();
 
             if (request.IncludeSurroundingUnits == true && !statesToProcess.Any())
@@ -206,9 +207,7 @@ namespace Apps.Utilities.Actions
             var transformation = Transformation.Parse(originalXliff, request.File.Name)
                 ?? throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
 
-            var units = transformation.GetUnits()
-                .Where(u => u.Segments.Any(s => statesToProcess.Contains(s.State ?? SegmentState.Initial)))
-                .ToList();
+            var units = transformation.GetUnits().ToList();
 
             for ( var currentUnitIndex = 0; currentUnitIndex < units.Count; currentUnitIndex++ )
             { 
@@ -239,14 +238,15 @@ namespace Apps.Utilities.Actions
                         {
                             noteContent.AppendLine("Previous source text:");
                             prevUnits
-                                .Select(u => u.GetSource().GetPlainText()).Distinct()
+                                .Select(u => string.Join(' ', u.GetSource().Parts.Where(x => x is not InlineCode).Select(x => x.Value)))
+                                .Distinct()
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
 
                             noteContent.AppendLine();
 
                             noteContent.AppendLine("Previous target text:");
                             prevUnits
-                                .Select(u => u.GetTarget().GetPlainText()).Distinct()
+                                .Select(u => string.Join(' ', u.GetTarget().Parts.Where(x => x is not InlineCode).Select(x => x.Value)))
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
                         }
 
@@ -257,14 +257,14 @@ namespace Apps.Utilities.Actions
                         {
                             noteContent.AppendLine("Following source text:");
                             nextUnits
-                                .Select(u => u.GetSource().GetPlainText()).Distinct()
+                                .Select(u => string.Join(' ', u.GetSource().Parts.Where(x => x is not InlineCode).Select(x => x.Value)))
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
 
                             noteContent.AppendLine();
 
                             noteContent.AppendLine("Following target text:");
                             nextUnits
-                                .Select(u => u.GetTarget().GetPlainText()).Distinct()
+                                .Select(u => string.Join(' ', u.GetTarget().Parts.Where(x => x is not InlineCode).Select(x => x.Value)))
                                 .ToList().ForEach(t => noteContent.AppendLine(t));
                         }
 
