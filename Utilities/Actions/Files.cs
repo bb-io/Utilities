@@ -182,10 +182,6 @@ public class Files : BaseInvocable
         {
             throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
         }
-        catch (Exception e)
-        {
-            throw new PluginApplicationException(e.Message);
-        }
     }
 
     [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
@@ -210,10 +206,6 @@ public class Files : BaseInvocable
         catch (RegexParseException ex)
         {
             throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
-        }
-        catch (Exception e)
-        {
-            throw new PluginApplicationException(e.Message);
         }
     }
 
