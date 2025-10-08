@@ -165,60 +165,48 @@ public class Files : BaseInvocable
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
     {
-        var file = await _fileManagementClient.DownloadAsync(request.File);
-        var fileMemoryStream = new MemoryStream();
-        await file.CopyToAsync(fileMemoryStream);
-        fileMemoryStream.Position = 0;
-
-        var reader = new StreamReader(fileMemoryStream);
-        var text = await reader.ReadToEndAsync();
-        string replacedText = "";
         try
         {
-            replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
+            await using var file = await _fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(file);
+            var text = await reader.ReadToEndAsync();
+            var replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
+        
+            return new()
+            {
+                File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
+                    request.File.ContentType, request.File.Name)
+            };
         }
         catch (RegexParseException ex)
         {
             throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
         }
-        catch (Exception e)
-        {
-            throw new PluginApplicationException(e.Message);
-        }
-        return new()
-        {
-            File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
-                request.File.ContentType, request.File.Name)
-        };
     }
 
     [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
     public async Task<ExtractTextFromDocumentResponse> ExtractTextFromDocument(
         [ActionParameter] ExtractTextFromDocumentRequest request)
     {
-        var file = await _fileManagementClient.DownloadAsync(request.File);
-        var fileMemoryStream = new MemoryStream();
-        await file.CopyToAsync(fileMemoryStream);
-        fileMemoryStream.Position = 0;
-
-        var reader = new StreamReader(fileMemoryStream);
-        var text = await reader.ReadToEndAsync();
-
         try
         {
+            await using var file = await _fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(file);
+            var text = await reader.ReadToEndAsync();
+            
             text = String.IsNullOrEmpty(request.Group)
                 ? Regex.Match(text, request.Regex).Value
                 : Regex.Match(text, request.Regex).Groups[request.Group].Value;
+
+            return new()
+            {
+                ExtractedText = text
+            };
         }
         catch (RegexParseException ex)
         {
             throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
         }
-
-        return new()
-        {
-            ExtractedText = text
-        };
     }
 
     [Action("Convert text to document", Description = "Convert text to txt, html, json, csv, doc or docx document.")]
@@ -391,7 +379,7 @@ public class Files : BaseInvocable
         if (!request.File.Name.EndsWith(".html") && !request.File.Name.EndsWith(".htm"))
             throw new PluginMisconfigurationException("The input file must be an html file.");
 
-        var htmlInputStream = await _fileManagementClient.DownloadAsync(request.File);
+        await using var htmlInputStream = await _fileManagementClient.DownloadAsync(request.File);
         string htmlString;
         using (var reader = new StreamReader(htmlInputStream))
         {
@@ -630,14 +618,10 @@ public class Files : BaseInvocable
         });
     }
 
-    private static async Task<string> ReadPlaintextFile(Stream file)
+    private static async Task<string> ReadPlaintextFile(Stream stream)
     {
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-
         var stringBuilder = new StringBuilder();
-        using (var reader = new StreamReader(memoryStream))
+        using (var reader = new StreamReader(stream))
         {
             while (!reader.EndOfStream)
             {

@@ -180,5 +180,40 @@ namespace Tests.Utilities
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
                 async () => await _fileActions.ExtractTextFromDocument(request));
         }
+
+        [TestMethod]
+        public async Task ReplaceTextInDocument_ReturnsModifiedFile()
+        {
+            // Arrange
+            var request = new ReplaceTextInDocumentRequest
+            {
+                File = new FileReference { Name = "extract_text_from_document.json" },
+                Regex = @"""workflow_id"":\s*""e3a1f7d2-8c2b-4e3a-9f1b-7c2e5a1b2c3d""",
+                Replace = @"""workflow_id"": ""12345678-1234-1234-1234-123456789abc"""
+            };
+
+            // Act
+            var response = await _fileActions.ReplaceTextInDocument(request);
+
+            // Assert
+            Assert.IsNotNull(response);
+            Assert.IsNotNull(response.File);
+        }
+
+        [TestMethod]
+        public async Task ReplaceTextInDocument_WithInvalidRegex_ThrowsPluginMisconfigurationException()
+        {
+            // Arrange
+            var request = new ReplaceTextInDocumentRequest
+            {
+                File = new FileReference { Name = "extract_text_from_document.json" },
+                Regex = @"""workflow_id"":\s*""(?P[0-9a-f]{8}""", // Invalid regex with incomplete named group
+                Replace = "replacement_text"
+            };
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
+                async () => await _fileActions.ReplaceTextInDocument(request));
+        }
     }
 }
