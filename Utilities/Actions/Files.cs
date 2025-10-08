@@ -185,6 +185,7 @@ public class Files : BaseInvocable
         {
             throw new PluginApplicationException(e.Message);
         }
+        
         return new()
         {
             File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
@@ -196,29 +197,29 @@ public class Files : BaseInvocable
     public async Task<ExtractTextFromDocumentResponse> ExtractTextFromDocument(
         [ActionParameter] ExtractTextFromDocumentRequest request)
     {
-        var file = await _fileManagementClient.DownloadAsync(request.File);
-        var fileMemoryStream = new MemoryStream();
-        await file.CopyToAsync(fileMemoryStream);
-        fileMemoryStream.Position = 0;
-
-        var reader = new StreamReader(fileMemoryStream);
-        var text = await reader.ReadToEndAsync();
-
         try
         {
+            var file = await _fileManagementClient.DownloadAsync(request.File);
+            var reader = new StreamReader(file);
+            var text = await reader.ReadToEndAsync();
+            
             text = String.IsNullOrEmpty(request.Group)
                 ? Regex.Match(text, request.Regex).Value
                 : Regex.Match(text, request.Regex).Groups[request.Group].Value;
+
+            return new()
+            {
+                ExtractedText = text
+            };
         }
         catch (RegexParseException ex)
         {
             throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
         }
-
-        return new()
+        catch (Exception e)
         {
-            ExtractedText = text
-        };
+            throw new PluginApplicationException(e.Message);
+        }
     }
 
     [Action("Convert text to document", Description = "Convert text to txt, html, json, csv, doc or docx document.")]
