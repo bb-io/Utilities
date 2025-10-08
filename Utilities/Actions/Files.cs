@@ -387,7 +387,7 @@ public class Files : BaseInvocable
         if (!request.File.Name.EndsWith(".html") && !request.File.Name.EndsWith(".htm"))
             throw new PluginMisconfigurationException("The input file must be an html file.");
 
-        var htmlInputStream = await _fileManagementClient.DownloadAsync(request.File);
+        await using var htmlInputStream = await _fileManagementClient.DownloadAsync(request.File);
         string htmlString;
         using (var reader = new StreamReader(htmlInputStream))
         {
@@ -626,14 +626,10 @@ public class Files : BaseInvocable
         });
     }
 
-    private static async Task<string> ReadPlaintextFile(Stream file)
+    private static async Task<string> ReadPlaintextFile(Stream stream)
     {
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-
         var stringBuilder = new StringBuilder();
-        using (var reader = new StreamReader(memoryStream))
+        using (var reader = new StreamReader(stream))
         {
             while (!reader.EndOfStream)
             {
