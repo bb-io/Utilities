@@ -165,17 +165,18 @@ public class Files : BaseInvocable
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
     {
-        var file = await _fileManagementClient.DownloadAsync(request.File);
-        var fileMemoryStream = new MemoryStream();
-        await file.CopyToAsync(fileMemoryStream);
-        fileMemoryStream.Position = 0;
-
-        var reader = new StreamReader(fileMemoryStream);
-        var text = await reader.ReadToEndAsync();
-        string replacedText = "";
         try
         {
-            replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
+            await using var file = await _fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(file);
+            var text = await reader.ReadToEndAsync();
+            var replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
+        
+            return new()
+            {
+                File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
+                    request.File.ContentType, request.File.Name)
+            };
         }
         catch (RegexParseException ex)
         {
@@ -185,12 +186,6 @@ public class Files : BaseInvocable
         {
             throw new PluginApplicationException(e.Message);
         }
-        
-        return new()
-        {
-            File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
-                request.File.ContentType, request.File.Name)
-        };
     }
 
     [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
@@ -199,8 +194,8 @@ public class Files : BaseInvocable
     {
         try
         {
-            var file = await _fileManagementClient.DownloadAsync(request.File);
-            var reader = new StreamReader(file);
+            await using var file = await _fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(file);
             var text = await reader.ReadToEndAsync();
             
             text = String.IsNullOrEmpty(request.Group)
