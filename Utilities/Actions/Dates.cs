@@ -133,6 +133,11 @@ public class Dates : BaseInvocable
                 finalResult = ParseWithAutoDetection(input.Text, culture, input.Timezone);
             }
 
+            if (string.IsNullOrEmpty(input.Timezone))
+            {
+                return new DateResponse { Date = DateTime.SpecifyKind(finalResult.UtcDateTime, DateTimeKind.Utc) };
+            }
+
             var inputDateTime = string.IsNullOrEmpty(input.Format)
                 ? DateTime.Parse(input.Text, culture)
                 : DateTime.ParseExact(input.Text, input.Format, culture);
