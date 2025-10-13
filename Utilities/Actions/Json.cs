@@ -32,15 +32,14 @@ namespace Apps.Utilities.Actions
             JToken jsonObj;
             if (input.File != null)
             {
-                jsonObj = await ErrorWrapperExecute.ExecuteSafely(()=> GetParsedJson(input.File));
+                jsonObj = await ErrorWrapperExecute.ExecuteSafely(() => GetParsedJson(input.File));
             }
             else
             {
                 jsonObj = ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString));
             }
 
-            JToken? token = jsonObj.SelectToken(input.PropertyPath);
-
+            var token = GetTokenAtPath(jsonObj, input.PropertyPath);
             var value = token?.ToString() ?? string.Empty;
 
             return new GetJsonPropertyOutput
@@ -53,12 +52,13 @@ namespace Apps.Utilities.Actions
         public async Task<GetJsonPropertyOutput> Lookup([ActionParameter] JsonLookupInput input)
         {
             var jsonObj = await GetParsedJson(input.File);
-            JToken? arrayToken = jsonObj.SelectToken(input.LookupArrayPropertyPath);
+            var arrayToken = GetTokenAtPath(jsonObj, input.LookupArrayPropertyPath);
             if (arrayToken == null || arrayToken.Type != JTokenType.Array)
                 throw new PluginMisconfigurationException("The specified property does not exist or is not an array.");
 
             var matchingItem = arrayToken
-                .FirstOrDefault(item => item?.SelectToken(input.LookupPropertyPath)?.ToObject<string>() == input.LookupPropertyValue);
+                .FirstOrDefault(item =>
+                    item?.SelectToken(input.LookupPropertyPath)?.ToObject<string>() == input.LookupPropertyValue);
 
             return new GetJsonPropertyOutput
             {
@@ -70,7 +70,7 @@ namespace Apps.Utilities.Actions
         public async Task<ChangeJsonPropertyOutput> ChangeJsonProperty([ActionParameter] ChangeJsonPropertyInput input)
         {
             var jsonObj = await GetParsedJson(input.File);
-            JToken? tokenToChange = jsonObj.SelectToken(input.PropertyPath);
+            var tokenToChange = GetTokenAtPath(jsonObj, input.PropertyPath);
 
             if (tokenToChange != null)
             {
@@ -108,7 +108,9 @@ namespace Apps.Utilities.Actions
             }
 
             if (string.IsNullOrWhiteSpace(jsonString))
+            {
                 throw new PluginMisconfigurationException("The file is empty. Please check the input.");
+            }
 
             try
             {
@@ -116,7 +118,21 @@ namespace Apps.Utilities.Actions
             }
             catch (JsonReaderException)
             {
-                throw new PluginMisconfigurationException("The file content is not valid JSON. Please check the file input");
+                throw new PluginMisconfigurationException(
+                    "The file content is not valid JSON. Please check the file input");
+            }
+        }
+
+        private JToken? GetTokenAtPath(JToken jsonObj, string path)
+        {
+            try
+            {
+                return jsonObj.SelectToken(path);
+            }
+            catch (JsonException ex)
+            {
+                throw new PluginMisconfigurationException(
+                    $"The provided property path is invalid. Check the file/string you are sending and the property path. Error details: {ex.Message}");
             }
         }
     }
