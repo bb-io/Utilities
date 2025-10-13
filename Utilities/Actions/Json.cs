@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Apps.Utilities.ErrorWrapper;
+using Apps.Utilities.Models.Enums;
 using Apps.Utilities.Models.Json;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
@@ -69,16 +70,45 @@ namespace Apps.Utilities.Actions
         [Action("Change JSON property value")]
         public async Task<ChangeJsonPropertyOutput> ChangeJsonProperty([ActionParameter] ChangeJsonPropertyInput input)
         {
+            var nullValueHandling = input.GetNullValueHandlingStrategy();
+            if(nullValueHandling == NullValueHandlingStrategy.Ignore && string.IsNullOrEmpty(input.NewValue))
+            {
+                return new ChangeJsonPropertyOutput
+                {
+                    File = input.File
+                };
+            }
+            
+            if(nullValueHandling == NullValueHandlingStrategy.Error && string.IsNullOrEmpty(input.NewValue))
+            {
+                throw new PluginMisconfigurationException("The new value cannot be null or empty. Please check the input.");
+            }
+            
+            
             var jsonObj = await GetParsedJson(input.File);
             var tokenToChange = GetTokenAtPath(jsonObj, input.PropertyPath);
 
             if (tokenToChange != null)
             {
-                tokenToChange.Replace(JToken.FromObject(input.NewValue));
+                if(input.NewValue == null)
+                {
+                    tokenToChange.Replace(JValue.CreateNull());
+                }
+                else
+                {
+                    tokenToChange.Replace(JToken.FromObject(input.NewValue));
+                }
             }
             else
             {
-                jsonObj[input.PropertyPath] = JToken.FromObject(input.NewValue);
+                if (string.IsNullOrEmpty(input.NewValue))
+                {
+                    jsonObj[input.PropertyPath] = null;
+                }
+                else
+                {
+                    jsonObj[input.PropertyPath] = JToken.FromObject(input.NewValue);
+                }
             }
 
             var updatedJson = jsonObj.ToString(Formatting.Indented);

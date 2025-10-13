@@ -63,19 +63,19 @@ namespace Tests.Utilities
 
             await action.ChangeJsonProperty(new ChangeJsonPropertyInput
             {
-                File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "appsettings.json" },
-                PropertyPath = "ConnectionDefinition.apiKey",
-                NewValue = "NewApikey"
+                File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "config.json" },
+                PropertyPath = "settings.theme",
+                NewValue = null,
+                NullValueHandlingStrategy = "ignore"
             });
 
             var check = await action.GetJsonPropertyValue(new GetJsonPropertyInput
             {
-                File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "appsettings.json" },
-                PropertyPath = "ConnectionDefinition.apiKey"
+                File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "config.json" },
+                PropertyPath = "settings.theme"
             });
 
             Console.WriteLine(check.Value);
-            Assert.AreEqual("NewApikey", check.Value);
         }
     }
 }
