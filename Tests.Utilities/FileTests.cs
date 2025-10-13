@@ -140,13 +140,12 @@ namespace Tests.Utilities
         {
             var response = _fileActions.ConvertTextToDocument( 
                 new ConvertTextToDocumentRequest { 
-                    Text = "Some text oh lala", 
-                    FileExtension=".txt", 
-                    Filename="TestNamea1", 
-                    Encoding= "utf8bom"
+                    Text = "{\"settings\":{}}  ", 
+                    FileExtension=".json", 
+                    Filename="config"
                 });
+            
             Assert.IsNotNull(response.Result);
-
         }
 
         [TestMethod]
