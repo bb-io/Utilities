@@ -9,7 +9,6 @@ using CsvHelper;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text.RegularExpressions;
 using Apps.Utilities.Models.Texts;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Apps.Utilities.Models.Csv;
@@ -267,8 +266,6 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
     }
 
-
-
     [Action("Add CSV row", Description = "Add a new row at the specified row index to the CSV file")]
     public async Task<CsvFile> AddRow(
     [ActionParameter] CsvFile csvFile,
@@ -277,12 +274,17 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     {
         var records = await ReadCsv(csvFile, csvOptions);
 
+        if (rawOptions.RowPosition == null)
+        {
+            rawOptions.RowPosition = records.Count;
+        }
+
         if (rawOptions.RowPosition < 0 || rawOptions.RowPosition > records.Count)
         {
             throw new PluginMisconfigurationException("Invalid row position specified. Please check the input and try again");
         }
 
-        records.Insert(rawOptions.RowPosition, rawOptions.InputValues.ToList());
+        records.Insert((int)rawOptions.RowPosition, rawOptions.InputValues.ToList());
 
         return await WriteCsv(records, csvOptions, csvFile.File.Name, csvFile.File.ContentType);
     }

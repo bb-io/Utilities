@@ -3,11 +3,6 @@ using Apps.Utilities.Models.Csv;
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Texts;
 using Blackbird.Applications.Sdk.Common.Files;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities;
@@ -101,17 +96,34 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
-    public async Task AddRows_works()
+    public async Task AddRows_WithRowPosition_Works()
     {
-        var file = new FileReference { Name = "test.csv" };
+        // Arrange
+        var file = new FileReference { Name = "testReg.csv" };
         var csvFile = new CsvFile { File = file };
+        var csvOptions = new CsvOptions { HasHeader = true };
+        var rowPosition = new RowPositionOption
+        {
+            RowPosition = 0,
+            InputValues = ["CA", "GB"]
+        };
 
-        var response = await actions.AddRow(csvFile, new CsvOptions { HasHeader = true }, 
-            new RowPositionOption { RowPosition=6, InputValues = ["TRW,Nicole Ponkey,Global Purchasing Manager at TRW Automotive,44.197.866.7800,,производитель автозапчастей,29,09,не зацікавлені,Великобритания,Стальная шерсть,,,Интернет,https://www.trwaftermarket.com/ru/,Стальная шерсть,Наташа,"] });
-
+        // Act
+        var response = await actions.AddRow(csvFile, csvOptions, rowPosition);
     }
 
+    [TestMethod]
+    public async Task AddRows_WithoutRowPosition_Works()
+    {
+        // Arrange
+        var file = new FileReference { Name = "testReg.csv" };
+        var csvFile = new CsvFile { File = file };
+        var csvOptions = new CsvOptions { HasHeader = true };
+        var rowPosition = new RowPositionOption { InputValues = ["DE", "FI", "123"] };
 
+        // Act
+        var response = await actions.AddRow(csvFile, csvOptions, rowPosition);
+    }
 
     [TestMethod]
     public async Task RemoveXlsColumns_works()
