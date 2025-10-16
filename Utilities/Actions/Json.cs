@@ -54,16 +54,32 @@ namespace Apps.Utilities.Actions
         {
             var jsonObj = await GetParsedJson(input.File);
             var arrayToken = GetTokenAtPath(jsonObj, input.LookupArrayPropertyPath);
-            if (arrayToken == null || arrayToken.Type != JTokenType.Array)
-                throw new PluginMisconfigurationException("The specified property does not exist or is not an array.");
+            if (arrayToken == null)
+                return new GetJsonPropertyOutput { Value = string.Empty };
 
-            var matchingItem = arrayToken
+            if (arrayToken.Type != JTokenType.Array)
+                throw new PluginMisconfigurationException(
+                    $"The specified path '{input.LookupArrayPropertyPath}' does not point to a JSON array. Actual type: {arrayToken.Type}.");
+
+
+            var jArray = (JArray)arrayToken;
+
+            var matchingItem = jArray
+                .OfType<JToken>()
                 .FirstOrDefault(item =>
-                    item?.SelectToken(input.LookupPropertyPath)?.ToObject<string>() == input.LookupPropertyValue);
+                {
+                    var prop = SafeSelectFirstToken(item, input.LookupPropertyPath);
+                    var propValue = prop?.ToObject<string>();
+                    return propValue == input.LookupPropertyValue;
+                });
+
+            var resultToken = matchingItem != null
+                ? SafeSelectFirstToken(matchingItem, input.ResultPropertyPath)
+                : null;
 
             return new GetJsonPropertyOutput
             {
-                Value = matchingItem?.SelectToken(input.ResultPropertyPath)?.ToObject<string>() ?? string.Empty
+                Value = resultToken?.ToObject<string>() ?? string.Empty
             };
         }
 
@@ -126,6 +142,8 @@ namespace Apps.Utilities.Actions
                 File = updatedFile
             };
         }
+
+        private JToken? SafeSelectFirstToken(JToken root, string path) => ErrorWrapperExecute.ExecuteSafely(() => root.SelectTokens(path).FirstOrDefault());
 
         private async Task<JObject> GetParsedJson(FileReference file)
         {
