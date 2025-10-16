@@ -169,6 +169,15 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         return res;
     }
 
+    [Action("Convert text to lower case", Description = "Converts the input text to lower case")]
+    public string ConvertToLowerCase([ActionParameter] TextDto input)
+    {
+        if (input == null || string.IsNullOrEmpty(input.Text))
+            return string.Empty;
+
+        return input.Text.ToLowerInvariant();
+    }
+
     [Action("Extract first occurence from text", Description = "Returns the first option that matches in a text of a predefined list of possible options")]
     public string? ExtractFirstOccurence([ActionParameter] TextDto input, [ActionParameter] OccurencesDto occurences)
     {
