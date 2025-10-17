@@ -107,6 +107,7 @@ This free app provides generic utility actions that can come in useful in any bi
 
 - **Get JSON property value** Get JSON property value.
 - **Change JSON property value** Changes the JSON property value.
+- **Get JSON array property values** Returns all elements under a JSON array property as text list
 
 
 ### Arrays
