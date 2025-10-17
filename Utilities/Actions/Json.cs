@@ -83,6 +83,41 @@ namespace Apps.Utilities.Actions
             };
         }
 
+        [Action("Get JSON array property values", Description = "Returns all elements under a JSON array property as text list")]
+        public async Task<GetJsonArrayPropertyOutput> GetJsonArrayPropertyValues([ActionParameter] GetJsonPropertyInput input)
+        {
+            if (input.File is null && input.JsonString is null)
+                throw new PluginMisconfigurationException("Either a JSON file or JSON string must be provided");
+
+            JToken jsonObj;
+            if (input.File != null)
+            {
+                jsonObj = await ErrorWrapperExecute.ExecuteSafely(() => GetParsedJson(input.File));
+            }
+            else
+            {
+                jsonObj = ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString));
+            }
+
+            var token = GetTokenAtPath(jsonObj, input.PropertyPath);
+            if (token == null)
+                throw new PluginMisconfigurationException($"Property '{input.PropertyPath}' not found in JSON.");
+
+            if (token.Type != JTokenType.Array)
+                throw new PluginMisconfigurationException($"Property '{input.PropertyPath}' is not a JSON array.");
+
+            var list = new List<string>();
+            foreach (var element in token)
+            {
+                list.Add(element.ToString(Formatting.None));
+            }
+
+            return new GetJsonArrayPropertyOutput
+            {
+                Values = list
+            };
+        }
+
         [Action("Change JSON property value")]
         public async Task<ChangeJsonPropertyOutput> ChangeJsonProperty([ActionParameter] ChangeJsonPropertyInput input)
         {
