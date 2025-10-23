@@ -2,17 +2,8 @@
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
-using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
-using Blackbird.Applications.Sdk.Common.Invocation;
-using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using System.Xml;
-using System.Xml.Linq;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities
@@ -55,7 +46,7 @@ namespace Tests.Utilities
                 File = file
             };
 
-            await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(()=> _fileActions.UnzipFiles(fileDto));
+            await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() => _fileActions.UnzipFiles(fileDto));
         }
 
         [TestMethod]
@@ -66,7 +57,7 @@ namespace Tests.Utilities
             var file3 = new FileReference { Name = "multiple_namespace.xml" };
             var response = await _fileActions.ToZipFiles(new FilesToZipRequest
             {
-                Files = new[]{file1, file2, file3}
+                Files = new[] { file1, file2, file3 }
             });
 
             Assert.IsNotNull(response.File);
@@ -76,7 +67,7 @@ namespace Tests.Utilities
         [TestMethod]
         public async Task ConvertDocumentToText_ReturnsConvertedText()
         {
-            var file = new LoadDocumentRequest { File=new FileReference { Name= "test.pdf" } };
+            var file = new LoadDocumentRequest { File = new FileReference { Name = "test.pdf" } };
 
             var response = _fileActions.LoadDocument(file);
 
@@ -138,13 +129,14 @@ namespace Tests.Utilities
         [TestMethod]
         public async Task Convert_Text_To_File_returns_true()
         {
-            var response = _fileActions.ConvertTextToDocument( 
-                new ConvertTextToDocumentRequest { 
-                    Text = "{\"settings\":{}}  ", 
-                    FileExtension=".json", 
-                    Filename="config"
+            var response = _fileActions.ConvertTextToDocument(
+                new ConvertTextToDocumentRequest
+                {
+                    Text = "{\"settings\":{}}  ",
+                    FileExtension = ".json",
+                    Filename = "config"
                 });
-            
+
             Assert.IsNotNull(response.Result);
         }
 
@@ -213,6 +205,24 @@ namespace Tests.Utilities
             // Act & Assert
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
                 async () => await _fileActions.ReplaceTextInDocument(request));
+        }
+
+        [TestMethod]
+        public async Task ReplaceMultipleTextsInDocument_ReturnsModifiedFile()
+        {
+            // Arrange
+            var request = new FileDto { File = new FileReference { Name = "test.txt" } };
+            var regexManyInput = new RegexReplaceMultipleInput
+            {
+                RegexPatterns = ["t", ","],
+                Replacements = ["T", "!"]
+            };
+
+            // Act
+            var response = await _fileActions.ReplaceMultipleTextsInDocument(request, regexManyInput);
+
+            // Assert
+            Assert.IsNotNull(response.File);
         }
     }
 }

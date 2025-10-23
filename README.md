@@ -38,6 +38,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Sanitize file name** removes any defined characters from a file name (without extension).
 - **Get file size** returns the size of a file in bytes.
 - **Replace using Regex in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace using Regex' but works with files.
+- **Replace multiple Regex patterns in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace multiple Regex patterns' but works with files.
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
@@ -94,7 +95,8 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Sanitize text** removes any defined characters from a text.
 - **Extract using Regex** returns the first match from the provided text using a Regular Expression as input.
 - **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
-- **Replace using Regex** use Regular Expressions to search and replace within text
+- **Replace using Regex** use Regular Expressions to search and replace within text.
+- **Replace multiple Regex patterns** use Regular Expressions to search and replace multiple patterns within text.
 - **Convert text to document** Convert text to txt, html, json, csv, doc or docx document.
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.

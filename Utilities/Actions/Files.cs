@@ -1,4 +1,5 @@
-﻿using Apps.Utilities.ErrorWrapper;
+﻿using AngleSharp.Io;
+using Apps.Utilities.ErrorWrapper;
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
@@ -10,6 +11,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Vml.Office;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -182,6 +184,48 @@ public class Files : BaseInvocable
         {
             throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
         }
+    }
+
+    [Action("Replace multiple Regex patterns in document", Description = "Use Regular Expressions to search and replace multiple patterns within text. Works only with text based files (txt, html, etc.).")]
+    public async Task<ReplaceTextInDocumentResponse> ReplaceMultipleTextsInDocument(
+        [ActionParameter] FileDto request,
+        [ActionParameter] RegexReplaceMultipleInput regex)
+    {
+        if (regex.RegexPatterns.Count() != regex.Replacements.Count())
+            throw new PluginMisconfigurationException("The number of regex patterns must match the number of replacement strings.");
+
+        if (regex.RegexPatterns.Any(string.IsNullOrEmpty))
+            throw new PluginMisconfigurationException("Regex patterns cannot contain empty strings.");
+
+        if (regex.Replacements.Any(string.IsNullOrEmpty))
+            throw new PluginMisconfigurationException("Replacement strings cannot contain empty strings.");
+
+        await using var download = await _fileManagementClient.DownloadAsync(request.File);
+        using var reader = new StreamReader(download);
+        var result = await reader.ReadToEndAsync();
+
+        var regexPairs = regex.RegexPatterns.Zip(regex.Replacements, (r, rep) => new { Regex = r, Replace = rep });
+
+        foreach (var pair in regexPairs)
+        {
+            try
+            {
+                var pattern = new Regex(pair.Regex);
+                result = pattern.Replace(result, pair.Replace);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new PluginApplicationException($"Error replacing '{pair.Regex}' with '{pair.Replace}': {ex.Message}");
+            }
+        }
+
+        return new()
+        {
+            File = await _fileManagementClient.UploadAsync(
+                new MemoryStream(Encoding.UTF8.GetBytes(result)),
+                request.File.ContentType,
+                request.File.Name)
+        };
     }
 
     [Action("Extract using Regex from document", Description = "Extract text from a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Extract using Regex' but works with files")]
