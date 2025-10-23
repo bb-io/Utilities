@@ -161,7 +161,21 @@ public class TextTests : TestBase
         foreach (char c in result)
         {
             Assert.IsTrue(chars.Contains(c));
-        }
-        
+        }        
+    }
+
+    [TestMethod]
+    public void ReplaceManyRegex_Works()
+    {
+        var textDto = new TextDto { Text = "Übermäßig süße Bären mögen Öl und Käse." };
+        var input = new RegexReplaceMultipleInput
+        {
+            RegexPatterns = ["Ä", "ä", "Ö", "ö", "Ü", "ü", "ß"],
+            Replacements = ["Ae", "ae", "Oe", "oe", "Ue", "ue", "ss"]
+        };
+        var result = _textActions.ReplaceManyRegex(textDto, input);
+        var expected = "Uebermaessig suesse Baeren moegen Oel und Kaese.";
+        Console.WriteLine(result);
+        Assert.AreEqual(expected, result);
     }
 }

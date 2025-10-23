@@ -214,5 +214,23 @@ namespace Tests.Utilities
             await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
                 async () => await _fileActions.ReplaceTextInDocument(request));
         }
+
+        [TestMethod]
+        public async Task ReplaceMultipleTextsInDocument_ReturnsModifiedFile()
+        {
+            // Arrange
+            var request = new FileDto { File = new FileReference { Name = "test.txt" } };
+            var regexManyInput = new RegexReplaceMultipleInput
+            {
+                RegexPatterns = ["t", ","],
+                Replacements = ["T", "!"]
+            };
+
+            // Act
+            var response = await _fileActions.ReplaceMultipleTextsInDocument(request, regexManyInput);
+
+            // Assert
+            Assert.IsNotNull(response.File);
+        }
     }
 }

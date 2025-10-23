@@ -209,6 +209,41 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         }
     }
 
+    [Action("Replace multiple using Regex", Description = "Use Regular Expressions to search and replace multiple patterns within text")]
+    public string ReplaceManyRegex([ActionParameter] TextDto input, [ActionParameter] RegexReplaceMultipleInput regex)
+    {
+        if (regex.RegexPatterns.Count() != regex.Replacements.Count())
+            throw new PluginMisconfigurationException("The number of regex patterns must match the number of replacement strings.");
+
+        if (regex.RegexPatterns.Any(string.IsNullOrEmpty))
+            throw new PluginMisconfigurationException("Regex patterns cannot contain empty strings.");
+
+        if (regex.Replacements.Any(string.IsNullOrEmpty))
+            throw new PluginMisconfigurationException("Replacement strings cannot contain empty strings.");
+
+        if (string.IsNullOrEmpty(input.Text))
+            throw new PluginMisconfigurationException("Input text cannot be empty.");
+
+        var result = input.Text;
+        var regexPairs = regex.RegexPatterns.Zip(regex.Replacements, (r, rep) => new { Regex = r, Replace = rep });
+
+        foreach (var pair in regexPairs)
+        {
+            try
+            {
+                var pattern = new Regex(pair.Regex);
+                result = pattern.Replace(result, pair.Replace);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new PluginApplicationException($"Error replacing '{pair.Regex}' with '{pair.Replace}': {ex.Message}");
+            }
+        }
+
+        return result;
+    }
+
+
     [Action("Trim text", Description = "Trim specified text")]
     public string TrimText([ActionParameter] TextDto text, [ActionParameter] TrimTextInput input)
     {
