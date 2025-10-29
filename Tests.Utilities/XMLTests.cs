@@ -476,6 +476,17 @@ public class XMLTests : TestBase
         Assert.IsNotNull(result);
     }
 
+    [TestMethod]
+    public async Task RemoveTargetTextAsync_ReturnsSucces()
+    {
+        var actions = new Xliff(FileManager);
+        var input = new RemoveTargetTextRequest { File = new FileReference { Name = "estimated-v22-sample.xlf" }, TargetStates = ["Final"] };
+        var result = actions.RemoveTargetText(input);
+
+        Console.WriteLine(result);
+        Assert.IsNotNull(result);
+    }
+
     private string GetTestFolderPath()
     {
         var config = new ConfigurationBuilder()
