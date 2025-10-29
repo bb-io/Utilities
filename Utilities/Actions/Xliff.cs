@@ -368,6 +368,48 @@ namespace Apps.Utilities.Actions
             }
         }
 
+        [Action("Remove target text from XLIFF", Description = "Removes only inline text inside target. Optionally process only targets with a specific state.")]
+        public async Task<ConvertTextToDocumentResponse> RemoveTargetText([ActionParameter] RemoveTargetTextRequest request)
+        {
+            if (request.File == null)
+                throw new PluginMisconfigurationException("File is required.");
+
+            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+
+            var statesFilter = (request.TargetStates ?? Enumerable.Empty<string>())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => s.Trim())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var targets = doc.Descendants().Where(e => e.Name.LocalName == "target").ToList();
+
+            foreach (var target in targets)
+            {
+                if (statesFilter.Count > 0)
+                {
+                    var segment = target.Ancestors().FirstOrDefault(a => a.Name.LocalName == "segment");
+                    var segState = segment?.Attributes().FirstOrDefault(a => a.Name.LocalName == "state")?.Value;
+
+                    var targetState = target.Attributes().FirstOrDefault(a => a.Name.LocalName == "state")?.Value;
+
+                    var effectiveState = !string.IsNullOrEmpty(segState) ? segState : (targetState ?? string.Empty);
+                    if (!statesFilter.Contains(effectiveState))
+                        continue;
+                }
+
+                target.RemoveNodes();
+            }
+
+            using var streamOut = new MemoryStream();
+            var settings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, NewLineHandling = NewLineHandling.Replace };
+            using (var writer = XmlWriter.Create(streamOut, settings)) doc.Save(writer);
+            streamOut.Position = 0;
+
+            var result = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType ?? "application/xml", request.File.Name);
+            return new ConvertTextToDocumentResponse { File = result };
+        }
+
         private async Task<XDocument> LoadXliffDocumentAsync(FileReference file)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(file);
