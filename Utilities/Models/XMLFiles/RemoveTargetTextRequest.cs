@@ -9,7 +9,7 @@ namespace Apps.Utilities.Models.XMLFiles
     public class RemoveTargetTextRequest
     {
         [Display("XLIFF file")]
-        public FileReference File { get; set; } = default!;
+        public FileReference File { get; set; }
 
         [Display("Only targets with state"), Description("Process only <target> elements whose @state equals any of these values (case-insensitive). Leave empty to process all.")]
         [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]

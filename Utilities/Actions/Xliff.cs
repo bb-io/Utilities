@@ -368,7 +368,7 @@ namespace Apps.Utilities.Actions
             }
         }
 
-        [Action("Remove target text from XLIFF", Description = "Removes only inline text inside <target> elements while preserving inline codes/tags. Optionally process only targets with a specific state.")]
+        [Action("Remove target text from XLIFF", Description = "Removes only inline text inside target. Optionally process only targets with a specific state.")]
         public async Task<ConvertTextToDocumentResponse> RemoveTargetText([ActionParameter] RemoveTargetTextRequest request)
         {
             if (request.File == null)
