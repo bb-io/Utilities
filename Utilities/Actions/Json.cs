@@ -89,32 +89,21 @@ namespace Apps.Utilities.Actions
             if (input.File is null && input.JsonString is null)
                 throw new PluginMisconfigurationException("Either a JSON file or JSON string must be provided");
 
-            JToken jsonObj;
-            if (input.File != null)
-            {
-                jsonObj = await ErrorWrapperExecute.ExecuteSafely(() => GetParsedJson(input.File));
-            }
-            else
-            {
-                jsonObj = ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString));
-            }
+            var jsonObj = input.File != null
+                ? await ErrorWrapperExecute.ExecuteSafely(() => GetParsedJson(input.File))
+                : ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString ?? string.Empty));
 
-            var token = GetTokenAtPath(jsonObj, input.PropertyPath);
-            if (token == null)
-                throw new PluginMisconfigurationException($"Property '{input.PropertyPath}' not found in JSON.");
+            var token = GetTokenAtPath(jsonObj, input.PropertyPath)
+                ?? throw new PluginMisconfigurationException($"Property '{input.PropertyPath}' not found in JSON.");
 
             if (token.Type != JTokenType.Array)
                 throw new PluginMisconfigurationException($"Property '{input.PropertyPath}' is not a JSON array.");
 
-            var list = new List<string>();
-            foreach (var element in token)
-            {
-                list.Add(element.ToString(Formatting.None));
-            }
-
             return new GetJsonArrayPropertyOutput
             {
-                Values = list
+                Values = token.Select(el => el.Type == JTokenType.String
+                    ? el.Value<string>() ?? string.Empty
+                    : el.ToString(Formatting.None))
             };
         }
 
