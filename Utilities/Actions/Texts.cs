@@ -67,13 +67,13 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     }
 
     [Action("Count characters in text", Description = "Returns number of chracters in text.")]
-    public int CountCharsInText([ActionParameter] TextDto input)
+    public double CountCharsInText([ActionParameter] TextDto input)
     {
         return input.Text.Length;
     }
 
     [Action("Count words in text", Description = "Returns number of words in text.")]
-    public int CountWordsInText([ActionParameter] TextDto input)
+    public double CountWordsInText([ActionParameter] TextDto input)
     {
         char[] punctuationCharacters = input.Text.Where(char.IsPunctuation).Distinct().ToArray();
         var words = input.Text.Split().Select(x => x.Trim(punctuationCharacters));
@@ -81,7 +81,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     }
 
     [Action("Count words in texts", Description = "Returns number of words in text from array.")]
-    public int CountWordsInTextFromArray([ActionParameter] TextsDto input)
+    public double CountWordsInTextFromArray([ActionParameter] TextsDto input)
     {
         int totalWords = 0;
 
