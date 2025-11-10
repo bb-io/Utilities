@@ -13,12 +13,21 @@ namespace Apps.Utilities.Actions;
 [ActionList("Arrays")]
 public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocationContext)
 {
-    [Action("Array contains", Description = "Check if array contains a ceratin entry")]
-    public ArrayContainsResponse ArrayContains([ActionParameter] ArrayContainsRequest input)
+    [Action("Array contains", Description = "Check if array contains a certain entry")]
+    public ArrayContainsResponse ArrayContains(
+    [ActionParameter] ArrayContainsRequest input,
+    [ActionParameter] [Display("Case sensitive", Description = "By default, this action is case sensitive.")] bool? CaseSensitive
+)
     {
+        bool caseSensitive = CaseSensitive ?? true; 
+
+        bool contains = caseSensitive
+            ? input.Array.Contains(input.Entry)
+            : input.Array.Any(x => string.Equals(x, input.Entry, StringComparison.OrdinalIgnoreCase));
+
         return new()
         {
-            Contains = input.Array.Contains(input.Entry)
+            Contains = contains
         };
     }
 
