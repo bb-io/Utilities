@@ -114,15 +114,19 @@ public class PollingList
         }
 
         // 3. Both times specified - handle normal case and crossing midnight
-        if (startTime!.Value < endTime!.Value)
+        if (startTime.HasValue && endTime.HasValue)
         {
-            // Normal case: 09:00 - 17:00
-            return currentTime >= startTime.Value && currentTime <= endTime.Value;
+            if (startTime.Value < endTime.Value)
+            {
+                // Normal case: 09:00 - 17:00
+                return currentTime >= startTime.Value && currentTime <= endTime.Value;
+            }
+            else
+            {
+                // Crossing midnight: 22:00 - 06:00
+                return currentTime >= startTime.Value || currentTime <= endTime.Value;
+            }
         }
-        else
-        {
-            // Crossing midnight: 22:00 - 06:00
-            return currentTime >= startTime.Value || currentTime <= endTime.Value;
-        }
+        return false;
     }
 }
