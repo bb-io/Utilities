@@ -19,12 +19,12 @@ public class Dates : BaseInvocable
     {
         try
         {
-            bool hasRelativeTime = input.AddHours.HasValue || input.AddMinutes.HasValue;
+            bool hasRelativeTime = input.AddHours.HasValue || input.AddMinutes.HasValue || input.BusinessHours.HasValue;
             bool hasFixedTime = !string.IsNullOrWhiteSpace(input.FixedTime);
 
             if (hasFixedTime && hasRelativeTime)
             {
-                throw new PluginMisconfigurationException("Only one of 'Set time' or 'Add hours/minutes' should be provided, not both.");
+                throw new PluginMisconfigurationException("Only one of 'Set time' or 'Add hours/minutes/business hours' should be provided, not both.");
             }
 
             TimeSpan? fixedTimeSpan = null;
@@ -57,6 +57,10 @@ public class Dates : BaseInvocable
                     0
                 );
             }
+            else if (input.BusinessHours.HasValue)
+            {
+                adjustedDate = AddBusinessHours(adjustedDate, input.BusinessHours.Value);
+            }
             else
             {
                 adjustedDate = adjustedDate
@@ -74,6 +78,7 @@ public class Dates : BaseInvocable
             throw new PluginApplicationException($"Timezone '{input.Timezone}' not recognized.", ex);
         }
     }
+
 
     [Action("Get first day of previous month", Description = "Generates a date corresponding to the first day of the previous month.")]
     public DateResponse FirstDayLastMonth()
@@ -279,6 +284,53 @@ public class Dates : BaseInvocable
         }
         var lastResort = DateTime.Parse(text, culture, DateTimeStyles.None);
         return CreateDateTimeOffset(lastResort, timezone);
+    }
+
+    private static DateTime AddBusinessHours(DateTime date, double hours)
+    {
+        var current = date;
+        double hoursToAdd = hours;
+
+        while (hoursToAdd > 0)
+        {
+            if (current.DayOfWeek == DayOfWeek.Saturday)
+            {
+                current = current.Date.AddDays(2).AddHours(9);
+                continue;
+            }
+            if (current.DayOfWeek == DayOfWeek.Sunday)
+            {
+                current = current.Date.AddDays(1).AddHours(9);
+                continue;
+            }
+
+            if (current.Hour < 9)
+            {
+                current = current.Date.AddHours(9);
+                continue;
+            }
+
+            if (current.Hour >= 17)
+            {
+                current = current.Date.AddDays(1).AddHours(9);
+                continue;
+            }
+
+            var remainingToday = 17 - current.Hour - (current.Minute > 0 ? 1 : 0);
+
+            if (hoursToAdd <= remainingToday)
+            {
+                current = current.AddHours(hoursToAdd);
+                hoursToAdd = 0;
+            }
+            else
+            {
+                current = current.Date.AddDays(1).AddHours(9);
+                hoursToAdd -= remainingToday;
+            }
+        }
+
+        return current;
     }
 
     private DateTimeOffset CreateDateTimeOffset(DateTime dateTime, string timezone)
