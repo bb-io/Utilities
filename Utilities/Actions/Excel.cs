@@ -285,13 +285,16 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         int colIndex = request.ColumnIndex - 1;
 
         var grouped = rows
-            .GroupBy(row => row[colIndex] ?? string.Empty)
-            .Select(g => new GroupedRows
-            {
-                Key = g.Key,
-                Rows = g.ToList()
-            })
-            .ToList();
+     .GroupBy(row => row[colIndex] ?? string.Empty)
+     .Select(g => new GroupedRows
+     {
+         Key = g.Key,
+         Rows = g.Select(r => new Row
+         {
+             Cells = r
+         }).ToList()
+     })
+     .ToList();
 
         return grouped;
     }
