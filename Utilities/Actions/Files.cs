@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Compression;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -133,11 +134,22 @@ public class Files : BaseInvocable
     [Action("Get file word count", Description = "Returns number of words in the file")]
     public async Task<double> GetWordCountInFile([ActionParameter] FileDto file)
     {
-        var _file = await _fileManagementClient.DownloadAsync(file.File);
+        var stream = await _fileManagementClient.DownloadAsync(file.File);
 
-        var extension = Path.GetExtension(file.File.Name).ToLower();
-        var filecontent = await ReadDocument(_file, extension);
-        return (double)CountWords(filecontent);
+        var extension = Path.GetExtension(file.File.Name).ToLowerInvariant();
+
+        string fileContent;
+
+        if (extension is ".html" or ".htm")
+        {
+            fileContent = await ReadHtmlInnerTextAsync(stream);
+        }
+        else
+        {
+            fileContent = await ReadDocument(stream, extension);
+        }
+
+        return CountWords(fileContent);
     }
 
     [Action("Get files word count", Description = "Returns number of words in the files")]
@@ -709,5 +721,44 @@ public class Files : BaseInvocable
         char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
         var words = text.Split().Select(x => x.Trim(punctuationCharacters));
         return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
+    }
+
+    private static async Task<string> ReadHtmlInnerTextAsync(Stream stream)
+    {
+        if (stream.CanSeek)
+            stream.Position = 0;
+
+        using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
+        var html = await reader.ReadToEndAsync();
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var body = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
+
+        var junkNodes = body.SelectNodes(".//script|.//style");
+        if (junkNodes is not null)
+        {
+            foreach (var node in junkNodes)
+                node.Remove();
+        }
+
+        var sb = new StringBuilder();
+
+        foreach (var node in body.DescendantsAndSelf())
+        {
+            if (node.NodeType == HtmlNodeType.Text)
+            {
+                var text = WebUtility.HtmlDecode(node.InnerText);
+
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    sb.Append(text);
+                    sb.Append(' ');
+                }
+            }
+        }
+
+        return sb.ToString();
     }
 }
