@@ -6,6 +6,7 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 
 namespace Apps.Utilities.Actions;
@@ -112,9 +113,36 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     [Action("Retain specified entries in array", Description = "Returns the array without the entries that were not present in the provided control array")]
     public ArrayResponse ArrayFilter([ActionParameter] ArrayFilterRequest input)
     {
-        return new()
+        var token = input.Array as JToken ?? JToken.FromObject(input.Array);
+
+        if (token.Type != JTokenType.Array)
+            throw new PluginMisconfigurationException(
+                "The 'Array' input must be an array. " +
+                "Make sure you pass an array");
+
+        var values = new List<string>();
+
+        foreach (var item in token)
         {
-            Array = input.Array.Where(x => input.Control.Contains(x))
+            if (item.Type == JTokenType.String ||
+                item.Type == JTokenType.Integer ||
+                item.Type == JTokenType.Float ||
+                item.Type == JTokenType.Boolean)
+            {
+                values.Add(item.ToString());
+            }
+            else
+            {
+                throw new PluginMisconfigurationException(
+                    "This action works only with arrays of texts. " +
+                    "You passed objects. " +
+                    "Please check your input and try again");
+            }
+        }
+
+        return new ArrayResponse
+        {
+            Array = values.Where(x => input.Control.Contains(x))
         };
     }
 
