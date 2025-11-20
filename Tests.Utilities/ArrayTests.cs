@@ -1,7 +1,6 @@
 ﻿using Apps.Utilities.Actions;
 using Apps.Utilities.Models.Arrays.Request;
 using Apps.Utilities.Models.Texts;
-using Blackbird.Applications.Sdk.Common.Exceptions;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities;
@@ -62,6 +61,19 @@ public class ArrayTests : TestBase
 
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
         Console.WriteLine(json);
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public void ArrayFilter_works()
+    {
+        var array1 = new List<string> { "one", "two", "three" };
+        var array2 = new List<string> { "two", "three", "four" };
+
+        var actions = new Arrays(InvocationContext);
+        var result = actions.ArrayFilter(new ArrayFilterRequest { Control = ["Location"], Array = new[] { "test", "Location" } });
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+
         Assert.IsNotNull(result);
     }
 }
