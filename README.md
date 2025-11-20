@@ -87,6 +87,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Replace using Regex in a spreadsheet column** Apply a regular expression and replace patternt to a spreadsheet column.
 - **Insert row to a spreadsheet** Insert a new row at the given index in a spreadsheet.
 - **Insert empty rows to a spreadsheet** Insert empty rows at the given indexes in a spreadsheet.
+- **Group rows by column value in spreadsheet** Reads a spreadsheet and groups its rows based on a specific column's value.
 
 ### Texts
 

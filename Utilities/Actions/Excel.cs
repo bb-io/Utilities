@@ -252,6 +252,53 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
+    [Action("Group rows by column value in spreadsheet",
+    Description = "Reads a spreadsheet and groups its rows based on a specific column's value")]
+    public async Task<List<GroupedRows>> GroupRowsByColumn(
+    [ActionParameter] ExcelFile file,
+    [ActionParameter] ExcelGroupingRequest request)
+    {
+        var (workbook, worksheet) = await ReadExcel(file.File, request.WorksheetIndex);
+
+        var usedRange = worksheet.RangeUsed();
+        if (usedRange == null)
+            throw new PluginMisconfigurationException("The worksheet is empty.");
+
+        var allRows = usedRange
+            .RowsUsed()
+            .Select(r => r.Cells().Select(c => c.GetString()).ToList())
+            .ToList();
+
+        if (!allRows.Any())
+            throw new PluginMisconfigurationException("No rows found in the worksheet.");
+
+        var rows = request.SkipHeader ? allRows.Skip(1).ToList() : allRows;
+
+        if (!rows.Any())
+            throw new PluginMisconfigurationException("No data rows available after skipping header.");
+
+        var columnCount = rows.First().Count;
+        if (request.ColumnIndex < 1 || request.ColumnIndex > columnCount)
+            throw new PluginMisconfigurationException(
+                $"Invalid column index {request.ColumnIndex}. The sheet contains {columnCount} columns.");
+
+        int colIndex = request.ColumnIndex - 1;
+
+        var grouped = rows
+     .GroupBy(row => row[colIndex] ?? string.Empty)
+     .Select(g => new GroupedRows
+     {
+         Key = g.Key,
+         Rows = g.Select(r => new Row
+         {
+             Cells = r
+         }).ToList()
+     })
+     .ToList();
+
+        return grouped;
+    }
+
     [Action("Insert empty rows to a spreadsheet", Description = "Inserts new empty rows at the given indexes in a worksheet")]
     public async Task<FileReference> InsertEmptyRowAtIndex(
     [ActionParameter] ExcelFile File,
