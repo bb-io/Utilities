@@ -178,4 +178,19 @@ public class TextTests : TestBase
         Console.WriteLine(result);
         Assert.AreEqual(expected, result);
     }
+
+    [TestMethod]
+    public void ConvertToUpperCase_ReturnsUpperCaseText()
+    {
+        // Arrange
+        var dto = new TextDto { Text = "hello, world!" };
+        var actions = new Texts(InvocationContext);
+
+        // Act
+        var result = actions.ConvertToUpperCase(dto);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual(dto.Text.ToUpperInvariant(), result);
+    }
 }
