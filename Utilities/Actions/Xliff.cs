@@ -410,6 +410,50 @@ namespace Apps.Utilities.Actions
             return new ConvertTextToDocumentResponse { File = result };
         }
 
+        [Action("Copy source to target in XLIFF", Description = "Copies all source content into targets.")]
+        public async Task<CopySourceToTargetResponse> CopySourceToTarget([ActionParameter] CopySourceToTargetRequest request)
+        {
+            var originalXliffStream = await _fileManagementClient.DownloadAsync(request.File);
+            var originalXliff = await originalXliffStream.ReadString();
+
+            if (!Xliff2Serializer.TryGetXliffVersion(originalXliff, out var originalXliffVersion))
+                throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            Func<Transformation, string> xliffSerializer = originalXliffVersion switch
+            {
+                "1.2" => t => Xliff1Serializer.Serialize(t),
+                ['2', ..] => t => Xliff2Serializer.Serialize(t, Xliff2VersionHelper.ToXliff2Version(originalXliffVersion) ?? throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported.")),
+                _ => throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported."),
+            };
+
+            var transformation = Transformation.Parse(originalXliff, request.File.Name)
+                ?? throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
+
+            var units = transformation.GetUnits().ToList();
+            var segmentsCopied = 0;
+
+            units.ForEach(u =>
+            {
+                u.Segments.ForEach(s =>
+                {
+                    if (s.Source == null)
+                        return;
+
+                    s.Target = s.Source.ToList();
+                    segmentsCopied++;
+                });
+            });
+
+            var processedXliff = xliffSerializer(transformation);
+            var processedXliffStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
+
+            return new CopySourceToTargetResponse
+            {
+                File = await _fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name),
+                SegmentsCopied = segmentsCopied,
+            };
+        }
+
         private async Task<XDocument> LoadXliffDocumentAsync(FileReference file)
         {
             await using var streamIn = await _fileManagementClient.DownloadAsync(file);

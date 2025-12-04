@@ -28,4 +28,23 @@ public class XliffTests: TestBase
 
         Console.WriteLine(result.File.Name);
     }
+
+    [TestMethod]
+    [DataRow("test.xliff")]
+    [DataRow("contentful_2.xlf")]
+    [DataRow("contentful.html.xlf")]
+    [DataRow("estimated-contentful.html.xlf")]
+    [DataRow("estimated-v22-sample.xlf")]
+    [DataRow("estimated-file.xliff")]
+    public async Task CopySourceToTarget_Works(string testFileName)
+    {
+        var request = new CopySourceToTargetRequest
+        {
+            File = new FileReference() { Name = testFileName },
+        };
+
+        var result = await Actions.CopySourceToTarget(request);
+
+        Console.WriteLine(result.File.Name);
+    }
 }
