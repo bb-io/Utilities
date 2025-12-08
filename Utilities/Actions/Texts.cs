@@ -340,7 +340,7 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     [Action("Convert text to boolean", Description = "Converts text to boolean")]
     public bool ConvertTextToBoolean([ActionParameter][Display("Text to convert")] string input)
     {
-        if (input == "true")
+        if (string.Equals(input, "true", StringComparison.OrdinalIgnoreCase))
             return true;
         else return false;
     }
