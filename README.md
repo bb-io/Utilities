@@ -107,7 +107,10 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert text to lower case** Returns the lower case version of the input text
 - **Convert text to upper case** Returns the upper case version of the input text
 - **Generate random text** Returns a random text of variable length and characters used. Default length is 10 and default characters are A-Z, a-z and 0-9.
-  
+- **Compare texts** compares texts
+- **Convert text to boolean** converts text to boolean
+- **Convert boolean to text** converts boolean to text
+
 ### JSON
 
 - **Get JSON property value** Get JSON property value.

@@ -184,13 +184,64 @@ public class TextTests : TestBase
     {
         // Arrange
         var dto = new TextDto { Text = "hello, world!" };
-        var actions = new Texts(InvocationContext);
 
         // Act
-        var result = actions.ConvertToUpperCase(dto);
+        var result = _textActions.ConvertToUpperCase(dto);
 
         // Assert
         Console.WriteLine(result);
         Assert.AreEqual(dto.Text.ToUpperInvariant(), result);
+    }
+
+    [TestMethod]
+    public void CompareStrings_SameStrings_ReturnsTrue()
+    {
+        // Arrange
+        var input = new CompareTextsRequest { Texts = ["ac/dc", "ac/dc", "ac/dc", "ac/dc"] };
+
+        // Act
+        var result = _textActions.CompareTexts(input);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void CompareStrings_DifferentStrings_ReturnsFalse()
+    {
+        // Arrange
+        var input = new CompareTextsRequest { Texts = ["ac/dc", "ac/dc", "ac/dc", "ac/d"] };
+
+        // Act
+        var result = _textActions.CompareTexts(input);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void ConvertTextToBoolean_ReturnsBoolean()
+    {
+        // Arrange
+        var input = "123123123123";
+
+        // Act
+        var result = _textActions.ConvertTextToBoolean(input);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void ConvertBooleanToText_ReturnsText()
+    {
+        // Arrange
+        var input = true;
+
+        // Act
+        var result = _textActions.ConvertBooleanToText(input);
+
+        // Assert
+        Assert.AreEqual("true", result);
     }
 }
