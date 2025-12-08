@@ -1,15 +1,14 @@
-﻿using Apps.Utilities.Models.Shared;
+﻿using Apps.Utilities.ErrorWrapper;
+using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
+using Apps.Utilities.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Invocation;
-using System.Text.RegularExpressions;
-using BleuNet;
 using Blackbird.Applications.Sdk.Common.Exceptions;
-using DocumentFormat.OpenXml.ExtendedProperties;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using BleuNet;
 using System.Text;
-using Apps.Utilities.ErrorWrapper;
-using Apps.Utilities.Utils;
+using System.Text.RegularExpressions;
 
 namespace Apps.Utilities.Actions;
 
@@ -46,7 +45,6 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
             Score = score
         };
     }
-
 
     [Action("Sanitize text", Description = "Remove any defined characters from a text.")]
     public TextDto SanitizeText([ActionParameter] TextDto text, [ActionParameter] SanitizeRequest input)
@@ -252,7 +250,6 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         return result;
     }
 
-
     [Action("Trim text", Description = "Trim specified text")]
     public string TrimText([ActionParameter] TextDto text, [ActionParameter] TrimTextInput input)
     {
@@ -331,5 +328,26 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         }
 
         return result.ToString();
+    }
+
+    [Action("Compare texts", Description = "Compares texts")]
+    public bool CompareTexts([ActionParameter] CompareTextsRequest input)
+    {
+        var first = input.Texts[0];
+        return input.Texts.All(s => s == first);
+    }
+
+    [Action("Convert text to boolean", Description = "Converts text to boolean")]
+    public bool ConvertTextToBoolean([ActionParameter][Display("Text to convert")] string input)
+    {
+        if (input == "true")
+            return true;
+        else return false;
+    }
+
+    [Action("Convert boolean to text", Description = "Converts boolean to text")]
+    public string ConvertBooleanToText([ActionParameter][Display("Boolean to convert")] bool input)
+    {
+        return input.ToString().ToLower();
     }
 }
