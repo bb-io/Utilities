@@ -138,4 +138,16 @@ public class CsvTests : TestBase
 
         Assert.IsNotNull(response);
     }
+
+    [TestMethod]
+    public async Task SumNumbersInColumn_works()
+    {
+        var file = new CsvFile { File = new FileReference { Name = "test_sum.csv" } };
+        var options = new CsvOptions { Delimiter = ";" };
+        var request = new SumNumbersInColumnRequest { ColumnIndex = 83 };
+        var action = new Csv(InvocationContext, FileManager);
+        var response = await action.SumNumbersInColumn(file, options, request);
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(response));
+        Assert.IsNotNull(response);
+    }
 }

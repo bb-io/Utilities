@@ -323,6 +323,95 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         return columnValues;
     }
 
+    [Action("Sum numbers in column", Description = "Sums integer values from a specified CSV column in the given row range. Empty/non-numeric values are treated as zero.")]
+    public async Task<SumNumbersInColumnResponse> SumNumbersInColumn(
+        [ActionParameter] CsvFile csvFile,
+        [ActionParameter] CsvOptions csvOptions,
+        [ActionParameter] SumNumbersInColumnRequest input)
+    {
+        if (input.ColumnIndex < 0)
+            throw new PluginMisconfigurationException("Column index must be 0 or a positive number.");
+
+        if (input.FromRow is < 0)
+            throw new PluginMisconfigurationException("From row must be 0 or a positive number.");
+
+        if (input.ToRow is < 0)
+            throw new PluginMisconfigurationException("To row must be 0 or a positive number.");
+
+        var records = await ReadCsv(csvFile, csvOptions);
+
+        if (records.Count == 0)
+        {
+            return new SumNumbersInColumnResponse
+            {
+                Sum = 0,
+                FromRowUsed = 0,
+                ToRowUsed = 0,
+                RowsProcessed = 0
+            };
+        }
+
+        var from = input.FromRow ?? FindFirstNumericRowIndex(records, input.ColumnIndex);
+        var to = input.ToRow ?? (records.Count - 1);
+
+        if (from >= records.Count)
+        {
+            var clampedTo = Math.Min(to, records.Count - 1);
+            return new SumNumbersInColumnResponse
+            {
+                Sum = 0,
+                FromRowUsed = from,
+                ToRowUsed = clampedTo,
+                RowsProcessed = 0
+            };
+        }
+
+        if (to >= records.Count)
+            to = records.Count - 1;
+
+        if (from > to)
+            throw new PluginMisconfigurationException("'From row' cannot be greater than 'To row'.");
+
+        var sum = 0;
+        for (int i = from; i <= to; i++)
+        {
+            var row = records[i];
+            var raw = input.ColumnIndex < row.Count ? row[input.ColumnIndex] : string.Empty;
+
+            if (TryParseIntInvariant(raw, out var value))
+                sum += value;
+        }
+
+        return new SumNumbersInColumnResponse
+        {
+            Sum = sum,
+            FromRowUsed = from,
+            ToRowUsed = to,
+            RowsProcessed = to - from + 1
+        };
+    }
+
+    private static int FindFirstNumericRowIndex(List<List<string>> records, int columnIndex)
+    {
+        for (int i = 0; i < records.Count; i++)
+        {
+            var row = records[i];
+            if (columnIndex >= row.Count) continue;
+
+            if (TryParseIntInvariant(row[columnIndex], out _))
+                return i;
+        }
+
+        return 0;
+    }
+
+    private static bool TryParseIntInvariant(string? raw, out int value)
+    {
+        value = 0;
+        if (string.IsNullOrWhiteSpace(raw)) return false;
+
+        return int.TryParse(raw.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+    }
 
     private CsvConfiguration CreateConfiguration(CsvOptions csvOptions)
     {
