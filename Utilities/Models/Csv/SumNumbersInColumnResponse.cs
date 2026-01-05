@@ -4,7 +4,7 @@ namespace Apps.Utilities.Models.Csv
 {
     public class SumNumbersInColumnResponse
     {
-        public double Sum { get; set; }
+        public int Sum { get; set; }
 
         [Display("From row used")]
         public int FromRowUsed { get; set; }

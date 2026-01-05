@@ -372,7 +372,7 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         if (from > to)
             throw new PluginMisconfigurationException("'From row' cannot be greater than 'To row'.");
 
-        long sum = 0;
+        var sum = 0;
         for (int i = from; i <= to; i++)
         {
             var row = records[i];
