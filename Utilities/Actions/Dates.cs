@@ -66,7 +66,7 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
             }
 
             var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
-            return new DateResponse { Date = dateTimeOffset };
+            return new DateResponse { Date = dateTimeOffset.DateTime };
         }
         catch (TimeZoneNotFoundException ex)
         {
