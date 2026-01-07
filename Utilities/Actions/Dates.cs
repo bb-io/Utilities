@@ -4,16 +4,13 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using Newtonsoft.Json;
 using System.Globalization;
 
 namespace Apps.Utilities.Actions;
 
 [ActionList("Dates")]
-public class Dates : BaseInvocable
+public class Dates(InvocationContext context) : BaseInvocable(context)
 {
-    public Dates(InvocationContext context) : base(context) { }
-
     [Action("Generate date", Description = "Generates a date relative to the moment this action is called or relative to a custom date.")]
     public DateResponse GenerateDate([ActionParameter] GenerateDateRequest input)
     {
@@ -335,6 +332,11 @@ public class Dates : BaseInvocable
 
     private DateTimeOffset CreateDateTimeOffset(DateTime dateTime, string timezone)
     {
+        if (dateTime.Kind == DateTimeKind.Local || dateTime.Kind == DateTimeKind.Utc)
+        {
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+            return TimeZoneInfo.ConvertTime(new DateTimeOffset(dateTime), tzInfo);
+        }
         if (!string.IsNullOrEmpty(timezone))
         {
             var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
