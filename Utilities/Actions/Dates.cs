@@ -12,7 +12,7 @@ namespace Apps.Utilities.Actions;
 public class Dates(InvocationContext context) : BaseInvocable(context)
 {
     [Action("Generate date", Description = "Generates a date relative to the moment this action is called or relative to a custom date.")]
-    public DateResponse GenerateDate([ActionParameter] GenerateDateRequest input)
+    public DateTimeOffset GenerateDate([ActionParameter] GenerateDateRequest input)
     {
         try
         {
@@ -66,9 +66,7 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
             }
 
             var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
-
-            var utcDate = dateTimeOffset.UtcDateTime;
-            return new DateResponse { Date = DateTime.SpecifyKind(utcDate, DateTimeKind.Utc) };
+            return dateTimeOffset;
         }
         catch (TimeZoneNotFoundException ex)
         {
