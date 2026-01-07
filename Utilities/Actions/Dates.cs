@@ -1,10 +1,10 @@
-﻿using Apps.Utilities.DataSourceHandlers;
+﻿using System.Globalization;
 using Apps.Utilities.Models.Dates;
+using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
-using System.Globalization;
 
 namespace Apps.Utilities.Actions;
 
@@ -12,7 +12,7 @@ namespace Apps.Utilities.Actions;
 public class Dates(InvocationContext context) : BaseInvocable(context)
 {
     [Action("Generate date", Description = "Generates a date relative to the moment this action is called or relative to a custom date.")]
-    public DateTimeOffset GenerateDate([ActionParameter] GenerateDateRequest input)
+    public DateResponse GenerateDate([ActionParameter] GenerateDateRequest input)
     {
         try
         {
@@ -66,14 +66,13 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
             }
 
             var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
-            return dateTimeOffset;
+            return new DateResponse { Date = dateTimeOffset.DateTime };
         }
         catch (TimeZoneNotFoundException ex)
         {
             throw new PluginApplicationException($"Timezone '{input.Timezone}' not recognized.", ex);
         }
     }
-
 
     [Action("Get first day of previous month", Description = "Generates a date corresponding to the first day of the previous month.")]
     public DateResponse FirstDayLastMonth()
@@ -224,7 +223,7 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
         return date.AddDays(-extraDays);
     }
 
-    private DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
+    private static DateTimeOffset ParseWithSpecificFormat(string text, string format, CultureInfo culture, string timezone)
     {
         if (format.Contains("zzz") || format.Contains("zz") || format.Contains("z"))
         {
@@ -245,7 +244,7 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
         }
     }
 
-    private DateTimeOffset ParseWithAutoDetection(string text, CultureInfo culture, string timezone)
+    private static DateTimeOffset ParseWithAutoDetection(string text, CultureInfo culture, string timezone)
     {
         var formatHandler = new DateFormatSourceHandler();
         var allFormats = formatHandler.GetData().Select(item => item.Value).ToArray();
@@ -328,22 +327,19 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
         return current;
     }
 
-    private DateTimeOffset CreateDateTimeOffset(DateTime dateTime, string timezone)
+    private static DateTimeOffset CreateDateTimeOffset(DateTime dateTime, string timezone)
     {
-        if (dateTime.Kind == DateTimeKind.Local || dateTime.Kind == DateTimeKind.Utc)
-        {
-            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
-            return TimeZoneInfo.ConvertTime(new DateTimeOffset(dateTime), tzInfo);
-        }
-        if (!string.IsNullOrEmpty(timezone))
-        {
-            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
-            var unspecified = DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
-            var offset = tzInfo.GetUtcOffset(unspecified);
-            return new DateTimeOffset(unspecified, offset);
-        }
+        if (string.IsNullOrEmpty(timezone))
+            return new DateTimeOffset(dateTime);
 
-        var localOffset = TimeZoneInfo.Local.GetUtcOffset(dateTime);
-        return new DateTimeOffset(dateTime, localOffset);
+        var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+
+        if (dateTime.Kind == DateTimeKind.Local || dateTime.Kind == DateTimeKind.Utc)
+            return TimeZoneInfo.ConvertTime(new DateTimeOffset(dateTime), tzInfo);
+
+        var unspecified = DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
+        var offset = tzInfo.GetUtcOffset(unspecified);
+
+        return new DateTimeOffset(unspecified, offset);
     }
 }
