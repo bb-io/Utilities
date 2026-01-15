@@ -72,6 +72,15 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
                         newRecords.Add(record);
                     break;
 
+                case "value_does_not_equal":
+                    if (String.IsNullOrEmpty(targetValue))
+                        throw new PluginMisconfigurationException(
+                            "Optional value to compare needs to be filled in when using Value equals, does not equal or contains conditions");
+
+                    if (value != targetValue)
+                        newRecords.Add(record);
+                    break;
+
                 default:
                     throw new PluginApplicationException($"Unsupported condition: {condition}");
             }

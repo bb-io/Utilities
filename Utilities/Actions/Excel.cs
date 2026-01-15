@@ -84,31 +84,78 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
-    [Action("Remove spreadsheet rows by condition", Description = "Remove the rows that meet the condition in the specfied column index.")]
+    [Action("Remove spreadsheet rows by condition",
+    Description = "Remove the rows that meet the condition in the specified column."
+)]
     public async Task<FileReference> RemoveRowsByCondition(
-        [ActionParameter] ExcelFile File,
-        [ActionParameter][Display("Sheet number")] int worksheetIndex, 
-        [ActionParameter][Display("Column letter")] string columnIndex,
-        [ActionParameter][Display("Condition", Description = "The condition that is applied to the column")][StaticDataSource(typeof(CsvColumnCondition))] string condition
-        )
+    [ActionParameter] ExcelFile File,
+    [ActionParameter][Display("Sheet number")] int worksheetIndex,
+    [ActionParameter][Display("Column letter")] string columnLetter,
+    [ActionParameter]
+    [Display("Condition", Description = "The condition that is applied to the column")]
+    [StaticDataSource(typeof(CsvColumnCondition))] string condition,
+    [ActionParameter]
+    [Display("Value to compare")]
+    string? targetValue)
     {
         var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
         var usedRange = worksheet.RangeUsed();
+        if (usedRange == null)
+            return await WriteExcel(workbook, File.File.Name);
+
         var rows = usedRange.RowsUsed().ToList();
 
         foreach (var row in rows)
         {
             string value = "";
-            try {
-                value = row.Cell(columnIndex)?.Value.GetText();
-            } catch { }
-            if (condition == "is_empty" && string.IsNullOrEmpty(value))
+            try
             {
-                row.Delete();
+                value = row.Cell(columnLetter)?.Value.GetText();
             }
-            else if (condition == "is_full" && !string.IsNullOrEmpty(value))
+            catch
+            {}
+
+            switch (condition)
             {
-                row.Delete();
+                case "is_empty":
+                    if (string.IsNullOrEmpty(value))
+                        row.Delete();
+                    break;
+
+                case "is_full":
+                    if (!string.IsNullOrEmpty(value))
+                        row.Delete();
+                    break;
+
+                case "value_equals":
+                    if (string.IsNullOrEmpty(targetValue))
+                        throw new PluginMisconfigurationException(
+                            "Value to compare needs to be filled in when using Value equals or contains conditions");
+
+                    if (value == targetValue)
+                        row.Delete();
+                    break;
+
+                case "value_contains":
+                    if (string.IsNullOrEmpty(targetValue))
+                        throw new PluginMisconfigurationException(
+                            "Value to compare needs to be filled in when using Value equals or contains conditions");
+
+                    if (value.Contains(targetValue))
+                        row.Delete();
+                    break;
+
+                case "value_does_not_equal":
+                    if (string.IsNullOrEmpty(targetValue))
+                        throw new PluginMisconfigurationException(
+                            "Value to compare needs to be filled in when using Value equals or contains conditions");
+
+                    if (value != targetValue)
+                        row.Delete();
+                    break;
+
+                default:
+                    throw new PluginApplicationException($"Unsupported condition: {condition}");
             }
         }
 
