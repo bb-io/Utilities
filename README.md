@@ -89,6 +89,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Insert row to a spreadsheet** Insert a new row at the given index in a spreadsheet.
 - **Insert empty rows to a spreadsheet** Insert empty rows at the given indexes in a spreadsheet.
 - **Group rows by column value in spreadsheet** Reads a spreadsheet and groups its rows based on a specific column's value.
+- **Get column values from spreadsheet** Returns all values from a specific column in a spreadsheet.
 
 ### Texts
 

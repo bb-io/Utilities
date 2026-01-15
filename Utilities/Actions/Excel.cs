@@ -315,6 +315,46 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
+    [Action("Get column values from spreadsheet", Description = "Returns all values from a specific column in a spreadsheet.")]
+    public async Task<IEnumerable<string>> GetColumnValues(
+   [ActionParameter] ExcelFile File,
+   [ActionParameter][Display("Sheet number")] int worksheetIndex,
+   [ActionParameter][Display("Column letter")] string columnLetter,
+   [ActionParameter][Display("Skip first row")] bool? skipFirstRow = false,
+   [ActionParameter][Display("Distinct values only")] bool? distinctOnly = false)
+    {
+        var (_, worksheet) = await ReadExcel(File.File, worksheetIndex);
+
+        var usedRange = worksheet.RangeUsed();
+        if (usedRange == null)
+            return Enumerable.Empty<string>();
+
+        var rows = usedRange.RowsUsed().ToList();
+        var values = new List<string>();
+
+        foreach (var row in rows)
+        {
+            if (skipFirstRow.HasValue && skipFirstRow.Value && row.RowNumber() == usedRange.FirstRow().RowNumber())
+                continue;
+
+            string value = "";
+            try
+            {
+                value = row.Cell(columnLetter)?.Value.GetText();
+            }
+            catch
+            { }
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                values.Add(value);
+            }
+        }
+
+        return distinctOnly.HasValue && distinctOnly.Value
+            ? values.Distinct()
+            : values;
+    }
     private async Task<(XLWorkbook Workbook, IXLWorksheet Worksheet)> ReadExcel(FileReference file, int worksheetIndex)
     {
         var stream = new MemoryStream();
