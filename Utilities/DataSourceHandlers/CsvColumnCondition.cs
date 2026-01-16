@@ -11,7 +11,8 @@ public class CsvColumnCondition : IStaticDataSourceItemHandler
             new DataSourceItem("is_empty", "Is empty"),
             new DataSourceItem("is_full", "Is full"),
             new DataSourceItem("value_equals","Value equals"),
-            new DataSourceItem("value_contains","Value contains")
+            new DataSourceItem("value_contains","Value contains"),
+            new DataSourceItem("value_does_not_equal", "Value does not equal")
         };
     }
 }
