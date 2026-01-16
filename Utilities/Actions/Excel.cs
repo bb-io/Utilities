@@ -337,7 +337,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
      .Select(g => new GroupedRows
      {
          Key = g.Key,
-         Rows = g.Select(r => new Row
+         Rows = g.Select(r => new Models.Excel.Row
          {
              Cells = r
          }).ToList()
