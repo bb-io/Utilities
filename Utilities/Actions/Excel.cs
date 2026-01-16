@@ -1,16 +1,17 @@
-﻿using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Invocation;
-using Blackbird.Applications.Sdk.Common;
-using Apps.Utilities.Models.Files;
-using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using Blackbird.Applications.Sdk.Common.Exceptions;
-using ClosedXML.Excel;
-using Blackbird.Applications.Sdk.Common.Files;
-using Apps.Utilities.DataSourceHandlers;
-using Blackbird.Applications.Sdk.Common.Dictionaries;
-using System.Text.RegularExpressions;
-using Apps.Utilities.Models.Excel;
+﻿using Apps.Utilities.DataSourceHandlers;
 using Apps.Utilities.ErrorWrapper;
+using Apps.Utilities.Models.Excel;
+using Apps.Utilities.Models.Files;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Exceptions;
+using Blackbird.Applications.Sdk.Common.Files;
+using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System.Text.RegularExpressions;
 
 namespace Apps.Utilities.Actions;
 
@@ -110,7 +111,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             string value = "";
             try
             {
-                value = row.Cell(columnLetter)?.Value.GetText();
+                value = row.Cell(columnLetter).Value.ToString();
             }
             catch
             {}
@@ -336,7 +337,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
      .Select(g => new GroupedRows
      {
          Key = g.Key,
-         Rows = g.Select(r => new Row
+         Rows = g.Select(r => new Models.Excel.Row
          {
              Cells = r
          }).ToList()
@@ -387,7 +388,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             string value = "";
             try
             {
-                value = row.Cell(columnLetter)?.Value.GetText();
+                value = row.Cell(columnLetter).Value.ToString();
             }
             catch
             { }
