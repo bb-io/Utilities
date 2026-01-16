@@ -111,7 +111,7 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             string value = "";
             try
             {
-                value = row.Cell(columnLetter)?.Value.GetText();
+                value = row.Cell(columnLetter).Value.ToString();
             }
             catch
             {}
