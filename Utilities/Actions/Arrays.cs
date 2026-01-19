@@ -72,9 +72,17 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
 
 
     [Action("Deduplicate array", Description = "Returns only unique elements")]
-    public ArrayResponse DeduplicateArray([ActionParameter] ArrayCountRequest input)
+    public ArrayResponse DeduplicateArray([ActionParameter] ArrayCountRequest input,
+    [ActionParameter][Display("Remove empty/null values")] bool? removeEmpty = false)
     {
-        return new ArrayResponse { Array = input.Array.Distinct() };
+        var result = input.Array
+            .Where(x => !removeEmpty.GetValueOrDefault() || !string.IsNullOrWhiteSpace(x))
+            .Distinct();
+
+        return new ArrayResponse
+        {
+            Array = result
+        };
     }
 
     [Action("Remove entries from array", Description = "Returns the array without the specified entries")]
