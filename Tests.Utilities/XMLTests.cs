@@ -479,7 +479,7 @@ public class XMLTests : TestBase
     public async Task RemoveTargetTextAsync_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new RemoveTargetTextRequest { File = new FileReference { Name = "estimated-v22-sample.xlf" }, TargetStates = ["Final"] };
+        var input = new RemoveTargetTextRequest { File = new FileReference { Name = "SPT6019_de_DE_21_Installation.xlf" } };
         var result = actions.RemoveTargetText(input);
 
         Console.WriteLine(result);
