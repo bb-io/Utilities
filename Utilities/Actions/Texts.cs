@@ -78,6 +78,14 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
     }
 
+    [Action("Count words in text - duplicate", Description = "Returns number of words in text.")]
+    public double CountWordsInText2([ActionParameter] TextDto input)
+    {
+        char[] punctuationCharacters = input.Text.Where(char.IsPunctuation).Distinct().ToArray();
+        var words = input.Text.Split().Select(x => x.Trim(punctuationCharacters));
+        return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
+    }
+
     [Action("Count words in texts", Description = "Returns number of words in text from array.")]
     public double CountWordsInTextFromArray([ActionParameter] TextsDto input)
     {
