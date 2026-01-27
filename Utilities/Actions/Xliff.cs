@@ -375,7 +375,9 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("File is required.");
 
             await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+
             var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+            doc.Declaration ??= new XDeclaration("1.0", "utf-8", null);
 
             var statesFilter = (request.TargetStates ?? Enumerable.Empty<string>())
                 .Where(s => !string.IsNullOrWhiteSpace(s))
@@ -402,11 +404,23 @@ namespace Apps.Utilities.Actions
             }
 
             using var streamOut = new MemoryStream();
-            var settings = new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true, NewLineHandling = NewLineHandling.Replace };
-            using (var writer = XmlWriter.Create(streamOut, settings)) doc.Save(writer);
+
+            var settings = new XmlWriterSettings
+            {
+                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                OmitXmlDeclaration = false,
+                Indent = false,
+                NewLineHandling = NewLineHandling.None
+            };
+
+            using (var writer = XmlWriter.Create(streamOut, settings))
+                doc.Save(writer);
+
             streamOut.Position = 0;
 
-            var result = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType ?? "application/xml", request.File.Name);
+            var contentType = request.File.ContentType ?? "application/xliff+xml";
+            var result = await _fileManagementClient.UploadAsync(streamOut, contentType, request.File.Name);
+
             return new ConvertTextToDocumentResponse { File = result };
         }
 
