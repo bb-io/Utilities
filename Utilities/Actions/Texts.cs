@@ -359,9 +359,9 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
 
     [Action("Split text into chunks of specific length",
     Description = "Returns an array of text chunks based on a maximum length, without breaking words.")]
-    public List<string> SplitIntoChunks(string Text, 
-        [Display("Max chunk size")] double maxChunkSize, 
-        [Display("Preserve whitespaces")]bool? preserveWhitespaces)
+    public List<string> SplitIntoChunks([ActionParameter]string Text,
+        [ActionParameter][Display("Max chunk size")] double maxChunkSize,
+        [ActionParameter][Display("Preserve whitespaces")]bool? preserveWhitespaces)
     {
         if (string.IsNullOrWhiteSpace(Text))
             return new List<string>();

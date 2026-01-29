@@ -40,6 +40,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Replace using Regex in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace using Regex' but works with files.
 - **Replace multiple Regex patterns in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace multiple Regex patterns' but works with files.
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
+- **Extract many using Regex from document** Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc).
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
 - **Concatenate text files** concatenates multiple text files into one file.

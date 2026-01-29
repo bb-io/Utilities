@@ -265,6 +265,38 @@ public class Files : BaseInvocable
         }
     }
 
+    [Action("Extract many using Regex from document",
+    Description = "Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc.)")]
+    public async Task<IEnumerable<string>> ExtractManyTextFromDocument([ActionParameter] ExtractTextFromDocumentRequest request)
+    {
+        try
+        {
+            await using var file = await _fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(file);
+            var text = await reader.ReadToEndAsync();
+
+            var matches = Regex.Matches(text, request.Regex);
+
+            var extracted = matches
+                .Cast<Match>()
+                .Where(m => m.Success)
+                .Select(m =>
+                    string.IsNullOrEmpty(request.Group)
+                        ? m.Value
+                        : m.Groups[request.Group].Value
+                )
+                .Where(v => !string.IsNullOrEmpty(v))
+                .ToList();
+
+            return extracted;
+        }
+        catch (RegexParseException ex)
+        {
+            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
+        }
+    }
+
+
     [Action("Convert text to document", Description = "Convert text to txt, html, json, csv, doc or docx document.")]
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
         [ActionParameter] ConvertTextToDocumentRequest request)
