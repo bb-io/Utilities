@@ -350,4 +350,10 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     {
         return input.ToString().ToLower();
     }
+
+    [Action("Compose text", Description = "Allows to compose dynamic values into text to be reused later")]
+    public string ComposeTest([ActionParameter][Display("Text")] string input)
+    {
+        return input;
+    }
 }
