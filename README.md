@@ -104,6 +104,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
+- **Split text into chunks of specific length** Returns an array of pieces from the original text based on the max length and without breaking words.
 - **Count words in texts** Returns number of words in text from array. 
 - **Convert text to lower case** Returns the lower case version of the input text
 - **Convert text to upper case** Returns the upper case version of the input text
@@ -111,6 +112,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Compare texts** compares texts
 - **Convert text to boolean** converts text to boolean
 - **Convert boolean to text** converts boolean to text
+
 
 ### JSON
 
