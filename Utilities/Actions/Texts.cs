@@ -356,4 +356,58 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     {
         return input;
     }
+
+    [Action("Split text into chunks of specific length",
+    Description = "Returns an array of text chunks based on a maximum length, without breaking words.")]
+    public List<string> SplitIntoChunks(string Text, 
+        [Display("Max chunk size")] double maxChunkSize, 
+        [Display("Preserve whitespaces")]bool? preserveWhitespaces)
+    {
+        if (string.IsNullOrWhiteSpace(Text))
+            return new List<string>();
+
+        if (maxChunkSize <= 0)
+            throw new ArgumentException("maxChunkSize must be greater than zero.");
+
+        var chunks = new List<string>();
+        int index = 0;
+
+        while (index < Text.Length)
+        {
+            int length = (int)Math.Min(maxChunkSize, Text.Length - index);
+            int end = index + length;
+
+            if (end < Text.Length && !char.IsWhiteSpace(Text[end]))
+            {
+                int lastSpace = Text.LastIndexOfAny(
+                    new[] { ' ', '\t', '\n', '\r' },
+                    end - 1,
+                    length
+                );
+
+                if (lastSpace > index)
+                    end = lastSpace;
+            }
+
+            string chunk = Text.Substring(index, end - index);
+
+            if (preserveWhitespaces.HasValue && preserveWhitespaces.Value != true)
+                chunk = chunk.Trim();
+
+            if (!string.IsNullOrEmpty(chunk))
+                chunks.Add(chunk);
+
+            index = end;
+
+            if (preserveWhitespaces.HasValue && preserveWhitespaces.Value != true)
+            {
+                while (index < Text.Length && char.IsWhiteSpace(Text[index]))
+                    index++;
+            }
+        }
+
+        return chunks;
+    }
+
+
 }
