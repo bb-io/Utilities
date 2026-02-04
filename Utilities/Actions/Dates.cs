@@ -97,8 +97,23 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
     [Action("Format date", Description = "Formats a date to text according to pre-defined formatting rules and culture")]
     public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input)
     {
-        return new FormattedDateResponse { FormattedDate = input.Date.ToString(input.Format, input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture) };
+        if (!string.IsNullOrEmpty(input.Format) &&
+            input.Format.Equals("OADate", StringComparison.OrdinalIgnoreCase))
+        {
+            return new FormattedDateResponse
+            {
+                FormattedDate = input.Date.ToOADate().ToString(CultureInfo.InvariantCulture)
+            };
+        }
+
+        var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
+
+        return new FormattedDateResponse
+        {
+            FormattedDate = input.Date.ToString(input.Format, culture)
+        };
     }
+
 
     [Action("Get date difference", Description = "Returns the difference between the two inputted days in total seconds, minutes, hours and days.")]
     public DateDifferenceResponse DateDifference([ActionParameter][Display("Date 1")] DateTime date1, [ActionParameter][Display("Date 2")] DateTime date2)
