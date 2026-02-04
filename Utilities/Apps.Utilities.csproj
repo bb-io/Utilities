@@ -3,11 +3,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Product>Blackbird Utilities</Product>
+    <Product>Utilities</Product>
     <Description>Various utility actions to parse or convert data</Description>
-    <Version>1.7.10</Version>
+    <Version>1.7.11</Version>
     <AssemblyName>Apps.Utilities</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Connections\**" />
+    <EmbeddedResource Remove="Connections\**" />
+    <None Remove="Connections\**" />
+  </ItemGroup>
   <ItemGroup>
     <None Remove="image\icon.png" />
   </ItemGroup>
@@ -42,8 +47,5 @@
     <Content Include="..\README.md">
       <Link>README.md</Link>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Connections\" />
   </ItemGroup>
 </Project>

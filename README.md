@@ -1,4 +1,4 @@
-# Blackbird.io Utilities
+# Utilities
 
 Blackbird is the automation backbone for the language technology industry. Blackbird provides enterprise-scale automation and orchestration with a simple no-code/low-code platform. Blackbird enables ambitious organizations to identify, vet and automate as many processes as possible. Not just localization workflows, but any business and IT process. This repository represents an application that is deployable on Blackbird and usable inside the workflow editor.
 
@@ -6,16 +6,8 @@ Blackbird is the automation backbone for the language technology industry. Black
 
 <!-- begin docs -->
 
-This free app provides generic utility actions that can come in useful in any bird. It includes utilities for dates and files.
-
-## Connecting
-
-1. Navigate to apps and search for Blackbird Utilities. 
-2. Click _Add Connection_.
-3. Name your connection for future reference e.g. 'My utilities'.
-4. Click _Connect_.
-
-![1700129917822](image/README/1700129917822.png)
+The Utilities provide generic utility Actions and Events that can come in useful in any Bird. It includes Utilities for text, dates, files, Actions for specific file formats, and you can even use it to scrape web pages.
+You do not need to create a connection to use Utilities. Instead, you can find Utilities at the top level menu when adding a new item in your Bird.
 
 ## Actions
 
