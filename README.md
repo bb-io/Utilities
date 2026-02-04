@@ -51,6 +51,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Convert XLIFF to HTML** Convert XLIFF file (version 1.2) to HTML file
 - **Add context notes to XLIFF** Add final segments as notes to translated segments in an XLIFF file. When only translated segments are imported into a CAT tool, the source of each segment remains available to reviewers.
 - **Copy source to target in XLIFF** Copy source text to target text for all segments in an XLIFF file.
+- **Convert XLIFF to CSV** Convert XLIFF file to CSV file.
 
 ### XML files
 
