@@ -32,6 +32,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Replace using Regex in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace using Regex' but works with files.
 - **Replace multiple Regex patterns in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace multiple Regex patterns' but works with files.
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
+- **Extract many using Regex from document** Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc).
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
 - **Concatenate text files** concatenates multiple text files into one file.
@@ -96,6 +97,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
+- **Split text into chunks of specific length** Returns an array of pieces from the original text based on the max length and without breaking words.
 - **Count words in texts** Returns number of words in text from array. 
 - **Convert text to lower case** Returns the lower case version of the input text
 - **Convert text to upper case** Returns the upper case version of the input text
@@ -103,6 +105,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Compare texts** compares texts
 - **Convert text to boolean** converts text to boolean
 - **Convert boolean to text** converts boolean to text
+
 
 ### JSON
 
@@ -150,5 +153,6 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 ## Feedback
 
 Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.
+
 
 <!-- end docs -->
