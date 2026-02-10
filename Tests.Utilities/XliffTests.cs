@@ -47,4 +47,23 @@ public class XliffTests: TestBase
 
         Console.WriteLine(result.File.Name);
     }
+
+    [TestMethod]
+    [DataRow("cyrillic.xliff")]
+    public async Task ConvertXliffToCsv_IsSuccess(string testFileName)
+    {
+        // Arrange
+        var request = new ConvertXliffToCsvRequest
+        {
+            File = new FileReference { Name = testFileName },
+            BatchSize = 10
+        };
+
+        // Act
+        var result = await Actions.ConvertXliffToCsv(request);
+
+        // Assert
+        foreach (var file in result.Files)
+            Console.WriteLine(file.Name);
+    }
 }

@@ -21,20 +21,12 @@ using System.Xml.Linq;
 namespace Apps.Utilities.Actions
 {
     [ActionList("XLIFF")]
-    public class Xliff
+    public class Xliff(IFileManagementClient fileManagementClient)
     {
-        private readonly IFileManagementClient _fileManagementClient;
-
-        public Xliff(IFileManagementClient fileManagementClient)
-        {
-            _fileManagementClient = fileManagementClient;
-        }
-
-
         [Action("Replace XLIFF source with target", Description = "Swap <source> and <target> contents, exchange language attributes, and optionally remove target elements or set a new target language.")]
         public async Task<ConvertTextToDocumentResponse> ReplaceXliffSourceWithTarget([ActionParameter] ReplaceXliffRequest request)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            await using var streamIn = await fileManagementClient.DownloadAsync(request.File);
             var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
 
             XNamespace ns = doc.Root.GetDefaultNamespace();
@@ -106,14 +98,14 @@ namespace Apps.Utilities.Actions
             }
             streamOut.Position = 0;
 
-            var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
+            var resultFile = await fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
             return new ConvertTextToDocumentResponse { File = resultFile };
         }
 
         [Action("Confirm and lock final targets", Description = "Set confirmed and locked attributes to 1 for translation units with target state 'final', and remove the target state attribute in mxliff files.")]
         public async Task<ConvertTextToDocumentResponse> ConfirmAndLockFinalTargets([ActionParameter] ConvertTextToDocumentResponse request)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            await using var streamIn = await fileManagementClient.DownloadAsync(request.File);
             var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
             XNamespace ns = doc.Root.GetDefaultNamespace();
             XNamespace mNs = "http://www.memsource.com/mxlf/2.0";
@@ -165,7 +157,7 @@ namespace Apps.Utilities.Actions
             }
 
             streamOut.Position = 0;
-            var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
+            var resultFile = await fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
 
             return new ConvertTextToDocumentResponse
             {
@@ -191,7 +183,7 @@ namespace Apps.Utilities.Actions
             if (request.IncludeSurroundingUnits == true && !statesToProcess.Any())
                 throw new PluginMisconfigurationException("At least one segment state must be specified in both 'Segment states to add notes into' and 'Segment states to be added as note'.");
 
-            var originalXliffStream = await _fileManagementClient.DownloadAsync(request.File);
+            var originalXliffStream = await fileManagementClient.DownloadAsync(request.File);
             var originalXliff = await originalXliffStream.ReadString();
 
             if (!Xliff2Serializer.TryGetXliffVersion(originalXliff, out var originalXliffVersion))
@@ -303,7 +295,7 @@ namespace Apps.Utilities.Actions
 
             return new FileDto
             {
-                File = await _fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name)
+                File = await fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name)
             };
         }
 
@@ -329,7 +321,7 @@ namespace Apps.Utilities.Actions
 
             MemoryStream streamOut = WriteXmlToMemoryStream(xliffDoc);
             string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".xliff";
-            var resultFile = await _fileManagementClient.UploadAsync(streamOut, "application/xml", fileName);
+            var resultFile = await fileManagementClient.UploadAsync(streamOut, "application/xml", fileName);
             return new ConvertTextToDocumentResponse { File = resultFile };
         }
 
@@ -354,7 +346,7 @@ namespace Apps.Utilities.Actions
                 string updatedHtml = GetHtmlFromDocument(htmlDoc);
                 MemoryStream streamOut = WriteTextToMemoryStream(updatedHtml);
                 string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
-                var resultFile = await _fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
+                var resultFile = await fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
                 return new ConvertTextToDocumentResponse { File = resultFile };
 
             }
@@ -374,7 +366,7 @@ namespace Apps.Utilities.Actions
             if (request.File == null)
                 throw new PluginMisconfigurationException("File is required.");
 
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            await using var streamIn = await fileManagementClient.DownloadAsync(request.File);
 
             var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
             doc.Declaration ??= new XDeclaration("1.0", "utf-8", null);
@@ -419,7 +411,7 @@ namespace Apps.Utilities.Actions
             streamOut.Position = 0;
 
             var contentType = request.File.ContentType ?? "application/xliff+xml";
-            var result = await _fileManagementClient.UploadAsync(streamOut, contentType, request.File.Name);
+            var result = await fileManagementClient.UploadAsync(streamOut, contentType, request.File.Name);
 
             return new ConvertTextToDocumentResponse { File = result };
         }
@@ -427,7 +419,7 @@ namespace Apps.Utilities.Actions
         [Action("Copy source to target in XLIFF", Description = "Copies all source content into targets.")]
         public async Task<CopySourceToTargetResponse> CopySourceToTarget([ActionParameter] CopySourceToTargetRequest request)
         {
-            var originalXliffStream = await _fileManagementClient.DownloadAsync(request.File);
+            var originalXliffStream = await fileManagementClient.DownloadAsync(request.File);
             var originalXliff = await originalXliffStream.ReadString();
 
             if (!Xliff2Serializer.TryGetXliffVersion(originalXliff, out var originalXliffVersion))
@@ -463,14 +455,109 @@ namespace Apps.Utilities.Actions
 
             return new CopySourceToTargetResponse
             {
-                File = await _fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name),
+                File = await fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name),
                 SegmentsCopied = segmentsCopied,
             };
         }
 
+        [Action("Convert XLIFF to CSV", Description = "Convert XLIFF file to CSV file.")]
+        public async Task<ConvertXliffToCsvResponse> ConvertXliffToCsv([ActionParameter] ConvertXliffToCsvRequest request)
+        {
+            using var stream = await fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(stream);
+            var fileContent = await reader.ReadToEndAsync();
+
+            var transformation = Transformation.Parse(fileContent, request.File.Name)
+                ?? throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            var segments = new List<XliffSegmentDto>();
+            long totalCharacters = 0;
+
+            foreach (var unit in transformation.GetUnits())
+            {
+                foreach (var segment in unit.Segments)
+                {
+                    if (segment.IsIgnorbale) 
+                        continue;
+
+                    var resolvedId = !string.IsNullOrWhiteSpace(segment.Id) ? segment.Id : unit.Id;
+
+                    string source = segment.GetSource();
+                    string target = segment.GetTarget();
+
+                    if (string.IsNullOrWhiteSpace(target)) 
+                        target = source;
+
+                    segments.Add(new XliffSegmentDto(resolvedId ?? string.Empty, source, target));
+
+                    totalCharacters += source.Length + target.Length;
+                }
+            }
+
+            if (segments.Count == 0)
+                return new([]);
+
+            int limit = request.BatchSize ?? 10000;
+            int numberOfBatches = (int)Math.Ceiling((double)totalCharacters / limit);
+            if (numberOfBatches < 1) 
+                numberOfBatches = 1;
+
+            long optimalBatchSize = (long)Math.Ceiling((double)totalCharacters / numberOfBatches);
+
+            var outputFiles = new List<FileReference>();
+            int currentSegmentIndex = 0;
+
+            for (int i = 0; i < numberOfBatches; i++)
+            {
+                if (currentSegmentIndex >= segments.Count) 
+                    break;
+
+                var csvBuilder = new StringBuilder();
+                csvBuilder.AppendLine("id,source,target");
+
+                long currentBatchChars = 0;
+
+                while (currentSegmentIndex < segments.Count)
+                {
+                    var segment = segments[currentSegmentIndex];
+
+                    var cleanId = EscapeCsv(RemoveInvalidXmlChars(segment.Id));
+                    var cleanSource = EscapeCsv(RemoveInvalidXmlChars(segment.Source));
+                    var cleanTarget = EscapeCsv(RemoveInvalidXmlChars(segment.Target));
+
+                    csvBuilder.AppendLine($"{cleanId},{cleanSource},{cleanTarget}");
+
+                    currentBatchChars += segment.CharacterCount;
+                    currentSegmentIndex++;
+
+                    if (i < numberOfBatches - 1 && currentBatchChars >= optimalBatchSize)
+                        break;
+                }
+
+                using var outStream = new MemoryStream(Encoding.UTF8.GetBytes(csvBuilder.ToString()));
+                var fileName = $"{Path.GetFileNameWithoutExtension(request.File.Name)}_part{i + 1}.csv";
+
+                var csvFile = await fileManagementClient.UploadAsync(outStream, "text/csv", fileName);
+                outputFiles.Add(csvFile);
+            }
+
+            return new(outputFiles);
+        }
+
+        private static string EscapeCsv(string field)
+        {
+            if (string.IsNullOrEmpty(field)) 
+                return string.Empty;
+
+            if (field.Contains(',') || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))
+                return $"\"{field.Replace("\"", "\"\"")}\"";
+
+            return field;
+        }
+
         private async Task<XDocument> LoadXliffDocumentAsync(FileReference file)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(file);
+            await using var streamIn = await fileManagementClient.DownloadAsync(file);
             return XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
         }
 
@@ -640,7 +727,7 @@ namespace Apps.Utilities.Actions
         }
         private async Task<string> DownloadHtmlContentAsync(FileReference file)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(file);
+            await using var streamIn = await fileManagementClient.DownloadAsync(file);
             using (var reader = new StreamReader(streamIn, Encoding.UTF8))
             {
                 return await reader.ReadToEndAsync();
