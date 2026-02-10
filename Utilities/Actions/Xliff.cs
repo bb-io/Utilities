@@ -482,13 +482,13 @@ namespace Apps.Utilities.Actions
 
                     var resolvedId = !string.IsNullOrWhiteSpace(segment.Id) ? segment.Id : unit.Id;
 
-                    var source = segment.GetSource();
-                    var target = segment.GetTarget();
+                    string source = segment.GetSource();
+                    string target = segment.GetTarget();
 
                     if (string.IsNullOrWhiteSpace(target)) 
                         target = source;
 
-                    segments.Add(new XliffSegmentDto(resolvedId, source, target));
+                    segments.Add(new XliffSegmentDto(resolvedId ?? string.Empty, source, target));
 
                     totalCharacters += source.Length + target.Length;
                 }

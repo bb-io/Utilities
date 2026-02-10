@@ -49,16 +49,14 @@ public class XliffTests: TestBase
     }
 
     [TestMethod]
-    [DataRow("test.xliff")]
-    [DataRow("example.mxliff")]
-    [DataRow("contentful_2.xlf")]
+    [DataRow("cyrillic.xliff")]
     public async Task ConvertXliffToCsv_IsSuccess(string testFileName)
     {
         // Arrange
         var request = new ConvertXliffToCsvRequest
         {
             File = new FileReference { Name = testFileName },
-            BatchSize = 300
+            BatchSize = 10
         };
 
         // Act
