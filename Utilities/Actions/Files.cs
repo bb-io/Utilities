@@ -179,22 +179,52 @@ public class Files : BaseInvocable
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
     {
+        if (request?.File == null)
+            throw new PluginMisconfigurationException("File is required.");
+
+        if (string.IsNullOrWhiteSpace(request.Regex))
+            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty.");
+
         try
         {
-            await using var file = await _fileManagementClient.DownloadAsync(request.File);
-            using var reader = new StreamReader(file);
+            await using var fileStream = await _fileManagementClient.DownloadAsync(request.File);
+
+            using var reader = new StreamReader(fileStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: false);
             var text = await reader.ReadToEndAsync();
-            var replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
-        
-            return new()
+
+            string replacedText;
+            try
             {
-                File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
-                    request.File.ContentType, request.File.Name)
-            };
+                replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
+            }
+            catch (RegexParseException ex)
+            {
+                throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}", ex);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new PluginMisconfigurationException($"Error: {ex.Message}", ex);
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(replacedText);
+            await using var uploadStream = new MemoryStream(bytes);
+
+            var contentType = string.IsNullOrWhiteSpace(request.File.ContentType)
+                ? "text/plain"
+                : request.File.ContentType;
+
+            var uploaded = await _fileManagementClient.UploadAsync(uploadStream, contentType, request.File.Name);
+
+            return new ReplaceTextInDocumentResponse { File = uploaded };
         }
-        catch (RegexParseException ex)
+        catch (HttpRequestException ex)
         {
-            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
+            var details = ex.InnerException?.Message ?? ex.Message;
+            throw new PluginApplicationException($"File service request failed: {details}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            throw new PluginApplicationException("File service request timed out while downloading or uploading the file.", ex);
         }
     }
 
