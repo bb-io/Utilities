@@ -38,23 +38,36 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     }
 
     [Action("Extract matches from array using Regex", Description = "From an array of strings, return extracted matches for elements that satisfy the regex. If 'Group' is set, returns that group's value; otherwise full match.")]
-    public async Task<ExtractArrayResponse> ExtractArrayUsingRegex([ActionParameter] TextsDto input, [ActionParameter] RegexInput regex)
+    public Task<ExtractArrayResponse> ExtractArrayUsingRegex([ActionParameter] TextsDto input, [ActionParameter] RegexInput regex)
     {
-        if (input == null || input.Texts == null)
+        if (input?.Texts == null)
             throw new PluginMisconfigurationException("Input array cannot be null.");
+
         if (regex == null || string.IsNullOrWhiteSpace(regex.Regex))
             throw new PluginMisconfigurationException("Regex pattern cannot be null or empty.");
 
         var options = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
-        var r = new Regex(regex.Regex, options);
+
+        Regex r;
+        try
+        {
+            r = new Regex(regex.Regex, options);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new PluginMisconfigurationException($"Invalid pattern '{regex.Regex}'. {ex.Message}", ex);
+        }
 
         var results = new List<string>();
+
         foreach (var s in input.Texts)
         {
-            if (string.IsNullOrWhiteSpace(s)) continue;
+            if (string.IsNullOrWhiteSpace(s))
+                continue;
 
             var m = r.Match(s);
-            if (!m.Success) continue;
+            if (!m.Success)
+                continue;
 
             if (string.IsNullOrWhiteSpace(regex.Group))
             {
@@ -64,10 +77,12 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
             {
                 if (!m.Groups.ContainsKey(regex.Group))
                     throw new PluginMisconfigurationException($"Group '{regex.Group}' not found in the regex pattern");
+
                 results.Add(m.Groups[regex.Group].Value);
             }
         }
-        return new ExtractArrayResponse { Response = results };
+
+        return Task.FromResult(new ExtractArrayResponse { Response = results });
     }
 
 
