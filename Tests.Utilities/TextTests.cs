@@ -112,11 +112,11 @@ public class TextTests : TestBase
         Assert.AreEqual("Line1\nLine2\nLine3", result5, "Should match across newlines");
 
         var result6 = _textActions.ExtractRegex(
-            new TextDto { Text = "Hello World" },
-            new RegexInput { Regex = @"\d+" }
-        );
-        Console.WriteLine(result6);
-        Assert.AreEqual("", result6, "Should return empty string when no match is found");
+             new TextDto { Text = "Hello World" },
+             new RegexInput { Regex = @"\d+" }
+         );
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result6));
+        Assert.IsNull(result6, "Should return null when no match is found");
 
         var result7 = _textActions.ExtractRegex(
             new TextDto { Text = "HELLO WORLD" },
