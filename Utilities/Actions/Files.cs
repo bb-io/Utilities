@@ -195,7 +195,7 @@ public class Files : BaseInvocable
             string replacedText;
             try
             {
-                replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
+                replacedText = Regex.Replace(text, request.Regex, request.ExprimentalRegexField ?? request.Replace ?? string.Empty);
             }
             catch (RegexParseException ex)
             {
