@@ -311,7 +311,9 @@ public class XMLTests : TestBase
     public async Task Count_Words_In_Html()
     {
         var actions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
-        var file = new FileReference { Name = "test.html" };
+        //var file = new FileReference { Name = "test.html" };
+        //var file = new FileReference { Name = "test-word-count.idml" };
+        var file = new FileReference { Name = "test-word-count.pptx" };
         var input = new FileDto { File = file };
         var result = await actions.GetWordCountInFile(input);
         Console.WriteLine(result);
