@@ -158,22 +158,52 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     public async Task<ReplaceTextInDocumentResponse> ReplaceTextInDocument(
         [ActionParameter] ReplaceTextInDocumentRequest request)
     {
+        if (request?.File == null)
+            throw new PluginMisconfigurationException("File is required.");
+
+        if (string.IsNullOrWhiteSpace(request.Regex))
+            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty.");
+
         try
         {
-            await using var file = await fileManagementClient.DownloadAsync(request.File);
-            using var reader = new StreamReader(file);
+            await using var fileStream = await _fileManagementClient.DownloadAsync(request.File);
+
+            using var reader = new StreamReader(fileStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: false);
             var text = await reader.ReadToEndAsync();
-            var replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
-        
-            return new()
+
+            string replacedText;
+            try
             {
-                File = await fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
-                    request.File.ContentType, request.File.Name)
-            };
+                replacedText = Regex.Replace(text, request.Regex, request.ExprimentalRegexField ?? request.Replace ?? string.Empty);
+            }
+            catch (RegexParseException ex)
+            {
+                throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}", ex);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new PluginMisconfigurationException($"Error: {ex.Message}", ex);
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(replacedText);
+            await using var uploadStream = new MemoryStream(bytes);
+
+            var contentType = string.IsNullOrWhiteSpace(request.File.ContentType)
+                ? "text/plain"
+                : request.File.ContentType;
+
+            var uploaded = await _fileManagementClient.UploadAsync(uploadStream, contentType, request.File.Name);
+
+            return new ReplaceTextInDocumentResponse { File = uploaded };
         }
-        catch (RegexParseException ex)
+        catch (HttpRequestException ex)
         {
-            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
+            var details = ex.InnerException?.Message ?? ex.Message;
+            throw new PluginApplicationException($"File service request failed: {details}", ex);
+        }
+        catch (TaskCanceledException ex)
+        {
+            throw new PluginApplicationException("File service request timed out while downloading or uploading the file.", ex);
         }
     }
 
@@ -638,17 +668,166 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
 
     private static async Task<string> ReadDocument(Stream file, string fileExtension)
     {
-        string text;
-        if (fileExtension == ".pdf")
-            text = await ReadPdfFile(file);
-        else if (fileExtension == ".docx" || fileExtension == ".doc")
-            text = await ReadDocxFile(file);
-        else if (fileExtension == ".html")
-            text = await ReadHtmlFile(file);
-        else
-            text = await ReadPlaintextFile(file);
+        return fileExtension switch
+        {
+            ".pdf" => await ReadPdfFile(file),
+            ".docx" or ".doc" => await ReadDocxFile(file),
+            ".html" or ".htm" => await ReadHtmlFile(file),
+            ".xlsx" => await ReadXlsxFile(file),
+            ".pptx" => await ReadPptxFile(file),
+            ".idml" => await ReadIdmlFile(file),
+            _ => await ReadPlaintextFile(file)
+        };
+    }
 
-        return text;
+    private static async Task<string> ReadXlsxFile(Stream file)
+    {
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            using var document = SpreadsheetDocument.Open(memoryStream, false);
+            var workbookPart = document.WorkbookPart
+                ?? throw new PluginApplicationException("Invalid XLSX file: workbook part is missing.");
+
+            var sharedStringTable = workbookPart.SharedStringTablePart?.SharedStringTable;
+            var stringBuilder = new StringBuilder();
+
+            foreach (var worksheetPart in workbookPart.WorksheetParts)
+            {
+                var cells = worksheetPart.Worksheet.Descendants<DocumentFormat.OpenXml.Spreadsheet.Cell>();
+
+                foreach (var cell in cells)
+                {
+                    var cellText = GetCellText(cell, sharedStringTable);
+
+                    if (!string.IsNullOrWhiteSpace(cellText))
+                    {
+                        stringBuilder.Append(cellText);
+                        stringBuilder.Append(' ');
+                    }
+                }
+            }
+
+            return stringBuilder.ToString();
+        });
+    }
+
+    private static string GetCellText(
+    DocumentFormat.OpenXml.Spreadsheet.Cell cell,
+    DocumentFormat.OpenXml.Spreadsheet.SharedStringTable? sharedStringTable)
+    {
+        if (cell == null)
+            return string.Empty;
+
+        if (cell.DataType == null)
+            return cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
+
+        var dataType = cell.DataType.Value;
+
+        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.SharedString)
+            return GetSharedStringValue(cell, sharedStringTable);
+
+        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.InlineString)
+            return cell.InlineString?.InnerText ?? string.Empty;
+
+        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.String)
+            return cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
+
+        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.Boolean)
+            return cell.CellValue?.InnerText == "1" ? "TRUE" : "FALSE";
+
+        return cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
+    }
+
+    private static string GetSharedStringValue(
+        DocumentFormat.OpenXml.Spreadsheet.Cell cell,
+        DocumentFormat.OpenXml.Spreadsheet.SharedStringTable? sharedStringTable)
+    {
+        if (sharedStringTable == null)
+            return string.Empty;
+
+        if (!int.TryParse(cell.CellValue?.InnerText, out var index))
+            return string.Empty;
+
+        var item = sharedStringTable.Elements<DocumentFormat.OpenXml.Spreadsheet.SharedStringItem>()
+            .ElementAtOrDefault(index);
+
+        return item?.InnerText ?? string.Empty;
+    }
+
+    private static async Task<string> ReadPptxFile(Stream file)
+    {
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            using var document = PresentationDocument.Open(memoryStream, false);
+            var presentationPart = document.PresentationPart
+                ?? throw new PluginApplicationException("Invalid PPTX file: presentation part is missing.");
+
+            var stringBuilder = new StringBuilder();
+
+            foreach (var slidePart in presentationPart.SlideParts)
+            {
+                var texts = slidePart.Slide
+                    .Descendants<DocumentFormat.OpenXml.Drawing.Text>()
+                    .Select(x => x.Text)
+                    .Where(x => !string.IsNullOrWhiteSpace(x));
+
+                foreach (var text in texts)
+                {
+                    stringBuilder.Append(text);
+                    stringBuilder.Append(' ');
+                }
+            }
+
+            return stringBuilder.ToString();
+        });
+    }
+
+    private static async Task<string> ReadIdmlFile(Stream file)
+    {
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read, leaveOpen: false);
+            var stringBuilder = new StringBuilder();
+
+            var storyEntries = archive.Entries
+                .Where(e => e.FullName.StartsWith("Stories/", StringComparison.OrdinalIgnoreCase)
+                         && e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var entry in storyEntries)
+            {
+                using var entryStream = entry.Open();
+                var document = await XDocument.LoadAsync(entryStream, LoadOptions.None, CancellationToken.None);
+
+                var contentNodes = document
+                    .Descendants()
+                    .Where(x => x.Name.LocalName == "Content");
+
+                foreach (var node in contentNodes)
+                {
+                    var text = node.Value;
+
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        stringBuilder.Append(text);
+                        stringBuilder.Append(' ');
+                    }
+                }
+            }
+
+            return stringBuilder.ToString();
+        });
     }
 
     private static async Task<string> ReadHtmlFile(Stream file)

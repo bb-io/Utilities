@@ -51,12 +51,15 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
         var r = new Regex(regex.Regex, options);
 
         var results = new List<string>();
+
         foreach (var s in input.Texts)
         {
-            if (string.IsNullOrWhiteSpace(s)) continue;
+            if (string.IsNullOrWhiteSpace(s))
+                continue;
 
             var m = r.Match(s);
-            if (!m.Success) continue;
+            if (!m.Success)
+                continue;
 
             if (string.IsNullOrWhiteSpace(regex.Group))
             {
@@ -66,10 +69,12 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
             {
                 if (!m.Groups.ContainsKey(regex.Group))
                     throw new PluginMisconfigurationException($"Group '{regex.Group}' not found in the regex pattern");
+
                 results.Add(m.Groups[regex.Group].Value);
             }
         }
-        return new ExtractArrayResponse { Response = results };
+
+        return Task.FromResult(new ExtractArrayResponse { Response = results });
     }
 
 
