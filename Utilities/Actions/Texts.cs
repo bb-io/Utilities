@@ -99,13 +99,11 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
     [Action("Extract using Regex", Description = "Returns first match from text using input Regex")]
     public string ExtractRegex([ActionParameter] TextDto input, [ActionParameter] RegexInput regex)
     {
+        regex.Validate();
+
         if (input == null || string.IsNullOrEmpty(input.Text))
         {
             throw new PluginMisconfigurationException("Input text cannot be null or empty");
-        }
-        if (regex == null || string.IsNullOrEmpty(regex.Regex))
-        {
-            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty");
         }
 
         var regexOptions = RegexOptionsUtillity.GetRegexOptions(regex.Flags);

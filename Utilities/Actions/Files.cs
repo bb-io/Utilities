@@ -1,54 +1,33 @@
-﻿using AngleSharp.Io;
-using Apps.Utilities.ErrorWrapper;
+﻿using Apps.Utilities.ErrorWrapper;
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
-using Apps.Utilities.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
-using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Vml.Office;
 using DocumentFormat.OpenXml.Wordprocessing;
 using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Mammoth;
-using Microsoft.Extensions.Logging;
-using System;
 using System.IO.Compression;
-using System.Linq.Expressions;
 using System.Net;
-using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml.Linq;
 using UglyToad.PdfPig;
 
 namespace Apps.Utilities.Actions;
 
 [ActionList("Files")]
-public class Files : BaseInvocable
+public class Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient)
+    : BaseInvocable(invocationContext)
 {
-    private readonly IFileManagementClient _fileManagementClient;
-
-    private readonly ILogger<Files> _logger;
-
-    public Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient, ILogger<Files> logger) : base(
-        invocationContext)
-    {
-        _fileManagementClient = fileManagementClient;
-        //_logger = logger;
-        //_logger.LogInformation("Files is called.");
-    }
-
-    [Action("Get file name information",
+    [Action("Get file name information", 
         Description = "Returns the name of a file, with or without extension, and the extension.")]
     public NameResponse GetFileName([ActionParameter] FileDto file)
     {
@@ -63,7 +42,7 @@ public class Files : BaseInvocable
     [Action("Get file size", Description = "Returns the size of a file in bytes.")]
     public async Task<double> GetFileSize([ActionParameter] FileDto file)
     {
-        var fileStream = await _fileManagementClient.DownloadAsync(file.File);
+        var fileStream = await fileManagementClient.DownloadAsync(file.File);
         var memoryStream = new MemoryStream();
         await fileStream.CopyToAsync(memoryStream);
         memoryStream.Seek(0, SeekOrigin.Begin);
@@ -74,7 +53,7 @@ public class Files : BaseInvocable
         Description = "Load document's text. Document must be in docx/doc, pdf or any plaintext format.")]
     public async Task<LoadDocumentResponse> LoadDocument([ActionParameter] LoadDocumentRequest request)
     {
-        var file = await _fileManagementClient.DownloadAsync(request.File);
+        var file = await fileManagementClient.DownloadAsync(request.File);
         var extension = Path.GetExtension(request.File.Name).ToLower();
         var filecontent = await ReadDocument(file, extension);
         return new() { Text = filecontent };
@@ -122,7 +101,7 @@ public class Files : BaseInvocable
     [Action("Get file character count", Description = "Returns number of characters in the file")]
     public async Task<int> GetCharCountInFile([ActionParameter] FileDto file)
     {
-        var _file = await _fileManagementClient.DownloadAsync(file.File);
+        var _file = await fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
 
@@ -134,7 +113,7 @@ public class Files : BaseInvocable
     [Action("Get file word count", Description = "Returns number of words in the file")]
     public async Task<double> GetWordCountInFile([ActionParameter] FileDto file)
     {
-        var stream = await _fileManagementClient.DownloadAsync(file.File);
+        var stream = await fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLowerInvariant();
 
@@ -181,14 +160,14 @@ public class Files : BaseInvocable
     {
         try
         {
-            await using var file = await _fileManagementClient.DownloadAsync(request.File);
+            await using var file = await fileManagementClient.DownloadAsync(request.File);
             using var reader = new StreamReader(file);
             var text = await reader.ReadToEndAsync();
             var replacedText = Regex.Replace(text, request.Regex, request.Replace ?? string.Empty);
         
             return new()
             {
-                File = await _fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
+                File = await fileManagementClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(replacedText)),
                     request.File.ContentType, request.File.Name)
             };
         }
@@ -212,7 +191,7 @@ public class Files : BaseInvocable
         if (regex.Replacements.Any(string.IsNullOrEmpty))
             throw new PluginMisconfigurationException("Replacement strings cannot contain empty strings.");
 
-        await using var download = await _fileManagementClient.DownloadAsync(request.File);
+        await using var download = await fileManagementClient.DownloadAsync(request.File);
         using var reader = new StreamReader(download);
         var result = await reader.ReadToEndAsync();
 
@@ -233,7 +212,7 @@ public class Files : BaseInvocable
 
         return new()
         {
-            File = await _fileManagementClient.UploadAsync(
+            File = await fileManagementClient.UploadAsync(
                 new MemoryStream(Encoding.UTF8.GetBytes(result)),
                 request.File.ContentType,
                 request.File.Name)
@@ -244,58 +223,44 @@ public class Files : BaseInvocable
     public async Task<ExtractTextFromDocumentResponse> ExtractTextFromDocument(
         [ActionParameter] ExtractTextFromDocumentRequest request)
     {
-        try
-        {
-            await using var file = await _fileManagementClient.DownloadAsync(request.File);
-            using var reader = new StreamReader(file);
-            var text = await reader.ReadToEndAsync();
-            
-            text = String.IsNullOrEmpty(request.Group)
-                ? Regex.Match(text, request.Regex).Value
-                : Regex.Match(text, request.Regex).Groups[request.Group].Value;
+        request.Validate();
 
-            return new()
-            {
-                ExtractedText = text
-            };
-        }
-        catch (RegexParseException ex)
-        {
-            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
-        }
+        await using var file = await fileManagementClient.DownloadAsync(request.File);
+        using var reader = new StreamReader(file);
+        var text = await reader.ReadToEndAsync();
+            
+        text = string.IsNullOrEmpty(request.Group)
+            ? Regex.Match(text, request.Regex).Value
+            : Regex.Match(text, request.Regex).Groups[request.Group].Value;
+
+        return new() { ExtractedText = text };
     }
 
     [Action("Extract many using Regex from document",
-    Description = "Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc.)")]
+        Description = "Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc.)")]
     public async Task<IEnumerable<string>> ExtractManyTextFromDocument([ActionParameter] ExtractTextFromDocumentRequest request)
     {
-        try
-        {
-            await using var file = await _fileManagementClient.DownloadAsync(request.File);
-            using var reader = new StreamReader(file);
-            var text = await reader.ReadToEndAsync();
+        request.Validate();
 
-            var matches = Regex.Matches(text, request.Regex);
+        await using var file = await fileManagementClient.DownloadAsync(request.File);
+        using var reader = new StreamReader(file);
+        var text = await reader.ReadToEndAsync();
 
-            var extracted = matches
-                .Cast<Match>()
-                .Where(m => m.Success)
-                .Select(m =>
-                    string.IsNullOrEmpty(request.Group)
-                        ? m.Value
-                        : m.Groups[request.Group].Value
-                )
-                .Where(v => !string.IsNullOrEmpty(v))
-                .ToList();
+        var matches = Regex.Matches(text, request.Regex);
 
-            return extracted;
-        }
-        catch (RegexParseException ex)
-        {
-            throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
-        }
+        var extracted = matches
+            .Cast<Match>()
+            .Where(m => m.Success)
+            .Select(m =>
+                string.IsNullOrEmpty(request.Group)
+                    ? m.Value
+                    : m.Groups[request.Group].Value
+            )
+            .Where(v => !string.IsNullOrEmpty(v))
+            .ToList();
+
+        return extracted;
     }
-
 
     [Action("Convert text to document", Description = "Convert text to txt, html, json, csv, doc or docx document.")]
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
@@ -325,7 +290,7 @@ public class Files : BaseInvocable
         string currentContent = null;
         foreach (var file in request.Files)
         {
-            var stream = await _fileManagementClient.DownloadAsync(file);
+            var stream = await fileManagementClient.DownloadAsync(file);
             var filecontent = await ReadPlaintextFile(stream);
             if (currentContent == null)
             {
@@ -358,7 +323,7 @@ public class Files : BaseInvocable
         {
             foreach (var fileRef in request.Files)
             {
-                var file = await _fileManagementClient.DownloadAsync(fileRef);
+                var file = await fileManagementClient.DownloadAsync(fileRef);
 
                 using (var seekableStream = new MemoryStream())
                 {
@@ -379,7 +344,7 @@ public class Files : BaseInvocable
 
         outputStream.Position = 0;
 
-        var uploadedFile = await _fileManagementClient.UploadAsync(
+        var uploadedFile = await fileManagementClient.UploadAsync(
             outputStream,
             mimeType,
             "MergedFile"+extension
@@ -394,7 +359,7 @@ public class Files : BaseInvocable
         if (!request.File.Name.EndsWith(".zip"))
             throw new PluginMisconfigurationException("The input file must be a zip.");
 
-        var file = await _fileManagementClient.DownloadAsync(request.File);
+        var file = await fileManagementClient.DownloadAsync(request.File);
         var files = new List<FileDto>();
 
         using (var seekableStream = new MemoryStream())
@@ -415,7 +380,7 @@ public class Files : BaseInvocable
                         entryStream.CopyTo(buffer);
                         buffer.Position = 0;
 
-                        var uploadedFile = await _fileManagementClient.UploadAsync(
+                        var uploadedFile = await fileManagementClient.UploadAsync(
                             buffer,
                             MimeTypes.GetMimeType(entry.Name),
                             entry.Name
@@ -443,7 +408,7 @@ public class Files : BaseInvocable
         {
             foreach (var fileRef in request.Files)
             {
-                var inputStream = await _fileManagementClient.DownloadAsync(fileRef);
+                var inputStream = await fileManagementClient.DownloadAsync(fileRef);
                 var entry = zip.CreateEntry(fileRef.Name, CompressionLevel.Optimal);
 
                 using var entryStream = entry.Open();
@@ -452,7 +417,7 @@ public class Files : BaseInvocable
         }
 
         archiveStream.Position = 0;
-        var zipFileDto = await _fileManagementClient.UploadAsync(
+        var zipFileDto = await fileManagementClient.UploadAsync(
             archiveStream,
             "application/zip",
             $"archive_{DateTime.UtcNow:yyyyMMdd_HHmmss}.zip"
@@ -467,7 +432,7 @@ public class Files : BaseInvocable
         if (!request.File.Name.EndsWith(".html") && !request.File.Name.EndsWith(".htm"))
             throw new PluginMisconfigurationException("The input file must be an html file.");
 
-        await using var htmlInputStream = await _fileManagementClient.DownloadAsync(request.File);
+        await using var htmlInputStream = await fileManagementClient.DownloadAsync(request.File);
         string htmlString;
         using (var reader = new StreamReader(htmlInputStream))
         {
@@ -493,7 +458,7 @@ public class Files : BaseInvocable
             }
 
             memStream.Position = 0;
-            var uploadedFile = await _fileManagementClient.UploadAsync(memStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", request.File.Name + ".docx");
+            var uploadedFile = await fileManagementClient.UploadAsync(memStream, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", request.File.Name + ".docx");
 
             return new ConvertTextToDocumentResponse { File = uploadedFile };
         }
@@ -512,7 +477,7 @@ public class Files : BaseInvocable
         {
             try
             {
-                await using var inputStream = await _fileManagementClient.DownloadAsync(fileRef);
+                await using var inputStream = await fileManagementClient.DownloadAsync(fileRef);
                 using var memoryStream = new MemoryStream();
                 await inputStream.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
@@ -576,7 +541,7 @@ public class Files : BaseInvocable
         if (!request.File.Name.EndsWith(".doc") && !request.File.Name.EndsWith(".docx"))
             throw new PluginMisconfigurationException("The input file must be a doc or docx.");
 
-        var docxInputStream = await _fileManagementClient.DownloadAsync(request.File);
+        var docxInputStream = await fileManagementClient.DownloadAsync(request.File);
         var converter = new DocumentConverter();
         string htmlString = "";
         try
@@ -593,7 +558,7 @@ public class Files : BaseInvocable
         var htmlStream = new MemoryStream(htmlBytes);
 
         htmlStream.Position = 0;
-        var uploadedFile = await _fileManagementClient.UploadAsync(htmlStream, "text/html", request.File.Name + ".html");
+        var uploadedFile = await fileManagementClient.UploadAsync(htmlStream, "text/html", request.File.Name + ".html");
         return new ConvertTextToDocumentResponse { File = uploadedFile};    
     }
 
@@ -613,7 +578,7 @@ public class Files : BaseInvocable
         }
 
 
-        var file = await _fileManagementClient.UploadAsync(new MemoryStream(contentBytes), contentType, filename);
+        var file = await fileManagementClient.UploadAsync(new MemoryStream(contentBytes), contentType, filename);
 
         return new ConvertTextToDocumentResponse { File = file };
     }
@@ -662,7 +627,7 @@ public class Files : BaseInvocable
         }
 
         stream.Seek(0, SeekOrigin.Begin);
-        var file = await _fileManagementClient.UploadAsync(stream,
+        var file = await fileManagementClient.UploadAsync(stream,
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename);
 
         return new ConvertTextToDocumentResponse

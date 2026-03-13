@@ -38,12 +38,14 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     }
 
     [Action("Extract matches from array using Regex", Description = "From an array of strings, return extracted matches for elements that satisfy the regex. If 'Group' is set, returns that group's value; otherwise full match.")]
-    public async Task<ExtractArrayResponse> ExtractArrayUsingRegex([ActionParameter] TextsDto input, [ActionParameter] RegexInput regex)
+    public async Task<ExtractArrayResponse> ExtractArrayUsingRegex(
+        [ActionParameter] TextsDto input, 
+        [ActionParameter] RegexInput regex)
     {
+        regex.Validate();
+
         if (input == null || input.Texts == null)
-            throw new PluginMisconfigurationException("Input array cannot be null.");
-        if (regex == null || string.IsNullOrWhiteSpace(regex.Regex))
-            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty.");
+            throw new PluginMisconfigurationException("Input array cannot be null.");        
 
         var options = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
         var r = new Regex(regex.Regex, options);

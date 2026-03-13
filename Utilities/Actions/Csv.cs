@@ -150,6 +150,8 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         [ActionParameter][Display("Column index")] int columnIndex,
         [ActionParameter] RegexInput regex)
     {
+        regex.Validate();
+
         if (columnIndex < 0) throw new PluginApplicationException("A column index must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);
         var replaceValues = new Dictionary<string, string>();
@@ -209,6 +211,8 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     [ActionParameter][Display("Row index")] int rowIndex,
     [ActionParameter] RegexInput regex)
     {
+        regex.Validate();
+
         if (rowIndex < 0) throw new PluginApplicationException("A row index must be 0 or a positive number.");
 
         bool hasFrom = regex.From != null && regex.From.Any();
