@@ -21,17 +21,17 @@ public class ArrayTests : TestBase
     }
 
     [TestMethod]
-    public async Task ExtractArrayUsingRegex_ReturnsCountWords()
+    public void ExtractArrayUsingRegex_ReturnsCountWords()
     {
-        var input = new TextsDto { Texts = new List<string> { "en", "DE", "fr-CH", "ES_mx", "en-US", "EN_gb", "eng", "eng-US" } };
+        var input = new TextsDto { Texts = ["en", "DE", "fr-CH", "ES_mx", "en-US", "EN_gb", "eng", "eng-US"] };
 
         var regex = new RegexInput
         {
             Regex = @"^(?:en|eng)(?:[-_][A-Za-z0-9]{2,8})*$",
-            Flags = new List<string> { "insensitive" }
+            Flags = ["insensitive"]
         };
         var actions = new Arrays(InvocationContext);
-        var result = await actions.ExtractArrayUsingRegex(input, regex);
+        var result = actions.ExtractArrayUsingRegex(input, regex);
 
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(result);
         Console.WriteLine(json);

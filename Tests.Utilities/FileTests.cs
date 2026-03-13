@@ -21,7 +21,7 @@ namespace Tests.Utilities
                 Directory.Delete(outputDirectory, true);
             Directory.CreateDirectory(outputDirectory);
 
-            _fileActions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
+            _fileActions = new Files(InvocationContext, FileManager);
         }
 
         [TestMethod]
