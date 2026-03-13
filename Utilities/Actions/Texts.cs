@@ -104,34 +104,20 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
         if (input == null || string.IsNullOrEmpty(input.Text))
             throw new PluginMisconfigurationException("Input text cannot be null or empty");
 
-        if (regex == null || string.IsNullOrEmpty(regex.Regex))
-            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty");
+        var regexOptions = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
+        var compiledRegex = new Regex(regex.Regex, regexOptions);
+        var match = compiledRegex.Match(input.Text);
 
-        try
-        {
-            var regexOptions = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
-            var compiledRegex = new Regex(regex.Regex, regexOptions);
-            var match = compiledRegex.Match(input.Text);
+        if (!match.Success)
+            return string.Empty;
 
-            if (!match.Success)
-                return null;
+        if (string.IsNullOrWhiteSpace(regex.Group))
+            return match.Value;
 
-            if (string.IsNullOrWhiteSpace(regex.Group))
-                return match.Value;
+        if (!match.Groups.ContainsKey(regex.Group))
+            throw new PluginMisconfigurationException($"Group '{regex.Group}' not found in the regex pattern");
 
-            if (!match.Groups.ContainsKey(regex.Group))
-                throw new PluginMisconfigurationException($"Group '{regex.Group}' not found in the regex pattern");
-
-            return match.Groups[regex.Group].Value;
-        }
-        catch (PluginMisconfigurationException)
-        {
-            throw;
-        }
-        catch (ArgumentException ex)
-        {
-            throw new PluginMisconfigurationException($"Invalid regex pattern: {ex.Message}");
-        }
+        return match.Groups[regex.Group].Value;
     }
 
     [Action("Extract many using Regex", Description = "Returns all matches from text using input Regex")]

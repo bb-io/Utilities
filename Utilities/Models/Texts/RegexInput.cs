@@ -43,6 +43,11 @@ public class RegexInput
             throw new PluginMisconfigurationException("Invalid regex pattern");
         }
 
+        if (From?.Count() != To?.Count())
+            throw new PluginMisconfigurationException(
+                "'From' and 'To' lists must both be provided and have the same number of " +
+                "elements when one is specified. Please check the input and try again");
+
         return this;
     }
 }

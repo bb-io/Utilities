@@ -166,7 +166,7 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
 
         try
         {
-            await using var fileStream = await _fileManagementClient.DownloadAsync(request.File);
+            await using var fileStream = await fileManagementClient.DownloadAsync(request.File);
 
             using var reader = new StreamReader(fileStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: false);
             var text = await reader.ReadToEndAsync();
@@ -192,7 +192,7 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
                 ? "text/plain"
                 : request.File.ContentType;
 
-            var uploaded = await _fileManagementClient.UploadAsync(uploadStream, contentType, request.File.Name);
+            var uploaded = await fileManagementClient.UploadAsync(uploadStream, contentType, request.File.Name);
 
             return new ReplaceTextInDocumentResponse { File = uploaded };
         }

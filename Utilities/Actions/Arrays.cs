@@ -38,9 +38,7 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     }
 
     [Action("Extract matches from array using Regex", Description = "From an array of strings, return extracted matches for elements that satisfy the regex. If 'Group' is set, returns that group's value; otherwise full match.")]
-    public async Task<ExtractArrayResponse> ExtractArrayUsingRegex(
-        [ActionParameter] TextsDto input, 
-        [ActionParameter] RegexInput regex)
+    public ExtractArrayResponse ExtractArrayUsingRegex([ActionParameter] TextsDto input, [ActionParameter] RegexInput regex)
     {
         regex.Validate();
 
@@ -74,9 +72,8 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
             }
         }
 
-        return Task.FromResult(new ExtractArrayResponse { Response = results });
+        return new(results);
     }
-
 
     [Action("Deduplicate array", Description = "Returns only unique elements")]
     public ArrayResponse DeduplicateArray([ActionParameter] ArrayCountRequest input,
