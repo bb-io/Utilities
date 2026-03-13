@@ -150,6 +150,8 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         [ActionParameter][Display("Column index")] int columnIndex,
         [ActionParameter] RegexInput regex)
     {
+        regex.Validate();
+
         if (columnIndex < 0) throw new PluginApplicationException("A column index must be 0 or a positive number.");
         var records = await ReadCsv(csvFile, csvOptions);
         var replaceValues = new Dictionary<string, string>();
@@ -164,38 +166,31 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         {
             if (columnIndex < record.Count)
             {
-                try
+                if (useDictionary)
                 {
-                    if (useDictionary)
+                    var match = Regex.Match(record[columnIndex], regex.Regex);
+                    if (match.Success && replaceValues.ContainsKey(match.Value))
                     {
-                        var match = Regex.Match(record[columnIndex], regex.Regex);
-                        if (match.Success && replaceValues.ContainsKey(match.Value))
-                        {
-                            record[columnIndex] = Regex.Replace(record[columnIndex], match.Value, replaceValues[match.Value]);
-                        }
+                        record[columnIndex] = Regex.Replace(record[columnIndex], match.Value, replaceValues[match.Value]);
                     }
-                    else if (!string.IsNullOrEmpty(regex.Replace))
+                }
+                else if (!string.IsNullOrEmpty(regex.Replace))
+                {
+                    if (Regex.IsMatch(record[columnIndex], regex.Regex))
                     {
-                        if (Regex.IsMatch(record[columnIndex], regex.Regex))
-                        {
-                            record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, regex.Replace);
-                        }
+                        record[columnIndex] = Regex.Replace(record[columnIndex], regex.Regex, regex.Replace);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(regex.Group))
+                    {
+                        record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Value;
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(regex.Group))
-                        {
-                            record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Value;
-                        }
-                        else
-                        {
-                            record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Groups[regex.Group].Value;
-                        }
+                        record[columnIndex] = Regex.Match(record[columnIndex], regex.Regex).Groups[regex.Group].Value;
                     }
-                }
-                catch (RegexParseException ex)
-                {
-                    throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
                 }
             }
         }
@@ -209,17 +204,10 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     [ActionParameter][Display("Row index")] int rowIndex,
     [ActionParameter] RegexInput regex)
     {
+        regex.Validate();
+
         if (rowIndex < 0) throw new PluginApplicationException("A row index must be 0 or a positive number.");
-
-        bool hasFrom = regex.From != null && regex.From.Any();
-        bool hasTo = regex.To != null && regex.To.Any();
-        if (hasFrom || hasTo)
-        {
-            if (!hasFrom || !hasTo || regex.From.Count() != regex.To.Count())
-                throw new PluginMisconfigurationException("'From' and 'To' lists must both be provided and have the same number of " +
-                    "elements when one is specified. Please check the input and try again");
-        }
-
+                
         var records = await ReadCsv(csvFile, csvOptions);
         if (rowIndex >= records.Count) return csvFile;
         var replaceValues = new Dictionary<string,string>();
@@ -233,42 +221,35 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
 
         for (int i = 0; i < records[rowIndex].Count; i++)
         {
-            try
+            if (useDictionary)
             {
-                if (useDictionary)
+                var match = Regex.Match(records[rowIndex][i], regex.Regex);
+                if (match != null && match.Success)
                 {
-                    var match = Regex.Match(records[rowIndex][i], regex.Regex);
-                    if (match != null && match.Success)
+                    if (!replaceValues.ContainsKey(match.Value))
                     {
-                        if (!replaceValues.ContainsKey(match.Value))
-                        {
-                            throw new PluginMisconfigurationException($"The matched value '{match.Value}' was not found. Please ensure all possible matched values are included in the 'From' list.");
-                        }
-                        records[rowIndex][i] = Regex.Replace(records[rowIndex][i], match.Value, replaceValues[match.Value]);
+                        throw new PluginMisconfigurationException($"The matched value '{match.Value}' was not found. Please ensure all possible matched values are included in the 'From' list.");
                     }
+                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], match.Value, replaceValues[match.Value]);
                 }
-                else if (!string.IsNullOrEmpty(regex.Replace))
+            }
+            else if (!string.IsNullOrEmpty(regex.Replace))
+            {
+                if (Regex.IsMatch(records[rowIndex][i], regex.Regex))
                 {
-                    if (Regex.IsMatch(records[rowIndex][i], regex.Regex))
-                    {
-                        records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, regex.Replace);
-                    }
+                    records[rowIndex][i] = Regex.Replace(records[rowIndex][i], regex.Regex, regex.Replace);
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(regex.Group))
+                {
+                    records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Value;
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(regex.Group))
-                    {
-                        records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Value;
-                    }
-                    else
-                    {
-                        records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Groups[regex.Group].Value;
-                    }
+                    records[rowIndex][i] = Regex.Match(records[rowIndex][i], regex.Regex).Groups[regex.Group].Value;
                 }
-            }
-            catch (RegexParseException ex)
-            {
-                throw new PluginMisconfigurationException($"Error in regular expression: {ex.Message}");
             }
         }
 

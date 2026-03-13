@@ -38,25 +38,15 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     }
 
     [Action("Extract matches from array using Regex", Description = "From an array of strings, return extracted matches for elements that satisfy the regex. If 'Group' is set, returns that group's value; otherwise full match.")]
-    public Task<ExtractArrayResponse> ExtractArrayUsingRegex([ActionParameter] TextsDto input, [ActionParameter] RegexInput regex)
+    public ExtractArrayResponse ExtractArrayUsingRegex([ActionParameter] TextsDto input, [ActionParameter] RegexInput regex)
     {
-        if (input?.Texts == null)
-            throw new PluginMisconfigurationException("Input array cannot be null.");
+        regex.Validate();
 
-        if (regex == null || string.IsNullOrWhiteSpace(regex.Regex))
-            throw new PluginMisconfigurationException("Regex pattern cannot be null or empty.");
+        if (input == null || input.Texts == null)
+            throw new PluginMisconfigurationException("Input array cannot be null.");        
 
         var options = RegexOptionsUtillity.GetRegexOptions(regex.Flags);
-
-        Regex r;
-        try
-        {
-            r = new Regex(regex.Regex, options);
-        }
-        catch (ArgumentException ex)
-        {
-            throw new PluginMisconfigurationException($"Invalid pattern '{regex.Regex}'. {ex.Message}", ex);
-        }
+        var r = new Regex(regex.Regex, options);
 
         var results = new List<string>();
 
@@ -82,9 +72,8 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
             }
         }
 
-        return Task.FromResult(new ExtractArrayResponse { Response = results });
+        return new(results);
     }
-
 
     [Action("Deduplicate array", Description = "Returns only unique elements")]
     public ArrayResponse DeduplicateArray([ActionParameter] ArrayCountRequest input,
