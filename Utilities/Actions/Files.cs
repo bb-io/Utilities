@@ -676,6 +676,7 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
             ".xlsx" => await ReadXlsxFile(file),
             ".pptx" => await ReadPptxFile(file),
             ".idml" => await ReadIdmlFile(file),
+            ".rtf" => await ReadRtfFile(file),
             _ => await ReadPlaintextFile(file)
         };
     }
@@ -892,11 +893,34 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
         });
     }
 
+    private static async Task<string> ReadRtfFile(Stream file)
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);        
+
+        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            using var reader = new StreamReader(memoryStream);
+            var rtfContent = await reader.ReadToEndAsync();
+
+            var htmlContent = RtfPipe.Rtf.ToHtml(rtfContent);
+
+            var doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
+
+            var text = doc.DocumentNode.InnerText;
+            return Regex.Replace(text, @"\s+", " ").Trim();
+        });
+    }
+
     private static int CountWords(string text)
     {
         char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
         var words = text.Split().Select(x => x.Trim(punctuationCharacters));
-        return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
+        return words.Count(x => !string.IsNullOrWhiteSpace(x));
     }
 
     private static async Task<string> ReadHtmlInnerTextAsync(Stream stream)
