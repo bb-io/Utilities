@@ -63,7 +63,6 @@ namespace Tests.Utilities
             Assert.IsNotNull(response.File);
         }
 
-
         [TestMethod]
         public async Task ConvertDocumentToText_ReturnsConvertedText()
         {
@@ -105,6 +104,20 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
+        public async Task GetWordCountInFile_ReturnsWordCount()
+        {
+            // Arrange
+            var request = new FileDto { File = new FileReference { Name = "test.rtf" } };
+
+            // Act
+            var result = await _fileActions.GetWordCountInFile(request);
+
+            // Assert
+            Console.WriteLine(result);
+            Assert.IsTrue(result != 0);
+        }
+
+        [TestMethod]
         public async Task Count_file_Pages_IsSuccess()
         {
             var files = new[]
@@ -124,7 +137,6 @@ namespace Tests.Utilities
 
             Assert.IsNotNull(response);
         }
-
 
         [TestMethod]
         public async Task Convert_Text_To_File_returns_true()

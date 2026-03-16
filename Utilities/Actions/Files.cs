@@ -2,6 +2,7 @@
 using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
+using Apps.Utilities.Utils.DocumentReader;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
@@ -10,11 +11,9 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using HtmlAgilityPack;
 using ICSharpCode.SharpZipLib.Zip;
 using Mammoth;
 using System.IO.Compression;
-using System.Net;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -55,8 +54,10 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     {
         var file = await fileManagementClient.DownloadAsync(request.File);
         var extension = Path.GetExtension(request.File.Name).ToLower();
-        var filecontent = await ReadDocument(file, extension);
-        return new() { Text = filecontent };
+
+        var reader = DocumentReaderFactory.GetReader(extension);
+        var content = await reader.Read(file);
+        return new(content);
     }
 
     [Action("Change file name", Description = "Rename a file (without extension).")]
@@ -101,13 +102,13 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     [Action("Get file character count", Description = "Returns number of characters in the file")]
     public async Task<int> GetCharCountInFile([ActionParameter] FileDto file)
     {
-        var _file = await fileManagementClient.DownloadAsync(file.File);
+        var stream = await fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLower();
+        IDocumentReader reader = DocumentReaderFactory.GetReader(extension);
 
-        var filecontent = await ReadDocument(_file, extension);
-
-        return filecontent.Length;
+        string fileContent = await reader.Read(stream);
+        return fileContent.Length;
     }
 
     [Action("Get file word count", Description = "Returns number of words in the file")]
@@ -116,19 +117,13 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
         var stream = await fileManagementClient.DownloadAsync(file.File);
 
         var extension = Path.GetExtension(file.File.Name).ToLowerInvariant();
+        IDocumentReader reader = DocumentReaderFactory.GetReader(extension);
 
-        string fileContent;
+        string fileContent = await reader.Read(stream);
 
-        if (extension is ".html" or ".htm")
-        {
-            fileContent = await ReadHtmlInnerTextAsync(stream);
-        }
-        else
-        {
-            fileContent = await ReadDocument(stream, extension);
-        }
-
-        return CountWords(fileContent);
+        char[] punctuationCharacters = fileContent.Where(char.IsPunctuation).Distinct().ToArray();
+        var words = fileContent.Split().Select(x => x.Trim(punctuationCharacters));
+        return words.Count(x => !string.IsNullOrWhiteSpace(x));
     }
 
     [Action("Get files word count", Description = "Returns number of words in the files")]
@@ -314,14 +309,18 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     }
 
     [Action("Compare file contents", Description = "Compare whether two files have the same content.")]
-    public async Task<CompareContentResults> CompareFileContents(
-    [ActionParameter] CompareFilesRequest request)
+    public async Task<CompareContentResults> CompareFileContents([ActionParameter] CompareFilesRequest request)
     {
-        string currentContent = null;
+        string? currentContent = null;
+
         foreach (var file in request.Files)
         {
             var stream = await fileManagementClient.DownloadAsync(file);
-            var filecontent = await ReadPlaintextFile(stream);
+
+            var extension = Path.GetExtension(file.Name);
+            var reader = DocumentReaderFactory.GetReader(extension);
+            var filecontent = await reader.Read(stream);
+
             if (currentContent == null)
             {
                 currentContent = filecontent;
@@ -664,277 +663,5 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
         {
             File = file
         };
-    }
-
-    private static async Task<string> ReadDocument(Stream file, string fileExtension)
-    {
-        return fileExtension switch
-        {
-            ".pdf" => await ReadPdfFile(file),
-            ".docx" or ".doc" => await ReadDocxFile(file),
-            ".html" or ".htm" => await ReadHtmlFile(file),
-            ".xlsx" => await ReadXlsxFile(file),
-            ".pptx" => await ReadPptxFile(file),
-            ".idml" => await ReadIdmlFile(file),
-            _ => await ReadPlaintextFile(file)
-        };
-    }
-
-    private static async Task<string> ReadXlsxFile(Stream file)
-    {
-        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
-        {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            using var document = SpreadsheetDocument.Open(memoryStream, false);
-            var workbookPart = document.WorkbookPart
-                ?? throw new PluginApplicationException("Invalid XLSX file: workbook part is missing.");
-
-            var sharedStringTable = workbookPart.SharedStringTablePart?.SharedStringTable;
-            var stringBuilder = new StringBuilder();
-
-            foreach (var worksheetPart in workbookPart.WorksheetParts)
-            {
-                var cells = worksheetPart.Worksheet.Descendants<DocumentFormat.OpenXml.Spreadsheet.Cell>();
-
-                foreach (var cell in cells)
-                {
-                    var cellText = GetCellText(cell, sharedStringTable);
-
-                    if (!string.IsNullOrWhiteSpace(cellText))
-                    {
-                        stringBuilder.Append(cellText);
-                        stringBuilder.Append(' ');
-                    }
-                }
-            }
-
-            return stringBuilder.ToString();
-        });
-    }
-
-    private static string GetCellText(
-    DocumentFormat.OpenXml.Spreadsheet.Cell cell,
-    DocumentFormat.OpenXml.Spreadsheet.SharedStringTable? sharedStringTable)
-    {
-        if (cell == null)
-            return string.Empty;
-
-        if (cell.DataType == null)
-            return cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
-
-        var dataType = cell.DataType.Value;
-
-        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.SharedString)
-            return GetSharedStringValue(cell, sharedStringTable);
-
-        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.InlineString)
-            return cell.InlineString?.InnerText ?? string.Empty;
-
-        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.String)
-            return cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
-
-        if (dataType == DocumentFormat.OpenXml.Spreadsheet.CellValues.Boolean)
-            return cell.CellValue?.InnerText == "1" ? "TRUE" : "FALSE";
-
-        return cell.CellValue?.InnerText ?? cell.InnerText ?? string.Empty;
-    }
-
-    private static string GetSharedStringValue(
-        DocumentFormat.OpenXml.Spreadsheet.Cell cell,
-        DocumentFormat.OpenXml.Spreadsheet.SharedStringTable? sharedStringTable)
-    {
-        if (sharedStringTable == null)
-            return string.Empty;
-
-        if (!int.TryParse(cell.CellValue?.InnerText, out var index))
-            return string.Empty;
-
-        var item = sharedStringTable.Elements<DocumentFormat.OpenXml.Spreadsheet.SharedStringItem>()
-            .ElementAtOrDefault(index);
-
-        return item?.InnerText ?? string.Empty;
-    }
-
-    private static async Task<string> ReadPptxFile(Stream file)
-    {
-        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
-        {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            using var document = PresentationDocument.Open(memoryStream, false);
-            var presentationPart = document.PresentationPart
-                ?? throw new PluginApplicationException("Invalid PPTX file: presentation part is missing.");
-
-            var stringBuilder = new StringBuilder();
-
-            foreach (var slidePart in presentationPart.SlideParts)
-            {
-                var texts = slidePart.Slide
-                    .Descendants<DocumentFormat.OpenXml.Drawing.Text>()
-                    .Select(x => x.Text)
-                    .Where(x => !string.IsNullOrWhiteSpace(x));
-
-                foreach (var text in texts)
-                {
-                    stringBuilder.Append(text);
-                    stringBuilder.Append(' ');
-                }
-            }
-
-            return stringBuilder.ToString();
-        });
-    }
-
-    private static async Task<string> ReadIdmlFile(Stream file)
-    {
-        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
-        {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read, leaveOpen: false);
-            var stringBuilder = new StringBuilder();
-
-            var storyEntries = archive.Entries
-                .Where(e => e.FullName.StartsWith("Stories/", StringComparison.OrdinalIgnoreCase)
-                         && e.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase));
-
-            foreach (var entry in storyEntries)
-            {
-                using var entryStream = entry.Open();
-                var document = await XDocument.LoadAsync(entryStream, LoadOptions.None, CancellationToken.None);
-
-                var contentNodes = document
-                    .Descendants()
-                    .Where(x => x.Name.LocalName == "Content");
-
-                foreach (var node in contentNodes)
-                {
-                    var text = node.Value;
-
-                    if (!string.IsNullOrWhiteSpace(text))
-                    {
-                        stringBuilder.Append(text);
-                        stringBuilder.Append(' ');
-                    }
-                }
-            }
-
-            return stringBuilder.ToString();
-        });
-    }
-
-    private static async Task<string> ReadHtmlFile(Stream file)
-    {
-        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
-        {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            var doc = new HtmlDocument();
-            using (var reader = new StreamReader(memoryStream))
-            {
-                var htmlContent = await reader.ReadToEndAsync();
-                doc.LoadHtml(htmlContent);
-            }
-
-            var text = doc.DocumentNode.InnerText;
-            return Regex.Replace(text, @"\s+", " ").Trim();
-        });
-    }
-
-    private static async Task<string> ReadPlaintextFile(Stream stream)
-    {
-        var stringBuilder = new StringBuilder();
-        using (var reader = new StreamReader(stream))
-        {
-            while (!reader.EndOfStream)
-            {
-                var line = await reader.ReadLineAsync();
-                stringBuilder.AppendLine(line);
-            }
-        }
-
-        var document = stringBuilder.ToString();
-        return document;
-    }
-
-    private static async Task<string> ReadPdfFile(Stream file)
-    {
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-
-        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
-        {
-            using var document = PdfDocument.Open(memoryStream);
-            return string.Join(" ", document.GetPages().Select(p => p.Text));
-        });
-    }
-
-    private static async Task<string> ReadDocxFile(Stream file)
-    {
-        return await ErrorWrapperExecute.ExecuteSafelyAsync(async () =>
-        {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-
-            using var document = WordprocessingDocument.Open(memoryStream, false);
-            return document.MainDocumentPart.Document.Body.InnerText;
-        });
-    }
-
-    private static int CountWords(string text)
-    {
-        char[] punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
-        var words = text.Split().Select(x => x.Trim(punctuationCharacters));
-        return words.Where(x => !string.IsNullOrWhiteSpace(x)).Count();
-    }
-
-    private static async Task<string> ReadHtmlInnerTextAsync(Stream stream)
-    {
-        if (stream.CanSeek)
-            stream.Position = 0;
-
-        using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
-        var html = await reader.ReadToEndAsync();
-
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
-
-        var body = doc.DocumentNode.SelectSingleNode("//body") ?? doc.DocumentNode;
-
-        var junkNodes = body.SelectNodes(".//script|.//style");
-        if (junkNodes is not null)
-        {
-            foreach (var node in junkNodes)
-                node.Remove();
-        }
-
-        var sb = new StringBuilder();
-
-        foreach (var node in body.DescendantsAndSelf())
-        {
-            if (node.NodeType == HtmlNodeType.Text)
-            {
-                var text = WebUtility.HtmlDecode(node.InnerText);
-
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    sb.Append(text);
-                    sb.Append(' ');
-                }
-            }
-        }
-
-        return sb.ToString();
     }
 }

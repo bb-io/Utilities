@@ -299,56 +299,131 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Convert HTML to XLIFF", Description = "Convert HTML file to XLIFF 1.2 format")]
+        [Action("Convert HTML to XLIFF", Description = "Convert HTML file to XLIFF 2.2 format")]
         public async Task<ConvertTextToDocumentResponse> ConvertHtmlToXliff([ActionParameter] ConvertHtmlToXliffRequest request)
         {
-            string htmlContent = await DownloadHtmlContentAsync(request.File);
-            htmlContent = RemoveInvalidXmlChars(htmlContent);
-
-            HtmlDocument htmlDoc = ParseHtmlDocument(htmlContent);
-            XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
-
-            XElement fileElement = CreateFileNode(request.File.Name, request.SourceLanguage, request.TargetLanguage, htmlContent, ns);
-            XElement bodyElement = CreateBodyNodes(htmlDoc, ns);
-
-            XDocument xliffDoc = new XDocument(
-                 new XElement(ns + "xliff",
-                     new XAttribute("version", "1.2"),
-                     fileElement,
-                     bodyElement
-                 )
-            );
-
-            MemoryStream streamOut = WriteXmlToMemoryStream(xliffDoc);
-            string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".xliff";
-            var resultFile = await fileManagementClient.UploadAsync(streamOut, "application/xml", fileName);
-            return new ConvertTextToDocumentResponse { File = resultFile };
-        }
-
-        [Action("Convert XLIFF to HTML", Description = "Convert XLIFF file (version 1.2) to HTML file")]
-        public async Task<ConvertTextToDocumentResponse> ConvertXliffToHtml([ActionParameter] ConvertXliffToHtmlRequest request)
-        {
-            string ext = Path.GetExtension(request.File.Name)?.ToLowerInvariant();
-            if (ext != ".xliff" && ext != ".xlf")
+            var ext = Path.GetExtension(request.File.Name)?.ToLowerInvariant();
+            if (ext != ".html" && ext != ".htm")
             {
-                throw new PluginMisconfigurationException("Wrong format file: expected XLIFF (.xliff or .xlf), not " + ext);
+                throw new PluginMisconfigurationException(
+                    $"Wrong format file: expected HTML (.html or .htm), not {ext}");
             }
 
             try
             {
+                var htmlContent = await DownloadFileAsStringAsync(request.File);
+                if (string.IsNullOrWhiteSpace(htmlContent))
+                {
+                    throw new PluginMisconfigurationException("The provided HTML file is empty.");
+                }
 
-                XDocument xliffDoc = await LoadXliffDocumentAsync(request.File);
-                XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
-                HtmlDocument htmlDoc = LoadOriginalHtmlDocument(xliffDoc, ns);
+                var codedContent = CodedContent.Parse(htmlContent, request.File.Name);
 
-                ApplyTranslationsToHtml(htmlDoc, xliffDoc, ns);
+                codedContent.Language = string.IsNullOrWhiteSpace(request.SourceLanguage)
+                    ? "en"
+                    : request.SourceLanguage;
 
-                string updatedHtml = GetHtmlFromDocument(htmlDoc);
-                MemoryStream streamOut = WriteTextToMemoryStream(updatedHtml);
-                string fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
-                var resultFile = await fileManagementClient.UploadAsync(streamOut, "text/html", fileName);
-                return new ConvertTextToDocumentResponse { File = resultFile };
+                var transformation = codedContent.CreateTransformation(
+                    string.IsNullOrWhiteSpace(request.TargetLanguage) ? null : request.TargetLanguage);
 
+                transformation.OriginalName = request.File.Name;
+                transformation.OriginalMediaType = "text/html";
+
+                var xliff = Xliff2Serializer.Serialize(transformation, Xliff2Version.Xliff22);
+                var streamOut = new MemoryStream(Encoding.UTF8.GetBytes(xliff));
+
+                var fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".xlf";
+                var resultFile = await fileManagementClient.UploadAsync(
+                    streamOut,
+                    "application/xliff+xml",
+                    fileName);
+
+                return new ConvertTextToDocumentResponse
+                {
+                    File = resultFile
+                };
+            }
+            catch (PluginMisconfigurationException)
+            {
+                throw;
+            }
+            catch (XmlException ex)
+            {
+                throw new PluginMisconfigurationException($"Invalid HTML/XML-compatible content: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new PluginApplicationException("Error converting HTML to XLIFF 2.2", ex);
+            }
+        }
+
+        [Action("Convert XLIFF to HTML", Description = "Convert XLIFF file to HTML file")]
+        public async Task<ConvertTextToDocumentResponse> ConvertXliffToHtml([ActionParameter] ConvertXliffToHtmlRequest request)
+        {
+            var ext = Path.GetExtension(request.File.Name)?.ToLowerInvariant();
+            if (ext != ".xliff" && ext != ".xlf")
+            {
+                throw new PluginMisconfigurationException(
+                    $"Wrong format file: expected XLIFF (.xliff or .xlf), not {ext}");
+            }
+
+            try
+            {
+                var xliffContent = await DownloadFileAsStringAsync(request.File);
+                if (string.IsNullOrWhiteSpace(xliffContent))
+                {
+                    throw new PluginMisconfigurationException("The provided XLIFF file is empty.");
+                }
+
+                var transformation = Transformation.Parse(xliffContent, request.File.Name);
+                if (transformation == null)
+                {
+                    throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
+                }
+
+                string html;
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(transformation.Original))
+                    {
+                        var codedContent = transformation.Target();
+
+                        if (codedContent.TextUnits.All(x => string.IsNullOrWhiteSpace(x.GetPlainText())))
+                        {
+                            codedContent = transformation.Source();
+                        }
+
+                        html = codedContent.Serialize();
+                    }
+                    else
+                    {
+                        html = BuildSimpleHtmlFromTransformation(transformation);
+                    }
+                }
+                catch (NullReferenceException ex) when (ex.Message.Contains("Cannot convert to content, no original data found"))
+                {
+                    html = BuildSimpleHtmlFromTransformation(transformation);
+                }
+
+                html = EnsureHtmlDocument(html, transformation.OriginalName);
+
+                var streamOut = new MemoryStream(Encoding.UTF8.GetBytes(html));
+                var fileName = Path.GetFileNameWithoutExtension(request.File.Name) + ".html";
+
+                var resultFile = await fileManagementClient.UploadAsync(
+                    streamOut,
+                    "text/html",
+                    fileName);
+
+                return new ConvertTextToDocumentResponse
+                {
+                    File = resultFile
+                };
+            }
+            catch (PluginMisconfigurationException)
+            {
+                throw;
             }
             catch (XmlException ex)
             {
@@ -358,6 +433,83 @@ namespace Apps.Utilities.Actions
             {
                 throw new PluginApplicationException("Error converting XLIFF to HTML", ex);
             }
+        }
+
+        private async Task<string> DownloadFileAsStringAsync(FileReference file)
+        {
+            await using var stream = await fileManagementClient.DownloadAsync(file);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            return await reader.ReadToEndAsync();
+        }
+
+        private static string BuildSimpleHtmlFromTransformation(Transformation transformation)
+        {
+            var units = transformation.GetUnits().ToList();
+            var parts = new List<string>();
+
+            foreach (var unit in units)
+            {
+                var segments = unit.Segments.OrderBy(x => x.Order ?? int.MaxValue).ToList();
+
+                foreach (var segment in segments)
+                {
+                    var text = segment.Target?.Any() == true
+                        ? segment.GetTarget()
+                        : segment.GetSource();
+
+                    if (string.IsNullOrWhiteSpace(text))
+                        continue;
+
+                    parts.Add($"<p>{System.Security.SecurityElement.Escape(text)}</p>");
+                }
+            }
+
+            if (!parts.Any())
+            {
+                return "<p></p>";
+            }
+
+            return string.Join(Environment.NewLine, parts);
+        }
+
+        private static string EnsureHtmlDocument(string html, string? title = null)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+            {
+                return """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+</head>
+<body></body>
+</html>
+""";
+            }
+
+            var trimmed = html.TrimStart();
+
+            if (trimmed.StartsWith("<!DOCTYPE html", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.StartsWith("<html", StringComparison.OrdinalIgnoreCase))
+            {
+                return html;
+            }
+
+            var safeTitle = System.Security.SecurityElement.Escape(
+                string.IsNullOrWhiteSpace(title) ? "Converted HTML" : title);
+
+            return $"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{safeTitle}</title>
+</head>
+<body>
+{html}
+</body>
+</html>
+""";
         }
 
         [Action("Remove target text from XLIFF", Description = "Removes only inline text inside target. Optionally process only targets with a specific state.")]
