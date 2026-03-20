@@ -286,31 +286,54 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
     [ActionParameter][Display("Column index")] int columnIndex,
     [ActionParameter][Display("Deduplicate values")] bool? deduplicate = null)
     {
-        var records = await ReadCsv(csvFile, csvOptions);
-
-        if (!records.Any())
+        try
         {
-            return new List<string>();
-        }
+            var records = await ReadCsv(csvFile, csvOptions);
 
-        if (columnIndex < 0 || columnIndex >= records.Count)
-        {
-            throw new PluginMisconfigurationException($"Invalid column index '{columnIndex}'. " +
-                $"The file has {records.Count} columns. Index starts at 0.");
-        }
+            if (!records.Any())
+            {
+                return new List<string>();
+            }
 
-        var columnValues = records
-            .Select(row => row[columnIndex])
-            .ToList();
+            if (columnIndex < 0)
+            {
+                throw new PluginMisconfigurationException(
+                    $"Invalid column index '{columnIndex}'. Index must be 0 or greater.");
+            }
 
-        if (deduplicate == true)
-        {
-            columnValues = columnValues
-                .Distinct()
+            var maxColumnCount = records.Max(r => r.Count);
+
+            if (columnIndex >= maxColumnCount)
+            {
+                throw new PluginMisconfigurationException(
+                    $"Invalid column index '{columnIndex}'. The file has {maxColumnCount} columns. Index starts at 0.");
+            }
+
+            var invalidRowIndex = records.FindIndex(r => columnIndex >= r.Count);
+            if (invalidRowIndex >= 0)
+            {
+                throw new PluginMisconfigurationException(
+                    $"Invalid column index '{columnIndex}'. Row {invalidRowIndex + 1} has only {records[invalidRowIndex].Count} columns.");
+            }
+
+            var columnValues = records
+                .Select(row => row[columnIndex])
                 .ToList();
-        }
 
-        return columnValues;
+            if (deduplicate == true)
+            {
+                columnValues = columnValues
+                    .Distinct()
+                    .ToList();
+            }
+
+            return columnValues;
+        }
+        catch (ArgumentOutOfRangeException ex) when (ex.ParamName == "index")
+        {
+            throw new PluginMisconfigurationException(
+                $"Invalid column index '{columnIndex}'. The specified column does not exist in the CSV file.", ex);
+        }
     }
 
     [Action("Sum numbers in column", Description = "Sums integer values from a specified CSV column in the given row range. Empty/non-numeric values are treated as zero.")]

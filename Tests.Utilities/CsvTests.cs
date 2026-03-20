@@ -140,6 +140,15 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
+    public async Task GetColumnValues_works()
+    {
+        var action = new Csv(InvocationContext, FileManager);
+        var response = await action.GetColumnValues(new CsvFile { File = new FileReference { Name = "" } }, new (), 2 );
+
+        Assert.IsNotNull(response);
+    }
+
+    [TestMethod]
     public async Task SumNumbersInColumn_works()
     {
         var file = new CsvFile { File = new FileReference { Name = "test_sum.csv" } };
