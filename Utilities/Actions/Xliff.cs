@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace Apps.Utilities.Actions
 {
@@ -296,6 +297,109 @@ namespace Apps.Utilities.Actions
             return new FileDto
             {
                 File = await fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name)
+            };
+        }
+
+        [Action("Move XLIFF content to notes", Description = "Move selected element text or attribute values into XLIFF notes.")]
+        public async Task<FileDto> MoveXliffContentToNotes([ActionParameter] MoveXliffContentToNotesRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.XPath))
+                throw new PluginMisconfigurationException("XPath is required.");
+
+            request.RemoveSource ??= true;
+            request.IncludeSourceNameInNote ??= true;
+
+            await using var streamIn = await fileManagementClient.DownloadAsync(request.File);
+            var doc = XDocument.Load(streamIn, LoadOptions.PreserveWhitespace);
+
+            if (doc.Root is null || doc.Root.Name.LocalName != "xliff")
+                throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            XNamespace ns = doc.Root.GetDefaultNamespace();
+            var version = doc.Root.Attribute("version")?.Value;
+            var isXliff12 = version == "1.2";
+            var isXliff2 = version?.StartsWith('2') == true;
+
+            if (!isXliff12 && !isXliff2)
+                throw new PluginMisconfigurationException($"XLIFF version {version} is not supported.");
+
+            var nsManager = new XmlNamespaceManager(new NameTable());
+            var xpathNamespace = string.IsNullOrWhiteSpace(request.Namespace)
+                ? ns.NamespaceName
+                : request.Namespace;
+
+            if (!string.IsNullOrWhiteSpace(xpathNamespace))
+                nsManager.AddNamespace("ns", xpathNamespace);
+
+            var matchedElements = doc.XPathSelectElements(request.XPath, nsManager).ToList();
+            if (!matchedElements.Any())
+                throw new PluginMisconfigurationException("No elements found for the specified XPath.");
+
+            var notesAdded = 0;
+
+            foreach (var element in matchedElements)
+            {
+                var container = GetNoteContainer(element, ns, isXliff12);
+                if (container is null)
+                    continue;
+
+                string? noteText;
+                if (!string.IsNullOrWhiteSpace(request.Attribute))
+                {
+                    var attribute = FindAttribute(element, request.Attribute);
+                    if (attribute is null || string.IsNullOrWhiteSpace(attribute.Value))
+                        continue;
+
+                    var attributeName = GetDisplayName(attribute);
+                    noteText = request.IncludeSourceNameInNote == true
+                        ? $"{attributeName}=\"{attribute.Value}\""
+                        : attribute.Value;
+
+                    if (request.RemoveSource == true)
+                        attribute.Remove();
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(element.Value))
+                        continue;
+
+                    var elementName = GetDisplayName(element);
+                    noteText = request.IncludeSourceNameInNote == true
+                        ? $"{elementName}: {element.Value}"
+                        : element.Value;
+
+                    if (request.RemoveSource == true)
+                        element.Remove();
+                }
+
+                if (string.IsNullOrWhiteSpace(noteText))
+                    continue;
+
+                if (AddNote(container, noteText, ns, isXliff12))
+                    notesAdded++;
+            }
+
+            if (notesAdded == 0)
+                throw new PluginMisconfigurationException("No note content was created from the selected XLIFF content.");
+
+            using var streamOut = new MemoryStream();
+            var settings = new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                Indent = true,
+                NewLineHandling = NewLineHandling.Replace
+            };
+
+            using (var writer = XmlWriter.Create(streamOut, settings))
+            {
+                doc.Save(writer);
+            }
+
+            streamOut.Position = 0;
+
+            return new FileDto
+            {
+                File = await fileManagementClient.UploadAsync(streamOut, request.File.ContentType ?? "application/xliff+xml", request.File.Name)
             };
         }
 
@@ -1000,6 +1104,85 @@ namespace Apps.Utilities.Actions
             decodedContent = Regex.Replace(decodedContent, @"<ept[^>]*>(.*?)</ept>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             decodedContent = Regex.Replace(decodedContent, @"<ph[^>]*>(.*?)</ph>", "$1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             return decodedContent;
+        }
+
+        private static XElement? GetNoteContainer(XElement element, XNamespace ns, bool isXliff12)
+        {
+            return isXliff12
+                ? element.AncestorsAndSelf(ns + "trans-unit").FirstOrDefault()
+                : element.AncestorsAndSelf(ns + "unit").FirstOrDefault();
+        }
+
+        private static XAttribute? FindAttribute(XElement element, string attributeName)
+        {
+            var normalizedName = attributeName.Contains(':')
+                ? attributeName.Split(':', 2)[1]
+                : attributeName;
+
+            return element.Attributes()
+                .FirstOrDefault(a =>
+                    string.Equals(a.Name.LocalName, normalizedName, StringComparison.Ordinal) ||
+                    string.Equals(GetDisplayName(a), attributeName, StringComparison.Ordinal));
+        }
+
+        private static bool AddNote(XElement container, string noteText, XNamespace ns, bool isXliff12)
+        {
+            if (isXliff12)
+            {
+                if (container.Elements(ns + "note").Any(n => n.Value == noteText))
+                    return false;
+
+                var note = new XElement(ns + "note", noteText);
+                var insertionTarget = container.Elements()
+                    .LastOrDefault(e => e.Name == ns + "note"
+                        || e.Name == ns + "target"
+                        || e.Name == ns + "source"
+                        || e.Name == ns + "seg-source"
+                        || e.Name == ns + "alt-trans"
+                        || e.Name == ns + "bin-unit");
+
+                if (insertionTarget is null)
+                    container.AddFirst(note);
+                else
+                    insertionTarget.AddAfterSelf(note);
+
+                return true;
+            }
+
+            var notes = container.Element(ns + "notes");
+            if (notes is null)
+            {
+                notes = new XElement(ns + "notes");
+                var insertionTarget = container.Elements()
+                    .FirstOrDefault(e => e.Name == ns + "segment" || e.Name == ns + "ignorable");
+
+                if (insertionTarget is null)
+                    container.Add(notes);
+                else
+                    insertionTarget.AddBeforeSelf(notes);
+            }
+
+            if (notes.Elements(ns + "note").Any(n => n.Value == noteText))
+                return false;
+
+            notes.Add(new XElement(ns + "note", noteText));
+            return true;
+        }
+
+        private static string GetDisplayName(XAttribute attribute)
+        {
+            var prefix = attribute.Parent?.GetPrefixOfNamespace(attribute.Name.Namespace);
+            return string.IsNullOrWhiteSpace(prefix)
+                ? attribute.Name.LocalName
+                : $"{prefix}:{attribute.Name.LocalName}";
+        }
+
+        private static string GetDisplayName(XElement element)
+        {
+            var prefix = element.GetPrefixOfNamespace(element.Name.Namespace);
+            return string.IsNullOrWhiteSpace(prefix)
+                ? element.Name.LocalName
+                : $"{prefix}:{element.Name.LocalName}";
         }
     }
 }
