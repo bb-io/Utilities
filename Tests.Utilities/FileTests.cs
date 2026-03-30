@@ -107,7 +107,9 @@ namespace Tests.Utilities
         public async Task GetWordCountInFile_ReturnsWordCount()
         {
             // Arrange
-            var request = new FileDto { File = new FileReference { Name = "test.rtf" } };
+            //var request = new FileDto { File = new FileReference { Name = "RevisedQSOFormUpdates2026-27.pptx" } };
+            var request = new FileDto { File = new FileReference { Name = "DE_Indeed Workforce Agility Report Final Edit_Updated.idml" } };
+            //var request = new FileDto { File = new FileReference { Name = "SEO FAQ SECTIONS.xlsx" } };
 
             // Act
             var result = await _fileActions.GetWordCountInFile(request);
