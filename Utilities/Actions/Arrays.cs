@@ -138,5 +138,14 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
             Array = input.FirstArray.Intersect(input.SecondArray)
         };
     }
+
+    [Action("Remove empty entries", Description = "Returns the array without empty entries (removes null, empty, or whitespace only string entries)")]
+    public ArrayResponse ArrayRemoveEmpty([ActionParameter] ArrayRemoveEmptyRequest input)
+    {
+        return new()
+        {
+            Array = input.Array.Where(x => !string.IsNullOrWhiteSpace(x))
+        };
+    }
 }
 
