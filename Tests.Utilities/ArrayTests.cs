@@ -1,4 +1,5 @@
 ﻿using Apps.Utilities.Actions;
+using Apps.Utilities.Models.Arrays;
 using Apps.Utilities.Models.Arrays.Request;
 using Apps.Utilities.Models.Texts;
 using Tests.Utilities.Base;
@@ -49,5 +50,26 @@ public class ArrayTests : TestBase
         Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 
         Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public void GetEntryInPositionNonComposable_ReturnsSecondEntryFromScreenshotExample()
+    {
+        var input = new GetEntryByPositionNonComposableRequest
+        {
+            Array = new List<string>
+            {
+                "60015",
+                "737813191903",
+                "Alix",
+                "PEIGNE CHABOT",
+                "421627061433"
+            }
+        };
+
+        var actions = new Arrays(InvocationContext);
+        var result = actions.GetEntryInPositionNonComposable(input, 2);
+
+        Assert.AreEqual("737813191903", result);
     }
 }
