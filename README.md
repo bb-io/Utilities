@@ -1,4 +1,4 @@
-# Blackbird.io Utilities
+# Utilities
 
 Blackbird is the automation backbone for the language technology industry. Blackbird provides enterprise-scale automation and orchestration with a simple no-code/low-code platform. Blackbird enables ambitious organizations to identify, vet and automate as many processes as possible. Not just localization workflows, but any business and IT process. This repository represents an application that is deployable on Blackbird and usable inside the workflow editor.
 
@@ -6,16 +6,8 @@ Blackbird is the automation backbone for the language technology industry. Black
 
 <!-- begin docs -->
 
-This free app provides generic utility actions that can come in useful in any bird. It includes utilities for dates and files.
-
-## Connecting
-
-1. Navigate to apps and search for Blackbird Utilities. 
-2. Click _Add Connection_.
-3. Name your connection for future reference e.g. 'My utilities'.
-4. Click _Connect_.
-
-![1700129917822](image/README/1700129917822.png)
+The Utilities provide generic utility Actions and Events that can come in useful in any Bird. It includes Utilities for text, dates, files, Actions for specific file formats, and you can even use it to scrape web pages.
+You do not need to create a connection to use Utilities. Instead, you can find Utilities at the top level menu when adding a new item in your Bird.
 
 ## Actions
 
@@ -40,6 +32,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Replace using Regex in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace using Regex' but works with files.
 - **Replace multiple Regex patterns in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace multiple Regex patterns' but works with files.
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
+- **Extract many using Regex from document** Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc).
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
 - **Compare file contents** returns whether the content of the given files are equal or not.
 - **Concatenate text files** concatenates multiple text files into one file.
@@ -57,7 +50,9 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert HTML to XLIFF** Convert HTML file to XLIFF 1.2 format
 - **Convert XLIFF to HTML** Convert XLIFF file (version 1.2) to HTML file
 - **Add context notes to XLIFF** Add final segments as notes to translated segments in an XLIFF file. When only translated segments are imported into a CAT tool, the source of each segment remains available to reviewers.
+- **Move XLIFF content to notes** Move selected element text or attribute values into XLIFF notes.
 - **Copy source to target in XLIFF** Copy source text to target text for all segments in an XLIFF file.
+- **Convert XLIFF to CSV** Convert XLIFF file to CSV file.
 
 ### XML files
 
@@ -104,6 +99,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
+- **Split text into chunks of specific length** Returns an array of pieces from the original text based on the max length and without breaking words.
 - **Count words in texts** Returns number of words in text from array. 
 - **Convert text to lower case** Returns the lower case version of the input text
 - **Convert text to upper case** Returns the upper case version of the input text
@@ -111,6 +107,7 @@ This free app provides generic utility actions that can come in useful in any bi
 - **Compare texts** compares texts
 - **Convert text to boolean** converts text to boolean
 - **Convert boolean to text** converts boolean to text
+
 
 ### JSON
 

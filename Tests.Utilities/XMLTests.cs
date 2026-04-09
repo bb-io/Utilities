@@ -27,7 +27,7 @@ public class XMLTests : TestBase
             Directory.Delete(outputDirectory, true);
         Directory.CreateDirectory(outputDirectory);
         _xmlActions = new XMLFiles(FileManager);
-        _fileActions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
+        _fileActions = new Files(InvocationContext, FileManager);
     }
 
     //Get XML propetry using XPath
@@ -310,8 +310,10 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task Count_Words_In_Html()
     {
-        var actions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
-        var file = new FileReference { Name = "test.html" };
+        var actions = new Files(InvocationContext, FileManager);
+        //var file = new FileReference { Name = "test.html" };
+        //var file = new FileReference { Name = "test-word-count.idml" };
+        var file = new FileReference { Name = "test-word-count.pptx" };
         var input = new FileDto { File = file };
         var result = await actions.GetWordCountInFile(input);
         Console.WriteLine(result);
@@ -445,10 +447,10 @@ public class XMLTests : TestBase
     public async Task ConvertHtmlToXliff_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "669571308.html" }, SourceLanguage = "it-IT", TargetLanguage = "de" };
+        var input = new ConvertHtmlToXliffRequest { File = new FileReference { Name = "Starting a flight.html" }, SourceLanguage = "en", TargetLanguage = "de" };
         var result = actions.ConvertHtmlToXliff(input);
 
-        Console.WriteLine(result);
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         Assert.IsNotNull(result);
     }
 
@@ -456,10 +458,10 @@ public class XMLTests : TestBase
     public async Task ConvertXliffToHtml_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "670470817.xliff" } };
+        var input = new ConvertXliffToHtmlRequest { File = new FileReference { Name = "Starting a flight_test.xlf" } };
         var result = actions.ConvertXliffToHtml(input);
 
-        Console.WriteLine(result);
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         Assert.IsNotNull(result);
     }
 
@@ -479,7 +481,7 @@ public class XMLTests : TestBase
     public async Task RemoveTargetTextAsync_ReturnsSucces()
     {
         var actions = new Xliff(FileManager);
-        var input = new RemoveTargetTextRequest { File = new FileReference { Name = "estimated-v22-sample.xlf" }, TargetStates = ["Final"] };
+        var input = new RemoveTargetTextRequest { File = new FileReference { Name = "SPT6019_de_DE_21_Installation.xlf" } };
         var result = actions.RemoveTargetText(input);
 
         Console.WriteLine(result);

@@ -1,10 +1,9 @@
 ﻿using Blackbird.Applications.Sdk.Common;
 
-namespace Apps.Utilities.Models.Texts
+namespace Apps.Utilities.Models.Texts;
+
+public record ExtractArrayResponse(List<string> Response)
 {
-    public class ExtractArrayResponse
-    {
-        [Display("Extracted values")]
-        public List<string> Response { get; set; }
-    }
+    [Display("Extracted values")]
+    public List<string> Response { get; set; } = Response;
 }

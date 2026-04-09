@@ -3,11 +3,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Product>Blackbird Utilities</Product>
+    <Product>Utilities</Product>
     <Description>Various utility actions to parse or convert data</Description>
-    <Version>1.7.11</Version>
+    <Version>1.7.29</Version>
     <AssemblyName>Apps.Utilities</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Connections\**" />
+    <EmbeddedResource Remove="Connections\**" />
+    <None Remove="Connections\**" />
+  </ItemGroup>
   <ItemGroup>
     <None Remove="image\icon.png" />
   </ItemGroup>
@@ -36,6 +41,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="PdfPig" Version="0.1.8" />
     <PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
+    <PackageReference Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
   </ItemGroup>
   <ItemGroup>

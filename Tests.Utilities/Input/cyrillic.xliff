@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns:sc="SmartcatXliff" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+	<file datatype="plaintext" date="2025-02-10T12:00:00.0000000Z" original="cyrillic_test_file" source-language="en" target-language="ua">
+		<header>
+			<tool tool-name="Smartcat.ai" tool-id="test-tool-id" tool-version="1.0" />
+		</header>
+		<body>
+			<trans-unit id="101" approved="yes">
+				<source xml:space="preserve">The cat likes to eat fish.</source>
+				<target state="final" xml:space="preserve">Кіт любить їсти рибу.</target>
+			</trans-unit>
+			<trans-unit id="102" approved="no">
+				<source xml:space="preserve">Test: "i" and "yo" mixed.</source>
+				<target state="translated" xml:space="preserve">Тест: літери "і" та "ё" разом.</target>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

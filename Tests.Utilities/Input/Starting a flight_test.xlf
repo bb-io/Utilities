@@ -1,0 +1,129 @@
+<xliff srcLang="it-IT" trgLang="de" version="2.2" xmlns:mda="urn:oasis:names:tc:xliff:metadata:2.0" xmlns:fs="urn:oasis:names:tc:xliff:fs:2.0" xmlns="urn:oasis:names:tc:xliff:document:2.2">
+	<file id="f1">
+		<skeleton>
+			&lt;html&gt;&lt;head&gt;&lt;title&gt;Starting a flight&lt;/title&gt;&lt;meta name="blackbird-reference-id" content="116907495204"&gt;&lt;meta name="blackbird-content-type" content="blog"&gt;&lt;description&gt;&lt;/description&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="container"&gt;Blackbird is an integration platform-as-a-service (iPaaS) solution.&lt;p class="no-margin"&gt;At Blackbird, our integration platform revolves around Birds. All the time.&lt;/p&gt;&lt;/div&gt;
+			&lt;!--more--&gt;&lt;p class="no-margin"&gt;We can solve the problem of applications operating in isolation and in dispersed modalities by enabling integration, automation, and seamless analytics between the apps, data, content, participants, and devices used for localization and globalization management. However, Blackbird goes beyond connecting applications, data, and content within an organization. It can also connect organizations into networks - e.g. the end clients who create the content with multiple localization vendors.​&lt;/p&gt;
+			&lt;p class="no-margin"&gt;Our mission is to become the global language services industry’s best iPaaS and automation-platform-as-a-service technology vendor.&lt;/p&gt;
+			&lt;p class="no-margin"&gt;At Blackbird, our integration platform revolves around Birds. All the time.&lt;/p&gt;
+			&lt;p class="no-margin"&gt;&lt;span&gt;Lines of code are transformed&lt;/span&gt; into the four forces of flight: lift (triggers), weight (actions), thrust (apps), and drag (connections). The way the four forces act on your Bird makes it do different things. Fine, but how, you could ask.&lt;/p&gt;
+			&lt;p class="no-margin"&gt;&lt;a&gt;Think about the apps&lt;/a&gt; you use for your business. Your initial list should have at least one e-mail client, project management software, translation memory software or billing software. You can connect and make them communicate with each other in Blackbird.&lt;/p&gt;
+			&lt;p class="no-margin"&gt;&lt;strong&gt;Let's assume that you get a request for a quote from a client of yours in an e-mail.&lt;/strong&gt; Normally you would open the e-mail, save the file you receive, create a project in your project management software and copy info from the email there, open your translation memory software, run an analysis on the file, and finally open your billing software and generate the quote based on the CAT analysis.&lt;/p&gt;
+			&lt;p class="no-margin"&gt;On the other hand, at Blackbird, &lt;strong&gt;some text&lt;/strong&gt;you can create this workflow as a Bird, run it in an automated way - and use it in Flights; yes, we love aviation.&lt;/p&gt;
+			&lt;p class="no-margin"&gt;First of all your Bird will need a trigger- the request for quote email from your client in this example. From now on&amp;nbsp;&lt;em&gt;when&lt;/em&gt;&amp;nbsp;you get an email from this client, your Bird will automatically run the series of&amp;nbsp;&lt;em&gt;actions&lt;/em&gt;&amp;nbsp;you define in the next step(s) - like saving the file, creating the project, copying the info from the body of the email, opening the translation memory software, running analysis, and generating the quote. Once you published your Bird it is used in Flights. As simple as that.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+		</skeleton>
+		<mda:metadata>
+			<mda:metaGroup category="blackbird">
+				<mda:meta type="original-name">Starting a flight.html</mda:meta>
+				<mda:meta type="original-media-type">text/html</mda:meta>
+				<mda:meta type="original-name">Starting a flight.html</mda:meta>
+				<mda:meta type="original-media-type">text/html</mda:meta>
+			</mda:metaGroup>
+		</mda:metadata>
+		<unit id="u1" name="/html[1]/head[1]/title[1]" fs:fs="title">
+			<segment>
+				<source>Starting a flight</source>
+				<target>Einen Flug starten</target>
+			</segment>
+		</unit>
+		<unit id="u2" name="/html[1]/body[1]/div[1]/#text[1]">
+			<segment>
+				<source>Blackbird is an integration platform-as-a-service (iPaaS) solution.</source>
+				<target>Blackbird ist eine Integration-Platform-as-a-Service-(iPaaS)-Lösung.</target>
+			</segment>
+		</unit>
+		<unit id="u3" name="/html[1]/body[1]/div[1]/p[1]" fs:fs="p" fs:subFs="class,no-margin">
+			<segment>
+				<source>At Blackbird, our integration platform revolves around Birds. All the time.</source>
+				<target>Bei Blackbird dreht sich unsere Integrationsplattform ganz um Birds. Die ganze Zeit.</target>
+			</segment>
+		</unit>
+		<unit id="u4" name="/html[1]/body[1]/p[1]" fs:fs="p" fs:subFs="class,no-margin">
+			<segment>
+				<source>We can solve the problem of applications operating in isolation and in dispersed modalities by enabling integration, automation, and seamless analytics between the apps, data, content, participants, and devices used for localization and globalization management. However, Blackbird goes beyond connecting applications, data, and content within an organization. It can also connect organizations into networks - e.g. the end clients who create the content with multiple localization vendors.​</source>
+				<target>Wir können das Problem isoliert arbeitender Anwendungen und verteilter Abläufe lösen, indem wir Integration, Automatisierung und nahtlose Analysen zwischen den Apps, Daten, Inhalten, Beteiligten und Geräten ermöglichen, die für das Management von Lokalisierung und Globalisierung verwendet werden. Blackbird geht jedoch über die Verbindung von Anwendungen, Daten und Inhalten innerhalb einer Organisation hinaus. Es kann auch Organisationen zu Netzwerken verbinden – z. B. die Endkunden, die Inhalte mit mehreren Lokalisierungsanbietern erstellen.​</target>
+			</segment>
+		</unit>
+		<unit id="u5" name="/html[1]/body[1]/p[2]" fs:fs="p" fs:subFs="class,no-margin">
+			<segment>
+				<source>Our mission is to become the global language services industry’s best iPaaS and automation-platform-as-a-service technology vendor.</source>
+				<target>Unsere Mission ist es, der beste Technologieanbieter für iPaaS und Automation-Platform-as-a-Service in der globalen Sprachdienstleistungsbranche zu werden.</target>
+			</segment>
+		</unit>
+		<unit id="u6" name="/html[1]/body[1]/p[3]" fs:fs="p" fs:subFs="class,no-margin">
+			<segment>
+				<source>At Blackbird, our integration platform revolves around Birds. All the time.</source>
+				<target>Bei Blackbird dreht sich unsere Integrationsplattform ganz um Birds. Die ganze Zeit.</target>
+			</segment>
+		</unit>
+		<unit id="u7" name="/html[1]/body[1]/p[4]" fs:fs="p" fs:subFs="class,no-margin">
+			<originalData>
+				<data id="d1">&lt;span&gt;</data>
+				<data id="d2">&lt;/span&gt;</data>
+			</originalData>
+			<segment>
+				<source>
+					<sc id="1" dataRef="d1" fs:fs="span" />Lines of code are transformed<ec dataRef="d2" fs:fs="span" startRef="1" /> into the four forces of flight: lift (triggers), weight (actions), thrust (apps), and drag (connections). The way the four forces act on your Bird makes it do different things. Fine, but how, you could ask.
+				</source>
+				<target>
+					<sc id="1" dataRef="d1" fs:fs="span" />Codezeilen werden verwandelt<ec dataRef="d2" fs:fs="span" startRef="1" /> in die vier Kräfte des Fliegens: Auftrieb (Trigger), Gewicht (Actions), Schub (Apps) und Widerstand (Verbindungen). Die Art und Weise, wie diese vier Kräfte auf deinen Bird wirken, lässt ihn unterschiedliche Dinge tun. Gut, aber wie, könntest du fragen.
+				</target>
+			</segment>
+		</unit>
+		<unit id="u8" name="/html[1]/body[1]/p[5]" fs:fs="p" fs:subFs="class,no-margin">
+			<originalData>
+				<data id="d1">&lt;a&gt;</data>
+				<data id="d2">&lt;/a&gt;</data>
+			</originalData>
+			<segment>
+				<source>
+					<sc id="1" dataRef="d1" fs:fs="a" />Think about the apps<ec dataRef="d2" fs:fs="a" startRef="1" /> you use for your business. Your initial list should have at least one e-mail client, project management software, translation memory software or billing software. You can connect and make them communicate with each other in Blackbird.
+				</source>
+				<target>
+					<sc id="1" dataRef="d1" fs:fs="a" />Denk an die Apps<ec dataRef="d2" fs:fs="a" startRef="1" />, die du für dein Unternehmen verwendest. Deine erste Liste sollte mindestens einen E-Mail-Client, eine Projektmanagement-Software, eine Translation-Memory-Software oder eine Abrechnungssoftware enthalten. Du kannst sie in Blackbird verbinden und miteinander kommunizieren lassen.
+				</target>
+			</segment>
+		</unit>
+		<unit id="u9" name="/html[1]/body[1]/p[6]" fs:fs="p" fs:subFs="class,no-margin">
+			<originalData>
+				<data id="d1">&lt;strong&gt;</data>
+				<data id="d2">&lt;/strong&gt;</data>
+			</originalData>
+			<segment>
+				<source>
+					<sc id="1" dataRef="d1" fs:fs="strong" />Let's assume that you get a request for a quote from a client of yours in an e-mail.<ec dataRef="d2" fs:fs="strong" startRef="1" /> Normally you would open the e-mail, save the file you receive, create a project in your project management software and copy info from the email there, open your translation memory software, run an analysis on the file, and finally open your billing software and generate the quote based on the CAT analysis.
+				</source>
+				<target>
+					<sc id="1" dataRef="d1" fs:fs="strong" />Nehmen wir an, du erhältst per E-Mail eine Angebotsanfrage von einem deiner Kunden.<ec dataRef="d2" fs:fs="strong" startRef="1" /> Normalerweise würdest du die E-Mail öffnen, die erhaltene Datei speichern, ein Projekt in deiner Projektmanagement-Software erstellen und die Informationen aus der E-Mail dorthin kopieren, deine Translation-Memory-Software öffnen, eine Analyse der Datei durchführen und schließlich deine Abrechnungssoftware öffnen und auf Grundlage der CAT-Analyse das Angebot erstellen.
+				</target>
+			</segment>
+		</unit>
+		<unit id="u10" name="/html[1]/body[1]/p[7]" fs:fs="p" fs:subFs="class,no-margin">
+			<originalData>
+				<data id="d1">&lt;strong&gt;</data>
+				<data id="d2">&lt;/strong&gt;</data>
+			</originalData>
+			<segment>
+				<source>
+					On the other hand, at Blackbird, <sc id="1" dataRef="d1" fs:fs="strong" />some text<ec dataRef="d2" fs:fs="strong" startRef="1" />you can create this workflow as a Bird, run it in an automated way - and use it in Flights; yes, we love aviation.
+				</source>
+				<target>
+					Andererseits kannst du bei Blackbird <sc id="1" dataRef="d1" fs:fs="strong" />etwas Text<ec dataRef="d2" fs:fs="strong" startRef="1" />diesen Workflow als Bird erstellen, ihn automatisiert ausführen und in Flights verwenden; ja, wir lieben die Luftfahrt.
+				</target>
+			</segment>
+		</unit>
+		<unit id="u11" name="/html[1]/body[1]/p[8]" fs:fs="p" fs:subFs="class,no-margin">
+			<originalData>
+				<data id="d1">&lt;em&gt;</data>
+				<data id="d2">&lt;/em&gt;</data>
+			</originalData>
+			<segment>
+				<source>
+					First of all your Bird will need a trigger- the request for quote email from your client in this example. From now on&amp;nbsp;<sc id="1" dataRef="d1" fs:fs="em" />when<ec dataRef="d2" fs:fs="em" startRef="1" />&amp;nbsp;you get an email from this client, your Bird will automatically run the series of&amp;nbsp;<sc id="2" dataRef="d1" fs:fs="em" />actions<ec dataRef="d2" fs:fs="em" startRef="2" />&amp;nbsp;you define in the next step(s) - like saving the file, creating the project, copying the info from the body of the email, opening the translation memory software, running analysis, and generating the quote. Once you published your Bird it is used in Flights. As simple as that.
+				</source>
+				<target>
+					Zunächst einmal braucht dein Bird einen Trigger – in diesem Beispiel die Angebotsanfrage per E-Mail von deinem Kunden. Ab jetzt&amp;nbsp;<sc id="1" dataRef="d1" fs:fs="em" />wenn<ec dataRef="d2" fs:fs="em" startRef="1" />&amp;nbsp;du eine E-Mail von diesem Kunden erhältst, führt dein Bird automatisch die Reihe von&amp;nbsp;<sc id="2" dataRef="d1" fs:fs="em" />Actions<ec dataRef="d2" fs:fs="em" startRef="2" />&amp;nbsp;aus, die du im nächsten Schritt bzw. in den nächsten Schritten definierst – z. B. das Speichern der Datei, das Erstellen des Projekts, das Kopieren der Informationen aus dem E-Mail-Text, das Öffnen der Translation-Memory-Software, das Durchführen der Analyse und das Erstellen des Angebots. Sobald du deinen Bird veröffentlicht hast, wird er in Flights verwendet. So einfach ist das.
+				</target>
+			</segment>
+		</unit>
+	</file>
+</xliff>

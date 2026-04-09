@@ -21,7 +21,7 @@ namespace Tests.Utilities
                 Directory.Delete(outputDirectory, true);
             Directory.CreateDirectory(outputDirectory);
 
-            _fileActions = new Files(InvocationContext, FileManager, CreateLogger<Files>());
+            _fileActions = new Files(InvocationContext, FileManager);
         }
 
         [TestMethod]
@@ -62,7 +62,6 @@ namespace Tests.Utilities
 
             Assert.IsNotNull(response.File);
         }
-
 
         [TestMethod]
         public async Task ConvertDocumentToText_ReturnsConvertedText()
@@ -105,6 +104,22 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
+        public async Task GetWordCountInFile_ReturnsWordCount()
+        {
+            // Arrange
+            //var request = new FileDto { File = new FileReference { Name = "RevisedQSOFormUpdates2026-27.pptx" } };
+            var request = new FileDto { File = new FileReference { Name = "DE_Indeed Workforce Agility Report Final Edit_Updated.idml" } };
+            //var request = new FileDto { File = new FileReference { Name = "SEO FAQ SECTIONS.xlsx" } };
+
+            // Act
+            var result = await _fileActions.GetWordCountInFile(request);
+
+            // Assert
+            Console.WriteLine(result);
+            Assert.IsTrue(result != 0);
+        }
+
+        [TestMethod]
         public async Task Count_file_Pages_IsSuccess()
         {
             var files = new[]
@@ -124,7 +139,6 @@ namespace Tests.Utilities
 
             Assert.IsNotNull(response);
         }
-
 
         [TestMethod]
         public async Task Convert_Text_To_File_returns_true()
