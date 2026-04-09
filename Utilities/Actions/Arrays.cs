@@ -114,6 +114,19 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
         {
             throw new PluginMisconfigurationException("Position is out of bounds or invalid");
         }
+        
+        return input.Array.ToList()[Position - 1];
+    }
+
+    [Action("Get entry by position (non composable)", Description = "Returns the element in the specified position within a non-composable array")]
+    public string GetEntryInPositionNonComposable([ActionParameter] GetEntryByPositionNonComposableRequest input,
+        [ActionParameter] int Position)
+    {
+        if (input.Array == null || !input.Array.Any() || Position <= 0 || input.Array.Count() < Position)
+        {
+            throw new PluginMisconfigurationException("Position is out of bounds or invalid");
+        }
+
         return input.Array.ToList()[Position - 1];
     }
 
