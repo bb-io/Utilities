@@ -97,13 +97,35 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
     [Action("Format date", Description = "Formats a date to text according to pre-defined formatting rules and culture")]
     public FormattedDateResponse FormatDate([ActionParameter] FormatDateRequest input)
     {
-        if (!string.IsNullOrEmpty(input.Format) &&
-            input.Format.Equals("OADate", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrEmpty(input.Format))
         {
-            return new FormattedDateResponse
+            if (input.Format.Equals("OADate", StringComparison.OrdinalIgnoreCase))
             {
-                FormattedDate = input.Date.ToOADate().ToString(CultureInfo.InvariantCulture)
-            };
+                return new FormattedDateResponse
+                {
+                    FormattedDate = input.Date.ToOADate().ToString(CultureInfo.InvariantCulture)
+                };
+            }
+
+            if (input.Format.Equals("UnixMilliseconds", StringComparison.OrdinalIgnoreCase))
+            {
+                var dto = new DateTimeOffset(input.Date.ToUniversalTime());
+
+                return new FormattedDateResponse
+                {
+                    FormattedDate = dto.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture)
+                };
+            }
+
+            if (input.Format.Equals("UnixSeconds", StringComparison.OrdinalIgnoreCase))
+            {
+                var dto = new DateTimeOffset(input.Date.ToUniversalTime());
+
+                return new FormattedDateResponse
+                {
+                    FormattedDate = dto.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+                };
+            }
         }
 
         var culture = input.Culture != null ? new CultureInfo(input.Culture) : CultureInfo.InvariantCulture;
@@ -113,7 +135,6 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
             FormattedDate = input.Date.ToString(input.Format, culture)
         };
     }
-
 
     [Action("Get date difference", Description = "Returns the difference between the two inputted days in total seconds, minutes, hours and days.")]
     public DateDifferenceResponse DateDifference([ActionParameter][Display("Date 1")] DateTime date1, [ActionParameter][Display("Date 2")] DateTime date2)

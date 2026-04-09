@@ -35,6 +35,8 @@ public class DateFormatSourceHandler : IStaticDataSourceItemHandler
             new DataSourceItem("yyyy/MM/dd HH:mm:ss.fff", "yyyy/MM/dd HH:mm:ss.fff"),
 
             new DataSourceItem  ("OADate", "OLE Automation date"),
+            new DataSourceItem  ("UnixMilliseconds", "Unix milliseconds"),
+            new DataSourceItem  ("UnixSeconds", "Unix seconds"),
             new DataSourceItem  ("d", "Short date"),
             new DataSourceItem  ("D", "Long date"),
             new DataSourceItem  ("f", "Full date/time (short time)"),
