@@ -298,6 +298,17 @@ public class Texts(InvocationContext context) : BaseInvocable(context)
             .ToList();
     }
 
+    [Action("Split string by newlines into array", Description = "Splits a string by new lines into an array. Removes empty entries and trims each line.")]
+    public IEnumerable<string> SplitStringByNewlinesToArray([ActionParameter] TextDto textDto)
+    {
+        if (string.IsNullOrEmpty(textDto.Text))
+            textDto.Text = string.Empty;
+
+        return textDto.Text
+            .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => s.Trim());
+    }
+
     [Action("Generate random text", Description = "Generates a random text with definable length and characters used.")]
     public string GenerateRandomText(
         [ActionParameter][Display("Length", Description = "Length of the text. Default is 10 characters.")] int? length,
