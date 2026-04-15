@@ -99,6 +99,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
+- **Split string by newlines into array** Splits a string into an array using newlines as delimiters. Removes any empty or whitespace only lines from the resulting array.
 - **Split text into chunks of specific length** Returns an array of pieces from the original text based on the max length and without breaking words.
 - **Count words in texts** Returns number of words in text from array. 
 - **Convert text to lower case** Returns the lower case version of the input text
