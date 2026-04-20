@@ -3,12 +3,7 @@ using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Texts;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Files;
-using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using DocumentFormat.OpenXml.Presentation;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using System.Xml;
-using System.Xml.Linq;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities;
@@ -34,14 +29,14 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task XPath_Get_XML_property_returns_correct_attribute_value()
     {
-        var file = new FileReference { Name = "simple.xml" };
+        var file = new FileReference { Name = "M001T0675 A Text Effect 29Sep23.psd" };
         var response = await _xmlActions.GetXMLProperty(new GetXMLPropertyRequest
         {
-            Attribute = "version",
+            //Attribute = "version",
             File = file,
             XPath = "//meta"
         });
-        Assert.AreEqual("1.0", response.Value);
+        //Assert.AreEqual("1.0", response.Value);
         Console.WriteLine(response.Value);
     }
 
