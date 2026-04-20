@@ -7,23 +7,14 @@ using System.Xml;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text;
-using System.Text.RegularExpressions;
-using HtmlAgilityPack;
-using System.Web;
+using System.Xml.XPath;
 using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.Utilities.Actions
 {
     [ActionList("XML files")]
-    public class XMLFiles
+    public class XMLFiles(IFileManagementClient fileManagementClient)
     {
-        private readonly IFileManagementClient _fileManagementClient;
-
-        public XMLFiles(IFileManagementClient fileManagementClient)
-        {
-            _fileManagementClient = fileManagementClient;
-        }
-
         [Action("Reduce multilingual glossary to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified language pair")]
         public async Task<ConvertTextToDocumentResponse> ConvertTbxToBilingual(
             [ActionParameter] ConvertTbxToBilingualRequest request)
@@ -37,17 +28,7 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("Both languages to keep must be specified.");
             }
 
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-            XDocument doc;
-            try
-            {
-                doc = XDocument.Load(streamIn);
-            }
-            catch (XmlException ex)
-            {
-                throw new PluginMisconfigurationException(
-                    $"File «{request.File.Name}» is not valid TBX/XML: {ex.Message}");
-            }
+            var doc = await LoadXDocumentSafely(request.File);
             var tbxNs = doc.Root?.GetDefaultNamespace() ?? throw new PluginMisconfigurationException("TBX file is missing a valid namespace.");
             var xmlNs = XNamespace.Xml;
 
@@ -95,15 +76,13 @@ namespace Apps.Utilities.Actions
             }
             streamOut.Position = 0;
 
-            var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType ?? "application/xml", request.File.Name);
+            var resultFile = await fileManagementClient.UploadAsync(streamOut, request.File.ContentType ?? "application/xml", request.File.Name);
 
             return new ConvertTextToDocumentResponse
             {
                 File = resultFile
             };
         }
-
-
 
         [Action("Bump version string", Description = "Bump version string")]
         public async Task<GetXMLPropertyResponse> BumpVersionString([ActionParameter] BumpVersionStringRequest request)
@@ -114,7 +93,6 @@ namespace Apps.Utilities.Actions
             int patch = request.VersionType == "patch" ? version.Build + 1 : version.Build;
             return new GetXMLPropertyResponse() { Value = $"{major}.{minor}.{patch}" };
         }
-
 
         [Action("Change XML file property value", Description = "Change XML file property value or attribute value")]
         public async Task<ConvertTextToDocumentResponse> ChangeXML([ActionParameter] ChangeXMLRequest request)
@@ -170,7 +148,6 @@ namespace Apps.Utilities.Actions
             }
         }       
 
-
         [Action("Get XML file property values", Description = "Get XML file property or attribute values and return all matching results")]
         public async Task<GetXMLPropertiesResponse> GetXMLProperties([ActionParameter] GetXMLPropertyRequest request)
         {
@@ -197,17 +174,14 @@ namespace Apps.Utilities.Actions
                 return await GetXmlPropertiesUsingXPath(request);
             }
         }
-
       
-
         private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingProperty(GetXMLPropertyRequest request)
         {
+            var doc = await LoadXDocumentSafely(request.File);
+            XNamespace ns = request.Namespace ?? string.Empty;
+            
             try
             {
-                await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-                XNamespace ns = request.Namespace ?? string.Empty;
-                var doc = XDocument.Load(streamIn);
-
                 var values = new List<string>();
 
                 var items = doc.Root.Descendants(ns + request.Property);
@@ -241,25 +215,18 @@ namespace Apps.Utilities.Actions
 
                 return new GetXMLPropertiesResponse { Values = values };
             }
-            catch (System.Xml.XmlException ex)
-            {
-               
-                throw new PluginApplicationException($"XML error: {ex.Message}");
-            }
             catch (Exception ex)
             {
                 throw new PluginApplicationException($"Unexpected error: {ex.Message}");
             }
         }
+        
         private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingXPath(GetXMLPropertyRequest request)
         {
+            var xmlDoc = await LoadXmlDocumentSafely(request.File);
+            
             try
             {
-                await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-
-                var xmlDoc = new XmlDocument();
-                xmlDoc.Load(streamIn);
-
                 var nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
                 if (!string.IsNullOrEmpty(request.Namespace))
                 {
@@ -288,10 +255,6 @@ namespace Apps.Utilities.Actions
 
                 return new GetXMLPropertiesResponse { Values = values };
             }
-            catch (System.Xml.XmlException ex)
-            {
-                throw new PluginApplicationException($"XML error: {ex.Message}");
-            }
             catch (Exception ex)
             {
                 throw new PluginApplicationException($"Unexpected error: {ex.Message}");
@@ -300,12 +263,11 @@ namespace Apps.Utilities.Actions
 
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingProperty(ChangeXMLRequest request)
         {
+            var doc = await LoadXDocumentSafely(request.File);
+            XNamespace ns = request.Namespace ?? string.Empty;
+            
             try
             {
-                await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-                XNamespace ns = request.Namespace ?? string.Empty;
-                var doc = XDocument.Load(streamIn);
-
                 var items = doc.Root.Descendants(ns + request.Property);
 
                 if (!items.Any())
@@ -350,31 +312,25 @@ namespace Apps.Utilities.Actions
                 }
                 streamOut.Position = 0;
 
-                var resultFile = await _fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
+                var resultFile = await fileManagementClient.UploadAsync(streamOut, request.File.ContentType, request.File.Name);
 
                 return new ConvertTextToDocumentResponse
                 {
                     File = resultFile
                 };
             }
-            catch (System.Xml.XmlException ex)
-            {
-                throw new PluginMisconfigurationException($"XML error: {ex.Message}");
-            }
             catch (Exception ex)
             {
                 throw new PluginApplicationException($"Unexpected error: {ex.Message}");
             }
         }
+        
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingXPath(ChangeXMLRequest request)
         {
+            var xmlDoc = await LoadXmlDocumentSafely(request.File);
+            
             try
             {
-                await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-
-                var xmlDoc = new XmlDocument();
-                xmlDoc.Load(streamIn);
-
                 var nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
                 if (!string.IsNullOrEmpty(request.Namespace))
                 {
@@ -416,7 +372,7 @@ namespace Apps.Utilities.Actions
                 }
                 streamOut.Position = 0;
 
-                var updatedFile = await _fileManagementClient.UploadAsync(
+                var updatedFile = await fileManagementClient.UploadAsync(
                     streamOut,
                     request.File.ContentType,
                     request.File.Name);
@@ -426,32 +382,22 @@ namespace Apps.Utilities.Actions
                     File = updatedFile
                 };
             }
-            catch (System.Xml.XmlException ex)
-            {
-                throw new PluginMisconfigurationException($"XML error: {ex.Message}");
-            }
             catch (Exception ex)
             {
                 throw new PluginApplicationException($"Unexpected error: {ex.Message}");
             }
         }
 
-
         private async Task<GetXMLPropertyResponse> GetXmlPropertyUsingXPath(GetXMLPropertyRequest request)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
-
-            var xmlDoc = new XmlDocument();
-            xmlDoc.Load(streamIn);
-
-            var nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
-            if (!string.IsNullOrEmpty(request.Namespace))
-            {
-                nsManager.AddNamespace("ns", request.Namespace);
-            }
+            var xmlDoc = await LoadXmlDocumentSafely(request.File);
 
             try
             {
+                var nsManager = new XmlNamespaceManager(xmlDoc.NameTable);
+                if (!string.IsNullOrEmpty(request.Namespace))
+                    nsManager.AddNamespace("ns", request.Namespace);
+                
                 var nodes = xmlDoc.SelectNodes(request.XPath, nsManager);
 
                 if (nodes == null || nodes.Count == 0)
@@ -472,48 +418,64 @@ namespace Apps.Utilities.Actions
                     return new GetXMLPropertyResponse { Value = node.InnerText };
                 }
             }
+            catch (XPathException ex)
+            {
+                throw new PluginMisconfigurationException(
+                    $"The provided XPath syntax is invalid. Details: {ex.Message}");
+            }
             catch (Exception ex)
             {
                 throw new PluginApplicationException(ex.Message);
             }
         }
+        
         private async Task<GetXMLPropertyResponse> GetXmlPropertyUsingProperty(GetXMLPropertyRequest request)
         {
-            await using var streamIn = await _fileManagementClient.DownloadAsync(request.File);
+            var doc = await LoadXDocumentSafely(request.File);
             XNamespace ns = request.Namespace ?? string.Empty;
 
-            var doc = XDocument.Load(streamIn);
+            var targetElement = doc.Root?.Descendants(ns + request.Property!).FirstOrDefault() ??
+                                doc.Element(ns + request.Property!) ??
+                                throw new PluginMisconfigurationException(
+                                    $"The specified property '{request.Property}' is not present in the file.");
+
+            var text = string.IsNullOrEmpty(request.Attribute)
+                ? targetElement.Value
+                : targetElement.Attribute(request.Attribute)?.Value;
+
+            return text == null 
+                ? throw new PluginMisconfigurationException(
+                    $"The specified attribute '{request.Attribute}' is not present on the property '{request.Property}'.") 
+                : new GetXMLPropertyResponse { Value = text };
+        }
+        
+        private async Task<XDocument> LoadXDocumentSafely(FileReference file)
+        {
+            await using var stream = await fileManagementClient.DownloadAsync(file);
             try
             {
-                var items = doc.Root.Descendants(ns + request.Property);
-                if (items.Any())
-                {
-                    var text = string.IsNullOrEmpty(request.Attribute)
-                        ? items.First().Value
-                        : items.First().Attribute(request.Attribute)?.Value;
-
-                    return new GetXMLPropertyResponse { Value = text };
-                }
-                else
-                {
-                    var element = doc.Element(ns + request.Property);
-                    var text = string.IsNullOrEmpty(request.Attribute)
-                        ? element?.Value
-                        : element?.Attribute(ns + request.Attribute)?.Value;
-
-                    if (text == null)
-                        throw new PluginMisconfigurationException("The specified property or attribute is not present in the file");
-
-                    return new GetXMLPropertyResponse { Value = text };
-                }
+                return XDocument.Load(stream);
             }
-            catch (Exception ex)
+            catch (XmlException ex)
             {
-                if (ex.Message.ToLower().Contains("sequence contains no elements"))
-                {
-                    throw new PluginMisconfigurationException("The specified property or attribute is not present in the file");
-                }
-                throw new PluginApplicationException(ex.Message);
+                throw new PluginApplicationException(
+                    $"Failed to parse the file as XML. Ensure it is a valid XML document. Details: {ex.Message}");
+            }
+        }
+
+        private async Task<XmlDocument> LoadXmlDocumentSafely(FileReference file)
+        {
+            await using var stream = await fileManagementClient.DownloadAsync(file);
+            try
+            {
+                var doc = new XmlDocument();
+                doc.Load(stream);
+                return doc;
+            }
+            catch (XmlException ex)
+            {
+                throw new PluginApplicationException(
+                    $"Failed to parse the file as XML. Ensure it is a valid XML document. Details: {ex.Message}");
             }
         }
     }
