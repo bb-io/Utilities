@@ -11,7 +11,7 @@ public class FileManager(string folderLocation) : IFileManagementClient
 {
     public Task<Stream> DownloadAsync(FileReference reference)
     {
-        var outputPath = Path.Combine(folderLocation, @$"Output\{reference.Name}");
+        var outputPath = Path.Combine(folderLocation, @$"Output/{reference.Name}");
         if (File.Exists(outputPath))
         {
             var bytes = File.ReadAllBytes(outputPath);
@@ -19,7 +19,7 @@ public class FileManager(string folderLocation) : IFileManagementClient
             return Task.FromResult((Stream)stream);
         }
 
-        var inputPath = Path.Combine(folderLocation, @$"Input\{reference.Name}");
+        var inputPath = Path.Combine(folderLocation, @$"Input/{reference.Name}");
         if (File.Exists(inputPath))
         {
             var bytes = File.ReadAllBytes(inputPath);
