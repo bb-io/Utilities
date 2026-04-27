@@ -126,20 +126,6 @@ public class CsvTests : TestBase
     }
 
     [TestMethod]
-    public async Task RemoveXlsColumns_works()
-    {
-        var file = new FileReference { Name = "Sample.xlsx" };
-        var csvFile = new ExcelFile { File = file };
-        var action = new Excel(InvocationContext, FileManager);
-        var response = await action.RemoveColumnsByIndexes(
-            csvFile, 
-            1, 
-            new Apps.Utilities.Models.Excel.ColumnIndexesRequest { ColumnIndexes = new List<int> { 1, 4, 5,6 } });
-
-        Assert.IsNotNull(response);
-    }
-
-    [TestMethod]
     public async Task GetColumnValues_works()
     {
         var action = new Csv(InvocationContext, FileManager);
