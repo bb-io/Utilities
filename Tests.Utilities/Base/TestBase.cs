@@ -1,6 +1,7 @@
 ﻿using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace Tests.Utilities.Base;
 
@@ -32,5 +33,10 @@ public class TestBase
             .AddJsonFile("appsettings.json")
             .Build();
         return config["TestFolder"];
+    }
+
+    protected static void PrintJsonResult(object result)
+    {
+        Console.WriteLine(JsonConvert.SerializeObject(result, Formatting.Indented));
     }
 }
