@@ -10,7 +10,6 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System.Text.RegularExpressions;
 
 namespace Apps.Utilities.Actions;
@@ -300,11 +299,11 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
-    [Action("Group rows by column value in spreadsheet",
-    Description = "Reads a spreadsheet and groups its rows based on a specific column's value")]
+    [Action("Group rows by column value in spreadsheet", 
+        Description = "Reads a spreadsheet and groups its rows based on a specific column's value")]
     public async Task<List<GroupedRows>> GroupRowsByColumn(
-    [ActionParameter] ExcelFile file,
-    [ActionParameter] ExcelGroupingRequest request)
+        [ActionParameter] ExcelFile file,
+        [ActionParameter] ExcelGroupingRequest request)
     {
         var (workbook, worksheet) = await ReadExcel(file.File, request.WorksheetIndex);
 
@@ -403,13 +402,27 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
             ? values.Distinct()
             : values;
     }
+    
     private async Task<(XLWorkbook Workbook, IXLWorksheet Worksheet)> ReadExcel(FileReference file, int worksheetIndex)
     {
         var stream = new MemoryStream();
         var downloaded = await fileManagementClient.DownloadAsync(file);
         await downloaded.CopyToAsync(stream);
         stream.Position = 0;
-        var workbook = new XLWorkbook(stream);
+        
+        XLWorkbook workbook;
+        try
+        {
+            workbook = new XLWorkbook(stream);
+        }
+        catch (Exception ex)
+        {
+            throw new PluginMisconfigurationException(
+                "An error occured while processing the input file. " +
+                "Ensure you have inputted a valid Excel file and not the CSV file. " +
+                $"Error message: {ex.Message}");
+        }
+        
 
         if (worksheetIndex < 1 || worksheetIndex > workbook.Worksheets.Count)
         {
