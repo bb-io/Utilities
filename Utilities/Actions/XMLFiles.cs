@@ -8,7 +8,7 @@ using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text;
 using System.Xml.XPath;
-using Blackbird.Applications.Sdk.Common.Files;
+using Apps.Utilities.Utils;
 
 namespace Apps.Utilities.Actions
 {
@@ -28,8 +28,9 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("Both languages to keep must be specified.");
             }
 
-            var doc = await LoadXDocumentSafely(request.File);
-            var tbxNs = doc.Root?.GetDefaultNamespace() ?? throw new PluginMisconfigurationException("TBX file is missing a valid namespace.");
+            var doc = await DocumentLoader.LoadXDocument(request.File, fileManagementClient);
+            var tbxNs = doc.Root?.GetDefaultNamespace() ?? 
+                        throw new PluginMisconfigurationException("TBX file is missing a valid namespace.");
             var xmlNs = XNamespace.Xml;
 
             var conceptEntries = doc.Descendants(tbxNs + "conceptEntry").ToList();
@@ -177,7 +178,7 @@ namespace Apps.Utilities.Actions
       
         private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingProperty(GetXMLPropertyRequest request)
         {
-            var doc = await LoadXDocumentSafely(request.File);
+            var doc = await DocumentLoader.LoadXDocument(request.File, fileManagementClient);
             XNamespace ns = request.Namespace ?? string.Empty;
             
             try
@@ -223,7 +224,7 @@ namespace Apps.Utilities.Actions
         
         private async Task<GetXMLPropertiesResponse> GetXmlPropertiesUsingXPath(GetXMLPropertyRequest request)
         {
-            var xmlDoc = await LoadXmlDocumentSafely(request.File);
+            var xmlDoc = await DocumentLoader.LoadXmlDocument(request.File, fileManagementClient);
             
             try
             {
@@ -263,7 +264,7 @@ namespace Apps.Utilities.Actions
 
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingProperty(ChangeXMLRequest request)
         {
-            var doc = await LoadXDocumentSafely(request.File);
+            var doc = await DocumentLoader.LoadXDocument(request.File, fileManagementClient);
             XNamespace ns = request.Namespace ?? string.Empty;
             
             try
@@ -327,7 +328,7 @@ namespace Apps.Utilities.Actions
         
         private async Task<ConvertTextToDocumentResponse> ChangeXmlUsingXPath(ChangeXMLRequest request)
         {
-            var xmlDoc = await LoadXmlDocumentSafely(request.File);
+            var xmlDoc = await DocumentLoader.LoadXmlDocument(request.File, fileManagementClient);
             
             try
             {
@@ -390,7 +391,7 @@ namespace Apps.Utilities.Actions
 
         private async Task<GetXMLPropertyResponse> GetXmlPropertyUsingXPath(GetXMLPropertyRequest request)
         {
-            var xmlDoc = await LoadXmlDocumentSafely(request.File);
+            var xmlDoc = await DocumentLoader.LoadXmlDocument(request.File, fileManagementClient);
 
             try
             {
@@ -431,7 +432,7 @@ namespace Apps.Utilities.Actions
         
         private async Task<GetXMLPropertyResponse> GetXmlPropertyUsingProperty(GetXMLPropertyRequest request)
         {
-            var doc = await LoadXDocumentSafely(request.File);
+            var doc = await DocumentLoader.LoadXDocument(request.File, fileManagementClient);
             XNamespace ns = request.Namespace ?? string.Empty;
 
             var targetElement = doc.Root?.Descendants(ns + request.Property!).FirstOrDefault() ??
@@ -447,36 +448,6 @@ namespace Apps.Utilities.Actions
                 ? throw new PluginMisconfigurationException(
                     $"The specified attribute '{request.Attribute}' is not present on the property '{request.Property}'.") 
                 : new GetXMLPropertyResponse { Value = text };
-        }
-        
-        private async Task<XDocument> LoadXDocumentSafely(FileReference file)
-        {
-            await using var stream = await fileManagementClient.DownloadAsync(file);
-            try
-            {
-                return XDocument.Load(stream);
-            }
-            catch (XmlException ex)
-            {
-                throw new PluginApplicationException(
-                    $"Failed to parse the file as XML. Ensure it is a valid XML document. Details: {ex.Message}");
-            }
-        }
-
-        private async Task<XmlDocument> LoadXmlDocumentSafely(FileReference file)
-        {
-            await using var stream = await fileManagementClient.DownloadAsync(file);
-            try
-            {
-                var doc = new XmlDocument();
-                doc.Load(stream);
-                return doc;
-            }
-            catch (XmlException ex)
-            {
-                throw new PluginApplicationException(
-                    $"Failed to parse the file as XML. Ensure it is a valid XML document. Details: {ex.Message}");
-            }
         }
     }
 }
