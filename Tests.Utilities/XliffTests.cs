@@ -2,6 +2,8 @@
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Files;
 using System.Xml.Linq;
+using Apps.Utilities.Models.Files;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities;
@@ -9,7 +11,7 @@ namespace Tests.Utilities;
 [TestClass]
 public class XliffTests: TestBase
 {
-    public Xliff Actions => new(FileManager);
+    private Xliff Actions => new(FileManager);
 
     [TestMethod]
     [DataRow("test.xliff")]
@@ -118,9 +120,26 @@ public class XliffTests: TestBase
         Assert.IsNull(target.Attributes().FirstOrDefault(a => a.Name.LocalName == "attribute"));
     }
 
+    [TestMethod]
+    public async Task ConfirmAndLockFinalTargets_WithDocxFile_ThrowsMisconfigException()
+    {
+        // Arrange
+        var input = new ConvertTextToDocumentResponse
+        {
+            File = new FileReference { Name = "test.docx" }
+        };
+
+        // Act
+        var ex = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
+            () => Actions.ConfirmAndLockFinalTargets(input));
+
+        // Assert
+        StringAssert.Contains(ex.Message, "Failed to parse the file as XLIFF");
+    }
+    
     private static void DeleteOutputFile(string fileName)
     {
-        var path = Path.Combine(TestBase.GetTestFolderPath(), "Output", fileName);
+        var path = Path.Combine(GetTestFolderPath(), "Output", fileName);
         if (File.Exists(path))
             File.Delete(path);
     }
