@@ -132,6 +132,24 @@ public class XliffTests: TestBase
         // Assert
         StringAssert.Contains(ex.Message, "Failed to parse the file as XLIFF");
     }
+
+    [TestMethod]
+    [DataRow("notes.mxliff")]
+    public async Task ExtractXliffNotes_ReturnsXliffNotes(string fileName)
+    {
+        // Arrange
+        var actions = new Xliff(FileManager);
+        var input = new FileDto { File = new FileReference { Name = fileName } };
+
+        // Act
+        var result = await actions.ExtractXliffNotes(input);
+
+        // Assert
+        foreach (var note in result.Notes)
+            Console.WriteLine($"{note.SegmentId} - {note.Note}");
+        
+        Assert.IsNotNull(result);
+    }
     
     private static void DeleteOutputFile(string fileName)
     {

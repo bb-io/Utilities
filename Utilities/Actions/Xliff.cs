@@ -17,6 +17,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Apps.Utilities.Utils;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace Apps.Utilities.Actions
 {
@@ -294,6 +295,32 @@ namespace Apps.Utilities.Actions
             {
                 File = await fileManagementClient.UploadAsync(processedXliffStream, "application/xliff+xml", request.File.Name)
             };
+        }
+
+        [Action("Extract context notes from XLIFF", Description = "Get notes for each segment")]
+        public async Task<ExtractXliffNotesResponse> ExtractXliffNotes([ActionParameter] FileDto fileInput)
+        {
+            await using var stream = await fileManagementClient.DownloadAsync(fileInput.File);
+            using var reader = new StreamReader(stream);
+            var fileContent = await reader.ReadToEndAsync();
+
+            var transformation = Transformation.Parse(fileContent, fileInput.File.Name) ?? 
+                                 throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            var notes = new List<XliffNoteDto>();
+            foreach (var unit in transformation.GetUnits())
+            {
+                if (unit.Notes.Count == 0) 
+                    continue;
+
+                string id = unit.Id ?? string.Empty;
+                string noteText = string.Join("; ", unit.Notes.Select(x => x.Text));
+        
+                var note = new XliffNoteDto(id, noteText);
+                notes.Add(note);
+            }
+
+            return new ExtractXliffNotesResponse(notes);
         }
 
         [Action("Move XLIFF content to notes", Description = "Move selected element text or attribute values into XLIFF notes.")]
