@@ -172,11 +172,14 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
             {
                 return new DateResponse { Date = DateTime.SpecifyKind(finalResult.UtcDateTime, DateTimeKind.Utc) };
             }
-
-            var inputDateTime = string.IsNullOrEmpty(input.Format)
+            
+            var parsedDateTime = string.IsNullOrEmpty(input.Format)
                 ? DateTime.Parse(input.Text, culture)
                 : DateTime.ParseExact(input.Text, input.Format, culture);
+            
+            var inputDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Unspecified);
             var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+            
             var expectedDateTimeOffset = new DateTimeOffset(inputDateTime, tzInfo.GetUtcOffset(inputDateTime));
             var expectedUtc = expectedDateTimeOffset.ToUniversalTime();
 

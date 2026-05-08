@@ -8,15 +8,14 @@ namespace Tests.Utilities;
 public class DateTests : TestBase
 {
     [TestMethod]
-    public async Task ConvertTextToDate_IssSuccess()
+    public void ConvertTextToDate_IssSuccess()
     {
         var action = new Dates(InvocationContext);
 
         var request = new TextToDateRequest
         {
-            Text = "10/10/2025",
-            //Format = "dd/MM/yyyy ",
-            Timezone = "UTC"
+            Text = "04/08/2026 03:12:54 +00:00",
+            Timezone = "America/Ciudad_Juarez"
         };
 
         var result = action.ConvertTextToDate(request);
