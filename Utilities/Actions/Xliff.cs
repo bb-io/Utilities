@@ -307,20 +307,18 @@ namespace Apps.Utilities.Actions
             var transformation = Transformation.Parse(fileContent, fileInput.File.Name) ?? 
                                  throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
 
-            var notes = new List<XliffNoteDto>();
+            var segmentIds = new List<string>();
+            var notes = new List<string>();
             foreach (var unit in transformation.GetUnits())
             {
                 if (unit.Notes.Count == 0) 
                     continue;
 
-                string id = unit.Id ?? string.Empty;
-                string noteText = string.Join("; ", unit.Notes.Select(x => x.Text));
-        
-                var note = new XliffNoteDto(id, noteText);
-                notes.Add(note);
+                segmentIds.Add(unit.Id ?? string.Empty);
+                notes.Add(string.Join("; ", unit.Notes.Select(x => x.Text)));
             }
 
-            return new ExtractXliffNotesResponse(notes);
+            return new ExtractXliffNotesResponse(segmentIds, notes);
         }
 
         [Action("Move XLIFF content to notes", Description = "Move selected element text or attribute values into XLIFF notes.")]

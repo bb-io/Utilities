@@ -135,6 +135,7 @@ public class XliffTests: TestBase
 
     [TestMethod]
     [DataRow("notes.mxliff")]
+    [DataRow("example.mxliff")]
     public async Task ExtractXliffNotes_ReturnsXliffNotes(string fileName)
     {
         // Arrange
@@ -145,8 +146,11 @@ public class XliffTests: TestBase
         var result = await actions.ExtractXliffNotes(input);
 
         // Assert
-        foreach (var note in result.Notes)
-            Console.WriteLine($"{note.SegmentId} - {note.Note}");
+        for (int i = 0; i < result.SegmentIds.Count; i++)
+        {
+            Console.WriteLine(result.SegmentIds[i]);
+            Console.WriteLine(result.SegmentNotes[i]);
+        }
         
         Assert.IsNotNull(result);
     }
