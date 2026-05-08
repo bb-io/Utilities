@@ -53,6 +53,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Move XLIFF content to notes** Move selected element text or attribute values into XLIFF notes.
 - **Copy source to target in XLIFF** Copy source text to target text for all segments in an XLIFF file.
 - **Convert XLIFF to CSV** Convert XLIFF file to CSV file.
+- **Extract context notes from XLIFF** Get notes for each segment.
 
 ### XML files
 
