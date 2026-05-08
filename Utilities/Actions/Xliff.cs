@@ -277,12 +277,15 @@ namespace Apps.Utilities.Actions
 
                     var note = new Note(noteContent.ToString());
 
-                    if (segment.Id is not null)
-                        note.Reference = segment.Id;
+                    // if (segment.Id is not null)
+                    //     note.Reference = segment.Id;
+                    //
+                    // if (note.Reference is null && unit.Notes.Any(n => n.Text == note.Text && n.Reference is null))
+                    //     continue;
 
-                    if (note.Reference is null && unit.Notes.Any(n => n.Text == note.Text && n.Reference is null))
+                    if (unit.Notes.Any(n => n.Text == note.Text))
                         continue;
-
+                    
                     unit.Notes.Add(note);
                 }
             }
