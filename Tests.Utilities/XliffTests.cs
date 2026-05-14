@@ -14,13 +14,16 @@ public class XliffTests: TestBase
     private Xliff Actions => new(FileManager);
 
     [TestMethod]
-    [DataRow("example.mxliff")]
-    [DataRow("test.xliff")]
+    [DataRow("st.mxliff")]
     public async Task AddNoteToXliff_Works(string testFileName)
     {
         var request = new AddNoteToXliffRequest
         {
             File = new FileReference() { Name = testFileName },
+            RawStatesToProcess = ["final", "initial", "reviewed", "translated"],
+            IncludeSegmentState = true,
+            IncludeQualityScore = true,
+            IncludeSurroundingUnits = false
         };
 
         var result = await Actions.AddNoteToXliff(request);
@@ -134,8 +137,7 @@ public class XliffTests: TestBase
     }
 
     [TestMethod]
-    [DataRow("notes.mxliff")]
-    [DataRow("example.mxliff")]
+    [DataRow("st.mxliff")]
     public async Task ExtractXliffNotes_ReturnsXliffNotes(string fileName)
     {
         // Arrange
@@ -150,6 +152,7 @@ public class XliffTests: TestBase
         {
             Console.WriteLine(result.SegmentIds[i]);
             Console.WriteLine(result.SegmentNotes[i]);
+            Console.WriteLine();
         }
         
         Assert.IsNotNull(result);
