@@ -271,7 +271,7 @@ namespace Apps.Utilities.Actions
                     }
 
                     if (request.IncludeQualityScore == true && unit.Quality.Score is not null)
-                        noteContent.AppendLine($"Quality score: {unit.Quality.Score:F0}");
+                        noteContent.AppendLine($"Quality score: {unit.Quality.Score:F3}");
 
                     if (noteContent.Length == 0)
                         continue;
