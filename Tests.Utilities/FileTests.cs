@@ -86,6 +86,15 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
+        public void ChangeFileName_WithLineBreaks_ThrowsPluginMisconfigurationException()
+        {
+            var file = new FileDto { File = new FileReference { Name = "test.pdf" } };
+            var request = new RenameRequest { Name = "new\r\nname" };
+
+            Assert.ThrowsException<PluginMisconfigurationException>(() => _fileActions.ChangeFileName(file, request));
+        }
+
+        [TestMethod]
         public async Task Compare_same_file_returns_true()
         {
             var file = new FileReference { Name = "test.txt" };

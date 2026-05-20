@@ -64,7 +64,12 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     public FileDto ChangeFileName([ActionParameter] FileDto file, [ActionParameter] RenameRequest input)
     {
         var extension = Path.GetExtension(file.File.Name);
-        file.File.Name = input.Name + extension;
+        var newFileName = input.Name + extension;
+
+        if (ContainsLineBreak(newFileName))
+            throw new PluginMisconfigurationException("File name cannot contain line breaks.");
+
+        file.File.Name = newFileName;
         return new FileDto { File = file.File };
     }
 
@@ -98,6 +103,9 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
 
         return new FileDto { File = file.File };
     }
+
+    private static bool ContainsLineBreak(string value)
+        => value.Contains('\r') || value.Contains('\n');
 
     [Action("Get file character count", Description = "Returns number of characters in the file")]
     public async Task<int> GetCharCountInFile([ActionParameter] FileDto file)
