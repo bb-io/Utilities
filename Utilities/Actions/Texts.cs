@@ -1,5 +1,4 @@
-﻿using Apps.Utilities.ErrorWrapper;
-using Apps.Utilities.Models.Shared;
+﻿using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
 using Apps.Utilities.Utils;
 using Blackbird.Applications.Sdk.Common;
