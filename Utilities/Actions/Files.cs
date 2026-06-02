@@ -177,7 +177,7 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
             string replacedText;
             try
             {
-                replacedText = Regex.Replace(text, request.Regex, request.ExprimentalRegexField ?? request.Replace ?? string.Empty);
+                replacedText = Regex.Replace(text, request.Regex, request.ExprimentalRegexField is not null ? request.Replace ?? string.Empty : Regex.Unescape(request.ExprimentalRegexField));
             }
             catch (RegexParseException ex)
             {
