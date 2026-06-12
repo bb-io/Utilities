@@ -130,6 +130,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Retain specified entries in array** returns the original array without the entries that were not present in the provided control group (entries to keep). The input can only be an array
 - **Array intersection** returns the intersection of two input arrays (returns the elements contained in both arrays).
 - **Extract matches from array using Regex** Extracts all matches from each string in the input array using the provided Regular Expression and returns them as a single array of matches.
+- **Find maximum value** Returns the maximum value in the array.
 
 
 ### Numbers
