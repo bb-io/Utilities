@@ -164,6 +164,9 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     [Action("Find maximum value", Description = "Returns the maximum value in the array")]
     public double ArrayFindMaximumValue([ActionParameter] ArrayFindMaximumValueRequest input)
     {
+        if (input.Array?.Any() != true)
+            throw new PluginMisconfigurationException("Array cannot be empty");
+
         return input.Array.Max();
     }
 }
