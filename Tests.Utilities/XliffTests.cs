@@ -70,6 +70,61 @@ public class XliffTests: TestBase
     }
 
     [TestMethod]
+    public async Task CheckCharacterLimits_WithEmptyStateFilter_ChecksAllUnits()
+    {
+        var request = new CheckXliffCharacterLimitsRequest
+        {
+            File = new FileReference { Name = "Home page with character limits_en-US-en_us-de-T.xliff" }
+        };
+
+        var result = await Actions.CheckCharacterLimits(request);
+
+        Assert.AreEqual(6, result.TotalUnits);
+        Assert.AreEqual(6, result.UnitsMatchingStateFilter);
+        Assert.AreEqual(2, result.TotalUnitsWithLimits);
+        Assert.AreEqual(1, result.UnitsOverLimits);
+        Assert.AreEqual("vQl02fa2sN2aX16G1_dc10:1", result.Units.Single().UnitId);
+        Assert.AreEqual(150, result.Units.Single().MaximumLength);
+        Assert.IsTrue(result.Units.Single().CurrentLength > result.Units.Single().MaximumLength);
+    }
+
+    [TestMethod]
+    public async Task CheckCharacterLimits_WithTranslatedStateFilter_ChecksOnlyTranslatedUnits()
+    {
+        var request = new CheckXliffCharacterLimitsRequest
+        {
+            File = new FileReference { Name = "Home page with character limits_en-US-en_us-de-T.xliff" },
+            SegmentStatesToInclude = ["translated"]
+        };
+
+        var result = await Actions.CheckCharacterLimits(request);
+
+        Assert.AreEqual(6, result.TotalUnits);
+        Assert.AreEqual(2, result.UnitsMatchingStateFilter);
+        Assert.AreEqual(1, result.TotalUnitsWithLimits);
+        Assert.AreEqual(1, result.UnitsOverLimits);
+        Assert.AreEqual("vQl02fa2sN2aX16G1_dc10:1", result.Units.Single().UnitId);
+    }
+
+    [TestMethod]
+    public async Task CheckCharacterLimits_CountsUnicodeGraphemes()
+    {
+        var request = new CheckXliffCharacterLimitsRequest
+        {
+            File = new FileReference { Name = "grapheme-character-limit.xliff" },
+            SegmentStatesToInclude = ["translated"]
+        };
+
+        var result = await Actions.CheckCharacterLimits(request);
+
+        Assert.AreEqual(1, result.TotalUnits);
+        Assert.AreEqual(1, result.UnitsMatchingStateFilter);
+        Assert.AreEqual(1, result.TotalUnitsWithLimits);
+        Assert.AreEqual(0, result.UnitsOverLimits);
+        Assert.AreEqual(0, result.Units.Count);
+    }
+
+    [TestMethod]
     public async Task MoveXliffContentToNotes_MovesAttributeToNote_InXliff12()
     {
         const string fileName = "move-note-1.2.xliff";
