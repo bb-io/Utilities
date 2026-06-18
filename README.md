@@ -54,6 +54,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Copy source to target in XLIFF** Copy source text to target text for all segments in an XLIFF file.
 - **Convert XLIFF to CSV** Convert XLIFF file to CSV file.
 - **Extract context notes from XLIFF** Get notes for each segment.
+- **Check character limits** Checks target text against XLIFF character limits using Unicode grapheme length.
 
 ### XML files
 
