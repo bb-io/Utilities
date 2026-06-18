@@ -1,0 +1,11 @@
+<xliff srcLang="en" trgLang="fr" version="2.2" xmlns:slr="urn:oasis:names:tc:xliff:sizerestriction:2.0" xmlns="urn:oasis:names:tc:xliff:document:2.2">
+  <file id="f1">
+    <slr:profiles generalProfile="xliff:codepoints" storageProfile="" />
+    <unit id="u1" slr:sizeRestriction="1">
+      <segment id="s1" state="translated">
+        <source>e</source>
+        <target>e&#x301;</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

@@ -11,6 +11,7 @@ using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
 using Blackbird.Filters.Xliff.Xliff1;
 using Blackbird.Filters.Xliff.Xliff2;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -319,6 +320,62 @@ namespace Apps.Utilities.Actions
             }
 
             return new ExtractXliffNotesResponse(segmentIds, notes);
+        }
+
+        [Action("Check character limits", Description = "Checks target text against XLIFF character limits using Unicode grapheme length.")]
+        public async Task<CheckXliffCharacterLimitsResponse> CheckCharacterLimits([ActionParameter] CheckXliffCharacterLimitsRequest request)
+        {
+            await using var stream = await fileManagementClient.DownloadAsync(request.File);
+            using var reader = new StreamReader(stream);
+            var fileContent = await reader.ReadToEndAsync();
+
+            var transformation = Transformation.Parse(fileContent, request.File.Name)
+                ?? throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            var units = transformation.GetUnits().ToList();
+            var selectedStates = (request.SegmentStatesToInclude ?? Enumerable.Empty<string>())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(SegmentStateHelper.ToSegmentState)
+                .Where(s => s.HasValue)
+                .Select(s => s!.Value)
+                .ToHashSet();
+
+            var response = new CheckXliffCharacterLimitsResponse
+            {
+                TotalUnits = units.Count
+            };
+
+            foreach (var unit in units)
+            {
+                if (selectedStates.Count > 0 && !unit.Segments.Any(s => selectedStates.Contains(s.State ?? SegmentState.Initial)))
+                    continue;
+
+                response.UnitsMatchingStateFilter++;
+
+                var maximumSize = unit.SizeRestrictions?.MaximumSize;
+                if (maximumSize is null)
+                    continue;
+
+                response.TotalUnitsWithLimits++;
+
+                var targetText = string.Join(string.Empty, unit.GetTarget().Parts.Where(p => p is not InlineCode).Select(p => p.Value));
+                var currentLength = StringInfo.ParseCombiningCharacters(targetText).Length;
+                var maximumLength = Convert.ToInt32(maximumSize.Value);
+
+                if (currentLength <= maximumLength)
+                    continue;
+
+                response.Units.Add(new XliffCharacterLimitUnit
+                {
+                    UnitId = unit.Id ?? string.Empty,
+                    MaximumLength = maximumLength,
+                    CurrentLength = currentLength
+                });
+            }
+
+            response.UnitsOverLimits = response.Units.Count;
+
+            return response;
         }
 
         [Action("Move XLIFF content to notes", Description = "Move selected element text or attribute values into XLIFF notes.")]
