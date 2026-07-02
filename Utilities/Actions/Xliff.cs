@@ -7,18 +7,18 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Filters.Content;
 using Blackbird.Filters.Enums;
-using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
-using Blackbird.Filters.Xliff.Xliff1;
-using Blackbird.Filters.Xliff.Xliff2;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Apps.Utilities.Extensions;
+using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Utils;
-using DocumentFormat.OpenXml.Presentation;
+using Blackbird.Filters.Bilingual.Xliff1;
+using Blackbird.Filters.Bilingual.Xliff2;
 
 namespace Apps.Utilities.Actions
 {
@@ -182,22 +182,9 @@ namespace Apps.Utilities.Actions
             if (request.IncludeSurroundingUnits == true && !statesToProcess.Any())
                 throw new PluginMisconfigurationException("At least one segment state must be specified in both 'Segment states to add notes into' and 'Segment states to be added as note'.");
 
-            var originalXliffStream = await fileManagementClient.DownloadAsync(request.File);
-            var originalXliff = await originalXliffStream.ReadString();
-
-            if (!Xliff2Serializer.TryGetXliffVersion(originalXliff, out var originalXliffVersion))
-                throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
-
-            Func<Transformation, string> xliffSerializer = originalXliffVersion switch
-            {
-                "1.2" => t => Xliff1Serializer.Serialize(t),
-                ['2', ..] => t => Xliff2Serializer.Serialize(t, Xliff2VersionHelper.ToXliff2Version(originalXliffVersion) ?? throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported.")),
-                _ => throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported."),
-            };
-
-            var transformation = Transformation.Parse(originalXliff, request.File.Name)
-                ?? throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
-
+            await using var originalXliffStream = await fileManagementClient.DownloadAsync(request.File);
+            var (transformation, xliffSerializer) = await SerializeXliffVersion(originalXliffStream);
+            
             var units = transformation.GetUnits().ToList();
 
             for ( var currentUnitIndex = 0; currentUnitIndex < units.Count; currentUnitIndex++ )
@@ -302,11 +289,7 @@ namespace Apps.Utilities.Actions
         public async Task<ExtractXliffNotesResponse> ExtractXliffNotes([ActionParameter] FileDto fileInput)
         {
             await using var stream = await fileManagementClient.DownloadAsync(fileInput.File);
-            using var reader = new StreamReader(stream);
-            var fileContent = await reader.ReadToEndAsync();
-
-            var transformation = Transformation.Parse(fileContent, fileInput.File.Name) ?? 
-                                 throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+            var transformation = stream.LoadTransformation(fileInput.File.Name);
 
             var segmentIds = new List<string>();
             var notes = new List<string>();
@@ -326,11 +309,7 @@ namespace Apps.Utilities.Actions
         public async Task<CheckXliffCharacterLimitsResponse> CheckCharacterLimits([ActionParameter] CheckXliffCharacterLimitsRequest request)
         {
             await using var stream = await fileManagementClient.DownloadAsync(request.File);
-            using var reader = new StreamReader(stream);
-            var fileContent = await reader.ReadToEndAsync();
-
-            var transformation = Transformation.Parse(fileContent, request.File.Name)
-                ?? throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+            var transformation = stream.LoadTransformation(request.File.Name);
 
             var units = transformation.GetUnits().ToList();
             var selectedStates = (request.SegmentStatesToInclude ?? Enumerable.Empty<string>())
@@ -491,23 +470,14 @@ namespace Apps.Utilities.Actions
 
             try
             {
-                var htmlContent = await DownloadFileAsStringAsync(request.File);
-                if (string.IsNullOrWhiteSpace(htmlContent))
-                {
-                    throw new PluginMisconfigurationException("The provided HTML file is empty.");
-                }
-
-                var codedContent = CodedContent.Parse(htmlContent, request.File.Name);
-
-                codedContent.Language = string.IsNullOrWhiteSpace(request.SourceLanguage)
-                    ? "en"
-                    : request.SourceLanguage;
-
-                var transformation = codedContent.CreateTransformation(
-                    string.IsNullOrWhiteSpace(request.TargetLanguage) ? null : request.TargetLanguage);
+                await using var fileStream = await fileManagementClient.DownloadAsync(request.File);
+                var transformation = fileStream.LoadTransformation(request.File.Name);
 
                 transformation.OriginalName = request.File.Name;
                 transformation.OriginalMediaType = "text/html";
+                transformation.SourceLanguage = string.IsNullOrWhiteSpace(request.SourceLanguage) ? "en" : request.SourceLanguage;
+                if (!string.IsNullOrWhiteSpace(request.TargetLanguage))
+                    transformation.TargetLanguage = request.TargetLanguage;
 
                 var xliff = Xliff2Serializer.Serialize(transformation, Xliff2Version.Xliff22);
                 var streamOut = new MemoryStream(Encoding.UTF8.GetBytes(xliff));
@@ -549,42 +519,33 @@ namespace Apps.Utilities.Actions
 
             try
             {
-                var xliffContent = await DownloadFileAsStringAsync(request.File);
-                if (string.IsNullOrWhiteSpace(xliffContent))
-                {
-                    throw new PluginMisconfigurationException("The provided XLIFF file is empty.");
-                }
-
-                var transformation = Transformation.Parse(xliffContent, request.File.Name);
-                if (transformation == null)
-                {
-                    throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
-                }
+                await using var stream = await fileManagementClient.DownloadAsync(request.File);
+                var transformation = stream.LoadTransformation(request.File.Name);
 
                 string html;
 
-                try
+                if (!string.IsNullOrWhiteSpace(transformation.Original))
                 {
-                    if (!string.IsNullOrWhiteSpace(transformation.Original))
-                    {
-                        var codedContent = transformation.Target();
+                    var codedContentLoadResult = transformation.Target();
+                    if (!codedContentLoadResult.Success)
+                        throw new PluginMisconfigurationException(codedContentLoadResult.Error);
 
-                        if (codedContent.TextUnits.All(x => string.IsNullOrWhiteSpace(x.GetPlainText())))
-                        {
-                            codedContent = transformation.Source();
-                        }
-
-                        html = codedContent.Serialize();
-                    }
-                    else
+                    var codedContent = codedContentLoadResult.Value;
+                    if (codedContent.TextUnits.All(x => string.IsNullOrWhiteSpace(x.GetPlainText())))
                     {
-                        html = BuildSimpleHtmlFromTransformation(transformation);
+                        var sourceLoadResult = transformation.Source();
+                        if (!sourceLoadResult.Success)
+                            throw new PluginMisconfigurationException(sourceLoadResult.Error);
+                                
+                        codedContent = sourceLoadResult.Value;
                     }
+
+                    await using var codedStream = codedContent.ToStream();
+                    using var reader = new StreamReader(codedStream);
+                    html = await reader.ReadToEndAsync();
                 }
-                catch (NullReferenceException ex) when (ex.Message.Contains("Cannot convert to content, no original data found"))
-                {
+                else
                     html = BuildSimpleHtmlFromTransformation(transformation);
-                }
 
                 html = EnsureHtmlDocument(html, transformation.OriginalName);
 
@@ -614,14 +575,7 @@ namespace Apps.Utilities.Actions
                 throw new PluginApplicationException("Error converting XLIFF to HTML", ex);
             }
         }
-
-        private async Task<string> DownloadFileAsStringAsync(FileReference file)
-        {
-            await using var stream = await fileManagementClient.DownloadAsync(file);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return await reader.ReadToEndAsync();
-        }
-
+        
         private static string BuildSimpleHtmlFromTransformation(Transformation transformation)
         {
             var units = transformation.GetUnits().ToList();
@@ -748,21 +702,8 @@ namespace Apps.Utilities.Actions
         [Action("Copy source to target in XLIFF", Description = "Copies all source content into targets.")]
         public async Task<CopySourceToTargetResponse> CopySourceToTarget([ActionParameter] CopySourceToTargetRequest request)
         {
-            var originalXliffStream = await fileManagementClient.DownloadAsync(request.File);
-            var originalXliff = await originalXliffStream.ReadString();
-
-            if (!Xliff2Serializer.TryGetXliffVersion(originalXliff, out var originalXliffVersion))
-                throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
-
-            Func<Transformation, string> xliffSerializer = originalXliffVersion switch
-            {
-                "1.2" => t => Xliff1Serializer.Serialize(t),
-                ['2', ..] => t => Xliff2Serializer.Serialize(t, Xliff2VersionHelper.ToXliff2Version(originalXliffVersion) ?? throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported.")),
-                _ => throw new PluginMisconfigurationException($"XLIFF version {originalXliffVersion} is not supported."),
-            };
-
-            var transformation = Transformation.Parse(originalXliff, request.File.Name)
-                ?? throw new PluginMisconfigurationException("Can't parse the provided XLIFF file.");
+            await using var originalXliffStream = await fileManagementClient.DownloadAsync(request.File);
+            var (transformation, xliffSerializer) = await SerializeXliffVersion(originalXliffStream);
 
             var units = transformation.GetUnits().ToList();
             var segmentsCopied = 0;
@@ -792,12 +733,8 @@ namespace Apps.Utilities.Actions
         [Action("Convert XLIFF to CSV", Description = "Convert XLIFF file to CSV file.")]
         public async Task<ConvertXliffToCsvResponse> ConvertXliffToCsv([ActionParameter] ConvertXliffToCsvRequest request)
         {
-            using var stream = await fileManagementClient.DownloadAsync(request.File);
-            using var reader = new StreamReader(stream);
-            var fileContent = await reader.ReadToEndAsync();
-
-            var transformation = Transformation.Parse(fileContent, request.File.Name)
-                ?? throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+            await using var stream = await fileManagementClient.DownloadAsync(request.File);
+            var transformation = stream.LoadTransformation(request.File.Name);
 
             var segments = new List<XliffSegmentDto>();
             long totalCharacters = 0;
@@ -884,6 +821,34 @@ namespace Apps.Utilities.Actions
             return field;
         }
 
+        private static async Task<VersionSerializationResult> SerializeXliffVersion(Stream fileStream)
+        {
+            using var xliffStream = new MemoryStream();
+            await fileStream.CopyToAsync(xliffStream);
+
+            Transformation transformation;
+            Func<Transformation, string> xliffSerializer;
+
+            if (Xliff2Serializer.IsXliff2(xliffStream, out var xliff2Node))
+            {
+                var version = xliff2Node.Attribute("version")?.Value;
+                var xliff2Version = version?.ToXliff2Version() ?? 
+                                    throw new PluginMisconfigurationException($"XLIFF version {version} is not supported.");
+
+                transformation = Xliff2Serializer.Deserialize(xliff2Node);
+                xliffSerializer = t => Xliff2Serializer.Serialize(t, xliff2Version);
+            }
+            else if (Xliff1Serializer.IsXliff1(xliffStream, out var xliff1Node))
+            {
+                transformation = Xliff1Serializer.Deserialize(xliff1Node);
+                xliffSerializer = Xliff1Serializer.Serialize;
+            }
+            else
+                throw new PluginMisconfigurationException("The provided file is not a valid XLIFF file.");
+
+            return new(transformation, xliffSerializer);
+        }
+        
         private static string RemoveInvalidXmlChars(string text)
         {
             if (string.IsNullOrEmpty(text))
