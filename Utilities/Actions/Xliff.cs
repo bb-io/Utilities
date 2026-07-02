@@ -473,8 +473,6 @@ namespace Apps.Utilities.Actions
                 await using var fileStream = await fileManagementClient.DownloadAsync(request.File);
                 var transformation = fileStream.LoadTransformation(request.File.Name);
 
-                transformation.OriginalName = request.File.Name;
-                transformation.OriginalMediaType = "text/html";
                 transformation.SourceLanguage = string.IsNullOrWhiteSpace(request.SourceLanguage) ? "en" : request.SourceLanguage;
                 if (!string.IsNullOrWhiteSpace(request.TargetLanguage))
                     transformation.TargetLanguage = request.TargetLanguage;
