@@ -178,13 +178,6 @@ namespace Apps.Utilities.Actions
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToList();
 
-            if (rawStates.Count == 0)
-            {
-                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Initial));
-                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Translated));
-                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Reviewed));
-            }
-
             var selectedStates = rawStates
                 .Select(SegmentStateHelper.ToSegmentState)
                 .ToList();

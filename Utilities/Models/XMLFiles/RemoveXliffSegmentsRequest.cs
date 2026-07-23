@@ -10,7 +10,7 @@ public class RemoveXliffSegmentsRequest
     [Display("XLIFF file")]
     public FileReference File { get; set; } = new();
 
-    [Display("Segment states to keep", Description = "Keep segments with one of these states. Keeps all states except Final by default.")]
+    [Display("Segment states to keep", Description = "Keep segments with one of these states. No states are kept by default.")]
     [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]
     public IEnumerable<string>? SegmentStatesToKeep { get; set; }
 

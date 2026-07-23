@@ -55,7 +55,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Convert XLIFF to CSV** Convert XLIFF file to CSV file.
 - **Extract context notes from XLIFF** Get notes for each segment.
 - **Check character limits** Checks target text against XLIFF character limits using Unicode grapheme length.
-- **Remove segments from XLIFF** Remove segments unless their state, empty target, or quality score matches a keep rule. By default, Final segments and the file skeleton are removed; empty unit containers are also removed. The resulting XLIFF cannot be merged back into a target file.
+- **Remove segments from XLIFF** Remove segments unless their state, empty target, or quality score matches a keep rule. By default, all segments and the file skeleton are removed; empty unit containers are also removed. The resulting XLIFF cannot be merged back into a target file.
 - **Apply XLIFF target translations** Apply target translations from one XLIFF file to another by matching unit and segment IDs. Segments without IDs are matched by exact source content. The updated target file and warnings for skipped translations are provided as output.
     Advanced settings:
   - **Copy provenance metadata**: Copy unit-level translation and review provenance from matched units. Disabled by default.
