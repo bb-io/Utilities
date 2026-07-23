@@ -164,7 +164,7 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Remove segments from XLIFF", Description = "Removes XLIFF segments unless their state, empty target, or quality score matches a keep rule. The resulting XLIFF cannot be merged back into a target file.")]
+        [Action("Remove segments from XLIFF", Description = "Removes XLIFF segments unless their state, empty target, or quality score matches a keep rule, and optionally sets the state of remaining segments. The resulting XLIFF cannot be merged back into a target file.")]
         public async Task<RemoveXliffSegmentsResponse> RemoveXliffSegments([ActionParameter] RemoveXliffSegmentsRequest request)
         {
             if (request.QualityThresholdLimit is not null
@@ -184,6 +184,16 @@ namespace Apps.Utilities.Actions
 
             if (selectedStates.Any(x => x is null))
                 throw new PluginMisconfigurationException("One or more segment states are invalid.");
+
+            var stateForRemainingSegments = string.IsNullOrWhiteSpace(request.StateForRemainingSegments)
+                ? null
+                : SegmentStateHelper.ToSegmentState(request.StateForRemainingSegments);
+
+            if (!string.IsNullOrWhiteSpace(request.StateForRemainingSegments)
+                && stateForRemainingSegments is null)
+            {
+                throw new PluginMisconfigurationException("State for remaining segments is invalid.");
+            }
 
             var stateSet = selectedStates
                 .Select(x => x!.Value)
@@ -228,6 +238,9 @@ namespace Apps.Utilities.Actions
                             keptSegmentsWithEmptyTarget++;
                         if (isUnderQualityThreshold)
                             keptSegmentsUnderQualityThreshold++;
+
+                        if (stateForRemainingSegments.HasValue)
+                            segment.State = stateForRemainingSegments.Value;
 
                         continue;
                     }
