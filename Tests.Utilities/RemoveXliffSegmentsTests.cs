@@ -22,7 +22,7 @@ public class RemoveXliffSegmentsTests : TestBase
     }
 
     [TestMethod]
-    public async Task Default_RemovesFinalSegmentsAndEmptyUnitsButPreservesMetadata()
+    public async Task Default_RemovesAllSegmentsAndUnitsButPreservesMetadata()
     {
         const string fileName = "remove-segments-default-2.0.xlf";
 
@@ -36,11 +36,11 @@ public class RemoveXliffSegmentsTests : TestBase
         });
 
         Assert.AreEqual(5, result.TotalSegmentsBefore);
-        Assert.AreEqual(2, result.TotalSegmentsAfter);
-        Assert.AreEqual(2, result.KeptSegmentsByState);
+        Assert.AreEqual(0, result.TotalSegmentsAfter);
+        Assert.AreEqual(0, result.KeptSegmentsByState);
         Assert.AreEqual(0, result.KeptSegmentsWithEmptyTarget);
         Assert.AreEqual(0, result.KeptSegmentsUnderQualityThreshold);
-        Assert.AreEqual(3, result.RemovedSegmentsByState);
+        Assert.AreEqual(5, result.RemovedSegmentsByState);
         Assert.AreEqual(0, result.RemovedSegmentsWithEmptyTarget);
         Assert.AreEqual(0, result.RemovedSegmentsUnderQualityThreshold);
 
@@ -49,9 +49,7 @@ public class RemoveXliffSegmentsTests : TestBase
         Assert.IsFalse(output.Descendants(ns + "skeleton").Any());
         Assert.AreEqual("source.html", output.Descendants(ns + "file").Single().Attribute("original")?.Value);
         Assert.IsTrue(output.Descendants(ns + "note").Any(x => x.Value == "Keep this note"));
-        CollectionAssert.AreEquivalent(
-            new[] { "u-mixed", "u-translated" },
-            output.Descendants(ns + "unit").Select(x => x.Attribute("id")!.Value).ToArray());
+        Assert.IsFalse(output.Descendants(ns + "unit").Any());
     }
 
     [TestMethod]
@@ -177,7 +175,7 @@ public class RemoveXliffSegmentsTests : TestBase
     }
 
     [TestMethod]
-    public async Task Xliff12_RemovesNestedUnitAndSkeletonButKeepsHeaderMetadata()
+    public async Task Xliff12_DefaultRemovesAllUnitsAndSkeletonButKeepsHeaderMetadata()
     {
         const string fileName = "remove-segments-nested-1.2.xlf";
 
@@ -191,9 +189,9 @@ public class RemoveXliffSegmentsTests : TestBase
         });
 
         Assert.AreEqual(2, result.TotalSegmentsBefore);
-        Assert.AreEqual(1, result.TotalSegmentsAfter);
-        Assert.AreEqual(1, result.KeptSegmentsByState);
-        Assert.AreEqual(1, result.RemovedSegmentsByState);
+        Assert.AreEqual(0, result.TotalSegmentsAfter);
+        Assert.AreEqual(0, result.KeptSegmentsByState);
+        Assert.AreEqual(2, result.RemovedSegmentsByState);
 
         var output = await LoadOutput(result.File);
         XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
@@ -201,7 +199,7 @@ public class RemoveXliffSegmentsTests : TestBase
         Assert.IsFalse(output.Descendants(ns + "skl").Any());
         Assert.IsTrue(output.Descendants(ns + "phase-group").Any());
         Assert.IsTrue(output.Descendants(ns + "group").Any());
-        Assert.AreEqual("u-translated", output.Descendants(ns + "trans-unit").Single().Attribute("id")?.Value);
+        Assert.IsFalse(output.Descendants(ns + "trans-unit").Any());
     }
 
     [TestMethod]
