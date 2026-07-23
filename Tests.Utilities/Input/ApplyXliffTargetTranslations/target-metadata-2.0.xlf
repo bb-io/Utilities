@@ -1,0 +1,20 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0"
+       xmlns:its="http://www.w3.org/2005/11/its"
+       version="2.0" srcLang="en" trgLang="fr">
+  <file id="target-file">
+    <unit id="u1"
+          its:person="Target translator"
+          its:org="Target organization"
+          its:tool="Target tool"
+          its:revPerson="Target reviewer"
+          its:revOrg="Target review organization"
+          its:revTool="Target review tool"
+          its:locQualityRatingScore="25"
+          its:locQualityRatingScoreThreshold="50"
+          its:locQualityRatingVote="-1"
+          its:locQualityRatingVoteThreshold="1"
+          its:locQualityRatingProfileRef="urn:quality:target">
+      <segment id="s1"><source>Source</source><target>Old target</target></segment>
+    </unit>
+  </file>
+</xliff>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0"
+       xmlns:its="http://www.w3.org/2005/11/its"
+       version="2.0" srcLang="en" trgLang="fr">
+  <file id="target-file" original="target.html">
+    <skeleton>target skeleton</skeleton>
+    <notes><note id="file-note">Target file note</note></notes>
+    <unit id="u-main" its:person="Target translator" its:locQualityRatingScore="25">
+      <notes><note id="unit-note">Target unit note</note></notes>
+      <segment id="s-id" state="reviewed"><source>Hello</source><target>Old ID target</target></segment>
+      <segment state="translated"><source>Exact source</source><target>Old source target</target></segment>
+      <segment id="s-empty" state="final"><source>Empty donor target</source><target>Keep empty target</target></segment>
+      <segment><source>Case-sensitive source</source><target>Keep case-sensitive target</target></segment>
+      <segment id="s-unchanged" state="initial"><source>Unchanged</source><target>Keep unmatched target</target></segment>
+    </unit>
+  </file>
+</xliff>

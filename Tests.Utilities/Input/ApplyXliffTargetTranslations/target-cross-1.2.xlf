@@ -1,0 +1,17 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="target.txt" source-language="en" target-language="fr">
+    <header>
+      <skl><external-file href="target.txt.skl" /></skl>
+      <phase-group><phase phase-name="translation" process-name="translation" /></phase-group>
+    </header>
+    <body>
+      <group id="target-group">
+        <trans-unit id="u1">
+          <source>Cross-version source</source>
+          <target state="translated">Old target</target>
+          <note>Target note</note>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

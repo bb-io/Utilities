@@ -1,0 +1,16 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="target-file">
+    <unit id="u-main">
+      <segment id="s-shared"><source>Shared source</source><target>Keep shared</target></segment>
+      <segment id="s-duplicate"><source>Duplicate ID</source><target>Keep duplicate</target></segment>
+      <segment id="s-target-duplicate"><source>Target duplicate one</source><target>Keep target duplicate one</target></segment>
+      <segment id="s-target-duplicate"><source>Target duplicate two</source><target>Keep target duplicate two</target></segment>
+      <segment><source>Ambiguous source</source><target>Keep ambiguous one</target></segment>
+      <segment><source>Ambiguous source</source><target>Keep ambiguous two</target></segment>
+      <segment><source>Repeated donor source</source><target>Keep repeated</target></segment>
+    </unit>
+    <unit id="u-duplicate"><segment id="s1"><source>One</source><target>Keep one</target></segment></unit>
+    <unit id="u-duplicate"><segment id="s1"><source>Two</source><target>Keep two</target></segment></unit>
+    <unit id="u-donor-duplicate"><segment id="s1"><source>Three</source><target>Keep three</target></segment></unit>
+  </file>
+</xliff>

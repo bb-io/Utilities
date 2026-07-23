@@ -1,0 +1,7 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="target-file">
+    <unit id="u1">
+      <segment id="u1" state="reviewed"><source>Cross-version source</source><target>Old target</target></segment>
+    </unit>
+  </file>
+</xliff>

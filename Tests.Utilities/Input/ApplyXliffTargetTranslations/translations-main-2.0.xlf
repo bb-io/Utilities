@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0"
+       xmlns:its="http://www.w3.org/2005/11/its"
+       version="2.0" srcLang="en" trgLang="de">
+  <file id="translations-file" original="translations.html">
+    <unit id="u-main" its:person="Donor translator" its:locQualityRatingScore="95">
+      <segment id="s-id" state="final"><source>Different source ignored for ID match</source><target>New ID target</target></segment>
+      <segment><source>Exact source</source><target>New source target</target></segment>
+      <segment id="s-empty"><source>Empty donor target</source><target>   </target></segment>
+      <segment><source>case-sensitive source</source><target>Wrong-case update</target></segment>
+      <segment id="s-missing"><source>Missing</source><target>Unused translation</target></segment>
+    </unit>
+    <unit id="u-missing">
+      <segment id="s1"><source>Missing unit</source><target>Unused unit</target></segment>
+    </unit>
+  </file>
+</xliff>
