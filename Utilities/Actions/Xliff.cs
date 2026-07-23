@@ -844,6 +844,265 @@ namespace Apps.Utilities.Actions
             };
         }
 
+        [Action("Apply XLIFF target translations", Description = "Applies target translations from one XLIFF file to another by matching unit and segment IDs, or exact source content for segments without IDs. Optionally copies unit provenance and quality data.")]
+        public async Task<ApplyXliffTargetTranslationsResponse> ApplyXliffTargetTranslations(
+            [ActionParameter] ApplyXliffTargetTranslationsRequest request)
+        {
+            await using var targetStream = await fileManagementClient.DownloadAsync(request.TargetFile);
+            var (targetTransformation, targetSerializer) = await SerializeXliffVersion(targetStream);
+
+            await using var translationsStream = await fileManagementClient.DownloadAsync(request.TranslationsFile);
+            var (translationsTransformation, _) = await SerializeXliffVersion(translationsStream);
+
+            var warnings = new List<string>();
+            var targetUnits = targetTransformation.GetUnits().ToList();
+            var translationsUnits = translationsTransformation.GetUnits().ToList();
+
+            for (var index = 0; index < targetUnits.Count; index++)
+            {
+                if (string.IsNullOrWhiteSpace(targetUnits[index].Id))
+                    warnings.Add($"Target unit at position {index + 1} has no ID and was skipped.");
+            }
+
+            for (var index = 0; index < translationsUnits.Count; index++)
+            {
+                if (string.IsNullOrWhiteSpace(translationsUnits[index].Id))
+                    warnings.Add($"Translations unit at position {index + 1} has no ID and was skipped.");
+            }
+
+            var targetUnitsById = targetUnits
+                .Where(unit => !string.IsNullOrWhiteSpace(unit.Id))
+                .GroupBy(unit => unit.Id!, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
+            var translationsUnitsById = translationsUnits
+                .Where(unit => !string.IsNullOrWhiteSpace(unit.Id))
+                .GroupBy(unit => unit.Id!, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
+
+            var duplicateTargetUnitIds = targetUnitsById
+                .Where(entry => entry.Value.Count > 1)
+                .Select(entry => entry.Key)
+                .ToHashSet(StringComparer.Ordinal);
+            var duplicateTranslationsUnitIds = translationsUnitsById
+                .Where(entry => entry.Value.Count > 1)
+                .Select(entry => entry.Key)
+                .ToHashSet(StringComparer.Ordinal);
+
+            foreach (var duplicateId in duplicateTargetUnitIds.Order(StringComparer.Ordinal))
+            {
+                warnings.Add(
+                    $"Unit ID '{duplicateId}' is duplicated in the target file; all units with this ID were skipped.");
+            }
+
+            foreach (var duplicateId in duplicateTranslationsUnitIds.Order(StringComparer.Ordinal))
+            {
+                warnings.Add(
+                    $"Unit ID '{duplicateId}' is duplicated in the translations file; all units with this ID were skipped.");
+            }
+
+            foreach (var (unitId, translationsUnitGroup) in translationsUnitsById)
+            {
+                if (duplicateTranslationsUnitIds.Contains(unitId))
+                    continue;
+
+                if (!targetUnitsById.TryGetValue(unitId, out var targetUnitGroup))
+                {
+                    warnings.Add($"Translations unit ID '{unitId}' has no matching target unit and was skipped.");
+                    continue;
+                }
+
+                if (duplicateTargetUnitIds.Contains(unitId))
+                    continue;
+
+                var targetUnit = targetUnitGroup.Single();
+                var translationsUnit = translationsUnitGroup.Single();
+
+                if (request.CopyProvenanceMetadata == true)
+                {
+                    targetUnit.Provenance = new Blackbird.Filters.Shared.Provenance
+                    {
+                        Translation = translationsUnit.Provenance.Translation is null
+                            ? null!
+                            : new Blackbird.Filters.Shared.ProvenanceRecord
+                            {
+                                Person = translationsUnit.Provenance.Translation.Person,
+                                PersonReference = translationsUnit.Provenance.Translation.PersonReference,
+                                Organization = translationsUnit.Provenance.Translation.Organization,
+                                OrganizationReference = translationsUnit.Provenance.Translation.OrganizationReference,
+                                Tool = translationsUnit.Provenance.Translation.Tool,
+                                ToolReference = translationsUnit.Provenance.Translation.ToolReference,
+                            },
+                        Review = translationsUnit.Provenance.Review is null
+                            ? null!
+                            : new Blackbird.Filters.Shared.ProvenanceRecord
+                            {
+                                Person = translationsUnit.Provenance.Review.Person,
+                                PersonReference = translationsUnit.Provenance.Review.PersonReference,
+                                Organization = translationsUnit.Provenance.Review.Organization,
+                                OrganizationReference = translationsUnit.Provenance.Review.OrganizationReference,
+                                Tool = translationsUnit.Provenance.Review.Tool,
+                                ToolReference = translationsUnit.Provenance.Review.ToolReference,
+                            },
+                    };
+                }
+
+                if (request.CopyQualityData == true)
+                {
+                    targetUnit.Quality = new Blackbird.Filters.Shared.Quality
+                    {
+                        Score = translationsUnit.Quality.Score,
+                        ScoreThreshold = translationsUnit.Quality.ScoreThreshold,
+                        Votes = translationsUnit.Quality.Votes,
+                        VoteThreshold = translationsUnit.Quality.VoteThreshold,
+                        ProfileReference = translationsUnit.Quality.ProfileReference,
+                    };
+                }
+
+                var invalidTranslationsSegments = new HashSet<Segment>(ReferenceEqualityComparer.Instance);
+
+                foreach (var duplicateGroup in translationsUnit.Segments
+                             .Where(segment => !string.IsNullOrWhiteSpace(segment.Id))
+                             .GroupBy(segment => segment.Id!, StringComparer.Ordinal)
+                             .Where(group => group.Count() > 1))
+                {
+                    foreach (var segment in duplicateGroup)
+                        invalidTranslationsSegments.Add(segment);
+
+                    warnings.Add(
+                        $"Translations unit '{translationsUnit.Id}' contains duplicate segment ID '{duplicateGroup.Key}'; all matching segments were skipped.");
+                }
+
+                foreach (var duplicateGroup in translationsUnit.Segments
+                             .Where(segment => string.IsNullOrWhiteSpace(segment.Id))
+                             .GroupBy(segment => segment.GetSource(), StringComparer.Ordinal)
+                             .Where(group => group.Count() > 1))
+                {
+                    foreach (var segment in duplicateGroup)
+                        invalidTranslationsSegments.Add(segment);
+
+                    const int maximumSourceLength = 80;
+                    var normalizedSource = duplicateGroup.Key
+                        .Replace("\r", "\\r", StringComparison.Ordinal)
+                        .Replace("\n", "\\n", StringComparison.Ordinal);
+                    var shortenedSource = normalizedSource.Length <= maximumSourceLength
+                        ? normalizedSource
+                        : $"{normalizedSource[..maximumSourceLength]}…";
+
+                    warnings.Add(
+                        $"Translations unit '{translationsUnit.Id}' contains multiple segments without IDs using source '{shortenedSource}'; all matching segments were skipped.");
+                }
+
+                var proposedUpdates =
+                    new List<(Segment TranslationsSegment, Segment TargetSegment, string MatchKey)>();
+
+                foreach (var translationsSegment in translationsUnit.Segments)
+                {
+                    string matchKey;
+                    if (!string.IsNullOrWhiteSpace(translationsSegment.Id))
+                    {
+                        matchKey = $"segment ID '{translationsSegment.Id}'";
+                    }
+                    else
+                    {
+                        const int maximumSourceLength = 80;
+                        var normalizedSource = translationsSegment.GetSource()
+                            .Replace("\r", "\\r", StringComparison.Ordinal)
+                            .Replace("\n", "\\n", StringComparison.Ordinal);
+                        var shortenedSource = normalizedSource.Length <= maximumSourceLength
+                            ? normalizedSource
+                            : $"{normalizedSource[..maximumSourceLength]}…";
+                        matchKey = $"segment without ID using source '{shortenedSource}'";
+                    }
+
+                    if (translationsSegment.Target is null
+                        || string.IsNullOrWhiteSpace(translationsSegment.GetTarget()))
+                    {
+                        warnings.Add(
+                            $"Translations unit '{translationsUnit.Id}', {matchKey} has an empty target and was skipped.");
+                        continue;
+                    }
+
+                    if (invalidTranslationsSegments.Contains(translationsSegment))
+                        continue;
+
+                    List<Segment> matchingTargetSegments;
+                    if (!string.IsNullOrWhiteSpace(translationsSegment.Id))
+                    {
+                        matchingTargetSegments = targetUnit.Segments
+                            .Where(segment => string.Equals(
+                                segment.Id,
+                                translationsSegment.Id,
+                                StringComparison.Ordinal))
+                            .ToList();
+                    }
+                    else
+                    {
+                        var source = translationsSegment.GetSource();
+                        matchingTargetSegments = targetUnit.Segments
+                            .Where(segment => string.Equals(
+                                segment.GetSource(),
+                                source,
+                                StringComparison.Ordinal))
+                            .ToList();
+                    }
+
+                    if (matchingTargetSegments.Count == 0)
+                    {
+                        warnings.Add(
+                            $"Translations unit '{translationsUnit.Id}', {matchKey} has no matching target segment and was skipped.");
+                        continue;
+                    }
+
+                    if (matchingTargetSegments.Count > 1)
+                    {
+                        warnings.Add(
+                            $"Translations unit '{translationsUnit.Id}', {matchKey} matches multiple target segments and was skipped.");
+                        continue;
+                    }
+
+                    proposedUpdates.Add((translationsSegment, matchingTargetSegments.Single(), matchKey));
+                }
+
+                var collidedTargetSegments = new HashSet<Segment>(ReferenceEqualityComparer.Instance);
+                foreach (var collision in proposedUpdates
+                             .GroupBy(
+                                 update => update.TargetSegment,
+                                 (IEqualityComparer<Segment>)ReferenceEqualityComparer.Instance)
+                             .Where(group => group.Count() > 1))
+                {
+                    collidedTargetSegments.Add(collision.Key);
+                    warnings.Add(
+                        $"Translations unit '{translationsUnit.Id}' has multiple segments ({string.Join(", ", collision.Select(update => update.MatchKey))}) resolving to the same target segment; all were skipped.");
+                }
+
+                foreach (var update in proposedUpdates)
+                {
+                    if (collidedTargetSegments.Contains(update.TargetSegment))
+                        continue;
+
+                    update.TargetSegment.Target = update.TranslationsSegment.Target.ToList();
+                }
+            }
+
+            var processedXliff = targetSerializer(targetTransformation);
+            await using var processedXliffStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
+            var contentType = request.TargetFile.ContentType ?? "application/xliff+xml";
+            var outputFile = await fileManagementClient.UploadAsync(
+                processedXliffStream,
+                contentType,
+                request.TargetFile.Name);
+
+            if (string.IsNullOrWhiteSpace(outputFile.Name))
+                outputFile.Name = request.TargetFile.Name;
+            outputFile.ContentType ??= contentType;
+
+            return new ApplyXliffTargetTranslationsResponse
+            {
+                File = outputFile,
+                Warnings = warnings,
+            };
+        }
+
         [Action("Convert XLIFF to CSV", Description = "Convert XLIFF file to CSV file.")]
         public async Task<ConvertXliffToCsvResponse> ConvertXliffToCsv([ActionParameter] ConvertXliffToCsvRequest request)
         {

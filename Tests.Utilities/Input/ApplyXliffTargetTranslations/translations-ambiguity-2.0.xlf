@@ -1,0 +1,18 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="translations-file">
+    <unit id="u-main">
+      <segment id="s-shared"><source>ID source</source><target>ID update</target></segment>
+      <segment><source>Shared source</source><target>Fallback update</target></segment>
+      <segment id="s-duplicate"><source>Duplicate ID</source><target>Duplicate update one</target></segment>
+      <segment id="s-duplicate"><source>Duplicate ID</source><target>Duplicate update two</target></segment>
+      <segment id="s-target-duplicate"><source>Target duplicate</source><target>Target duplicate update</target></segment>
+      <segment><source>Ambiguous source</source><target>Ambiguous update</target></segment>
+      <segment><source>Repeated donor source</source><target>Repeated update one</target></segment>
+      <segment><source>Repeated donor source</source><target>Repeated update two</target></segment>
+      <segment id="s-missing"><source>Missing</source><target>Missing update</target></segment>
+    </unit>
+    <unit id="u-duplicate"><segment id="s1"><source>One</source><target>Unit update</target></segment></unit>
+    <unit id="u-donor-duplicate"><segment id="s1"><source>Three</source><target>Donor update one</target></segment></unit>
+    <unit id="u-donor-duplicate"><segment id="s1"><source>Three</source><target>Donor update two</target></segment></unit>
+  </file>
+</xliff>
