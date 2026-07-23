@@ -14,6 +14,10 @@ public class RemoveXliffSegmentsRequest
     [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]
     public IEnumerable<string>? SegmentStatesToKeep { get; set; }
 
+    [Display("State for remaining segments", Description = "Optionally set all segments remaining after removal to this state.")]
+    [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]
+    public string? StateForRemainingSegments { get; set; }
+
     [Display("Keep segments with empty targets", Description = "Keep segments whose target is empty or contains only whitespace.")]
     public bool? KeepSegmentsWithEmptyTargets { get; set; }
 

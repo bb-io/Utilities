@@ -175,6 +175,55 @@ public class RemoveXliffSegmentsTests : TestBase
     }
 
     [TestMethod]
+    public async Task StateForRemainingSegments_SetsStateAfterFiltering()
+    {
+        const string fileName = "remove-segments-filters-2.0.xlf";
+
+        var result = await Actions.RemoveXliffSegments(new RemoveXliffSegmentsRequest
+        {
+            File = new FileReference
+            {
+                Name = Path.Combine("RemoveXliffSegments", fileName),
+                ContentType = "application/xliff+xml",
+            },
+            SegmentStatesToKeep = ["final", "reviewed"],
+            StateForRemainingSegments = "translated",
+        });
+
+        Assert.AreEqual(2, result.TotalSegmentsAfter);
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.0";
+        Assert.IsTrue(output.Descendants(ns + "segment").All(
+            segment => segment.Attribute("state")?.Value == "translated"));
+    }
+
+    [TestMethod]
+    public async Task StateForRemainingSegments_SupportsXliff12()
+    {
+        const string fileName = "remove-segments-nested-1.2.xlf";
+
+        var result = await Actions.RemoveXliffSegments(new RemoveXliffSegmentsRequest
+        {
+            File = new FileReference
+            {
+                Name = Path.Combine("RemoveXliffSegments", fileName),
+                ContentType = "application/xliff+xml",
+            },
+            SegmentStatesToKeep = ["translated"],
+            StateForRemainingSegments = "final",
+        });
+
+        Assert.AreEqual(1, result.TotalSegmentsAfter);
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
+        Assert.AreEqual(
+            "final",
+            output.Descendants(ns + "target").Single().Attribute("state")?.Value);
+    }
+
+    [TestMethod]
     public async Task Xliff12_DefaultRemovesAllUnitsAndSkeletonButKeepsHeaderMetadata()
     {
         const string fileName = "remove-segments-nested-1.2.xlf";
