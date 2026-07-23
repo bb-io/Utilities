@@ -3,7 +3,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.Utilities.Models.XMLFiles;
 
-public class RemoveXliffUnitsResponse
+public class RemoveXliffSegmentsResponse
 {
     [Display("File with filtered segments")]
     public required FileReference File { get; set; }
@@ -14,10 +14,16 @@ public class RemoveXliffUnitsResponse
     [Display("Total segments after")]
     public int TotalSegmentsAfter { get; set; }
 
-    [Display("Units left")]
-    public int UnitsLeft { get; set; }
+    [Display("Kept segments matching state")]
+    public int KeptSegmentsByState { get; set; }
 
-    [Display("Removed segments by state")]
+    [Display("Kept segments with empty target")]
+    public int KeptSegmentsWithEmptyTarget { get; set; }
+
+    [Display("Kept segments under quality threshold")]
+    public int KeptSegmentsUnderQualityThreshold { get; set; }
+
+    [Display("Removed segments not matching state")]
     public int RemovedSegmentsByState { get; set; }
 
     [Display("Removed segments with empty target")]

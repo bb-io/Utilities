@@ -164,8 +164,8 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Remove units from XLIFF", Description = "Removes XLIFF units by segment state, empty targets, or quality threshold. The resulting XLIFF cannot be merged back into a target file.")]
-        public async Task<RemoveXliffUnitsResponse> RemoveXliffUnits([ActionParameter] RemoveXliffUnitsRequest request)
+        [Action("Remove segments from XLIFF", Description = "Removes XLIFF segments unless their state, empty target, or quality score matches a keep rule. The resulting XLIFF cannot be merged back into a target file.")]
+        public async Task<RemoveXliffSegmentsResponse> RemoveXliffSegments([ActionParameter] RemoveXliffSegmentsRequest request)
         {
             if (request.QualityThresholdLimit is not null
                 && (!double.IsFinite(request.QualityThresholdLimit.Value)
@@ -174,12 +174,16 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("Quality threshold limit must be between 0 and 100.");
             }
 
-            var rawStates = (request.SegmentStates ?? [])
+            var rawStates = (request.SegmentStatesToKeep ?? [])
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToList();
 
             if (rawStates.Count == 0)
-                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Final));
+            {
+                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Initial));
+                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Translated));
+                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Reviewed));
+            }
 
             var selectedStates = rawStates
                 .Select(SegmentStateHelper.ToSegmentState)
@@ -195,54 +199,66 @@ namespace Apps.Utilities.Actions
             await using var inputStream = await fileManagementClient.DownloadAsync(request.File);
             var (transformation, xliffSerializer) = await SerializeXliffVersion(inputStream);
             var units = transformation.GetUnits().ToList();
+            var totalSegmentsBefore = units.Sum(unit => unit.Segments.Count);
 
-            var unitsMatchingState = new HashSet<Unit>();
-            var unitsWithEmptyTargets = new HashSet<Unit>();
-            var unitsUnderQualityThreshold = new HashSet<Unit>();
-            var qualityFilterEnabled = request.RemoveUnitsUnderQualityThreshold == true
+            var keptSegmentsByState = 0;
+            var keptSegmentsWithEmptyTarget = 0;
+            var keptSegmentsUnderQualityThreshold = 0;
+            var removedSegmentsByState = 0;
+            var removedSegmentsWithEmptyTarget = 0;
+            var removedSegmentsUnderQualityThreshold = 0;
+            var emptyUnits = new HashSet<Unit>();
+            var qualityKeepEnabled = request.KeepSegmentsUnderQualityThreshold == true
                 || request.QualityThresholdLimit.HasValue;
 
             foreach (var unit in units)
             {
-                if (unit.Segments.Count > 0
-                    && unit.Segments.All(segment => stateSet.Contains(segment.State ?? SegmentState.Initial)))
+                var threshold = request.QualityThresholdLimit ?? unit.Quality.ScoreThreshold;
+                var isUnderQualityThreshold = unit.Quality.Score.HasValue
+                    && threshold.HasValue
+                    && unit.Quality.Score.Value < threshold.Value;
+
+                for (var index = unit.Segments.Count - 1; index >= 0; index--)
                 {
-                    unitsMatchingState.Add(unit);
+                    var segment = unit.Segments[index];
+                    var matchesState = stateSet.Contains(segment.State ?? SegmentState.Initial);
+                    var hasEmptyTarget = string.IsNullOrWhiteSpace(segment.GetTarget());
+                    var keepSegment = matchesState
+                        || (request.KeepSegmentsWithEmptyTargets == true && hasEmptyTarget)
+                        || (qualityKeepEnabled && isUnderQualityThreshold);
+
+                    if (keepSegment)
+                    {
+                        if (matchesState)
+                            keptSegmentsByState++;
+                        if (hasEmptyTarget)
+                            keptSegmentsWithEmptyTarget++;
+                        if (isUnderQualityThreshold)
+                            keptSegmentsUnderQualityThreshold++;
+
+                        continue;
+                    }
+
+                    if (!matchesState)
+                        removedSegmentsByState++;
+                    if (hasEmptyTarget)
+                        removedSegmentsWithEmptyTarget++;
+                    if (isUnderQualityThreshold)
+                        removedSegmentsUnderQualityThreshold++;
+
+                    unit.Segments.RemoveAt(index);
                 }
 
-                if (request.RemoveUnitsWithEmptyTargets == true
-                    && unit.Segments.Count > 0
-                    && unit.Segments.All(segment => string.IsNullOrWhiteSpace(segment.GetTarget())))
-                {
-                    unitsWithEmptyTargets.Add(unit);
-                }
-
-                if (qualityFilterEnabled
-                    && unit.Quality.Score.HasValue)
-                {
-                    var threshold = request.QualityThresholdLimit ?? unit.Quality.ScoreThreshold;
-                    if (threshold.HasValue && unit.Quality.Score.Value < threshold.Value)
-                        unitsUnderQualityThreshold.Add(unit);
-                }
+                if (unit.Segments.Count == 0)
+                    emptyUnits.Add(unit);
             }
 
-            var unitsToRemove = unitsMatchingState
-                .Concat(unitsWithEmptyTargets)
-                .Concat(unitsUnderQualityThreshold)
-                .ToHashSet();
-
-            var totalSegmentsBefore = units.Sum(unit => unit.Segments.Count);
-            var removedSegmentsByState = unitsMatchingState.Sum(unit => unit.Segments.Count);
-            var removedSegmentsWithEmptyTarget = unitsWithEmptyTargets.Sum(unit => unit.Segments.Count);
-            var removedSegmentsUnderQualityThreshold = unitsUnderQualityThreshold.Sum(unit => unit.Segments.Count);
-
-            RemoveUnits(transformation, unitsToRemove);
+            RemoveUnits(transformation, emptyUnits);
 
             if (request.StripSkeleton != false)
                 RemoveSkeleton(transformation);
 
-            var remainingUnits = transformation.GetUnits().ToList();
-            var totalSegmentsAfter = remainingUnits.Sum(unit => unit.Segments.Count);
+            var totalSegmentsAfter = transformation.GetUnits().Sum(unit => unit.Segments.Count);
             var processedXliff = xliffSerializer(transformation);
             await using var outputStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
             var outputFile = await fileManagementClient.UploadAsync(
@@ -250,12 +266,14 @@ namespace Apps.Utilities.Actions
                 request.File.ContentType ?? "application/xliff+xml",
                 request.File.Name);
 
-            return new RemoveXliffUnitsResponse
+            return new RemoveXliffSegmentsResponse
             {
                 File = outputFile,
                 TotalSegmentsBefore = totalSegmentsBefore,
                 TotalSegmentsAfter = totalSegmentsAfter,
-                UnitsLeft = remainingUnits.Count,
+                KeptSegmentsByState = keptSegmentsByState,
+                KeptSegmentsWithEmptyTarget = keptSegmentsWithEmptyTarget,
+                KeptSegmentsUnderQualityThreshold = keptSegmentsUnderQualityThreshold,
                 RemovedSegmentsByState = removedSegmentsByState,
                 RemovedSegmentsWithEmptyTarget = removedSegmentsWithEmptyTarget,
                 RemovedSegmentsUnderQualityThreshold = removedSegmentsUnderQualityThreshold,
