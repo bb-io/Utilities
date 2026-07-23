@@ -241,7 +241,8 @@ namespace Apps.Utilities.Actions
             if (request.StripSkeleton != false)
                 RemoveSkeleton(transformation);
 
-            var totalSegmentsAfter = transformation.GetUnits().Sum(unit => unit.Segments.Count);
+            var remainingUnits = transformation.GetUnits().ToList();
+            var totalSegmentsAfter = remainingUnits.Sum(unit => unit.Segments.Count);
             var processedXliff = xliffSerializer(transformation);
             await using var outputStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
             var outputFile = await fileManagementClient.UploadAsync(
@@ -254,6 +255,7 @@ namespace Apps.Utilities.Actions
                 File = outputFile,
                 TotalSegmentsBefore = totalSegmentsBefore,
                 TotalSegmentsAfter = totalSegmentsAfter,
+                UnitsLeft = remainingUnits.Count,
                 RemovedSegmentsByState = removedSegmentsByState,
                 RemovedSegmentsWithEmptyTarget = removedSegmentsWithEmptyTarget,
                 RemovedSegmentsUnderQualityThreshold = removedSegmentsUnderQualityThreshold,

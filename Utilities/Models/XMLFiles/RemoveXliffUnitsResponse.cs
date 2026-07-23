@@ -14,6 +14,9 @@ public class RemoveXliffUnitsResponse
     [Display("Total segments after")]
     public int TotalSegmentsAfter { get; set; }
 
+    [Display("Units left")]
+    public int UnitsLeft { get; set; }
+
     [Display("Removed segments by state")]
     public int RemovedSegmentsByState { get; set; }
 

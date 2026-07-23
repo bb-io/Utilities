@@ -37,6 +37,7 @@ public class RemoveXliffUnitsTests : TestBase
 
         Assert.AreEqual(5, result.TotalSegmentsBefore);
         Assert.AreEqual(3, result.TotalSegmentsAfter);
+        Assert.AreEqual(2, result.UnitsLeft);
         Assert.AreEqual(2, result.RemovedSegmentsByState);
         Assert.AreEqual(0, result.RemovedSegmentsWithEmptyTarget);
         Assert.AreEqual(0, result.RemovedSegmentsUnderQualityThreshold);
@@ -71,6 +72,7 @@ public class RemoveXliffUnitsTests : TestBase
 
         Assert.AreEqual(6, result.TotalSegmentsBefore);
         Assert.AreEqual(3, result.TotalSegmentsAfter);
+        Assert.AreEqual(2, result.UnitsLeft);
         Assert.AreEqual(2, result.RemovedSegmentsByState);
         Assert.AreEqual(3, result.RemovedSegmentsWithEmptyTarget);
         Assert.AreEqual(2, result.RemovedSegmentsUnderQualityThreshold);
@@ -100,6 +102,7 @@ public class RemoveXliffUnitsTests : TestBase
 
         Assert.AreEqual(3, result.TotalSegmentsBefore);
         Assert.AreEqual(2, result.TotalSegmentsAfter);
+        Assert.AreEqual(2, result.UnitsLeft);
         Assert.AreEqual(1, result.RemovedSegmentsUnderQualityThreshold);
 
         var output = await LoadOutput(result.File);
@@ -125,6 +128,7 @@ public class RemoveXliffUnitsTests : TestBase
 
         Assert.AreEqual(2, result.TotalSegmentsBefore);
         Assert.AreEqual(1, result.TotalSegmentsAfter);
+        Assert.AreEqual(1, result.UnitsLeft);
 
         var output = await LoadOutput(result.File);
         XNamespace ns = "urn:oasis:names:tc:xliff:document:1.2";
