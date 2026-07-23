@@ -55,6 +55,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Convert XLIFF to CSV** Convert XLIFF file to CSV file.
 - **Extract context notes from XLIFF** Get notes for each segment.
 - **Check character limits** Checks target text against XLIFF character limits using Unicode grapheme length.
+- **Remove units from XLIFF** Remove units by segment state, empty targets, or quality threshold. By default, units whose segments are all final and the file skeleton are removed. The resulting XLIFF cannot be merged back into a target file.
 
 ### XML files
 

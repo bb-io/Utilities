@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0"
+       xmlns:its="http://www.w3.org/2005/11/its"
+       version="2.0" srcLang="en" trgLang="fr">
+  <file id="f1">
+    <skeleton href="source.html" />
+    <unit id="u-overlap" its:locQualityRatingScore="40" its:locQualityRatingScoreThreshold="50">
+      <segment id="s1" state="final"><source>One</source><target /></segment>
+      <segment id="s2" state="reviewed"><source>Two</source><target>   </target></segment>
+    </unit>
+    <unit id="u-partly-empty">
+      <segment id="s3" state="translated"><source>Three</source><target /></segment>
+      <segment id="s4" state="translated"><source>Four</source><target>Quatre</target></segment>
+    </unit>
+    <unit id="u-empty">
+      <segment id="s5" state="translated"><source>Five</source><target /></segment>
+    </unit>
+    <unit id="u-equal" its:locQualityRatingScore="50" its:locQualityRatingScoreThreshold="50">
+      <segment id="s6" state="translated"><source>Six</source><target>Six</target></segment>
+    </unit>
+  </file>
+</xliff>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="source.txt" source-language="en" target-language="fr">
+    <header>
+      <skl><external-file href="source.txt.skl" /></skl>
+      <phase-group><phase phase-name="translation" process-name="translation" /></phase-group>
+    </header>
+    <body>
+      <group id="g1">
+        <trans-unit id="u-final">
+          <source>One</source><target state="final">Un</target>
+        </trans-unit>
+        <trans-unit id="u-translated">
+          <source>Two</source><target state="translated">Deux</target>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>
