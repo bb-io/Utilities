@@ -164,6 +164,102 @@ namespace Apps.Utilities.Actions
             };
         }
 
+        [Action("Remove units from XLIFF", Description = "Removes XLIFF units by segment state, empty targets, or quality threshold. The resulting XLIFF cannot be merged back into a target file.")]
+        public async Task<RemoveXliffUnitsResponse> RemoveXliffUnits([ActionParameter] RemoveXliffUnitsRequest request)
+        {
+            if (request.QualityThresholdLimit is not null
+                && (!double.IsFinite(request.QualityThresholdLimit.Value)
+                    || request.QualityThresholdLimit is < 0 or > 100))
+            {
+                throw new PluginMisconfigurationException("Quality threshold limit must be between 0 and 100.");
+            }
+
+            var rawStates = (request.SegmentStates ?? [])
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            if (rawStates.Count == 0)
+                rawStates.Add(SegmentStateHelper.Serialize(SegmentState.Final));
+
+            var selectedStates = rawStates
+                .Select(SegmentStateHelper.ToSegmentState)
+                .ToList();
+
+            if (selectedStates.Any(x => x is null))
+                throw new PluginMisconfigurationException("One or more segment states are invalid.");
+
+            var stateSet = selectedStates
+                .Select(x => x!.Value)
+                .ToHashSet();
+
+            await using var inputStream = await fileManagementClient.DownloadAsync(request.File);
+            var (transformation, xliffSerializer) = await SerializeXliffVersion(inputStream);
+            var units = transformation.GetUnits().ToList();
+
+            var unitsMatchingState = new HashSet<Unit>();
+            var unitsWithEmptyTargets = new HashSet<Unit>();
+            var unitsUnderQualityThreshold = new HashSet<Unit>();
+            var qualityFilterEnabled = request.RemoveUnitsUnderQualityThreshold == true
+                || request.QualityThresholdLimit.HasValue;
+
+            foreach (var unit in units)
+            {
+                if (unit.Segments.Count > 0
+                    && unit.Segments.All(segment => stateSet.Contains(segment.State ?? SegmentState.Initial)))
+                {
+                    unitsMatchingState.Add(unit);
+                }
+
+                if (request.RemoveUnitsWithEmptyTargets == true
+                    && unit.Segments.Count > 0
+                    && unit.Segments.All(segment => string.IsNullOrWhiteSpace(segment.GetTarget())))
+                {
+                    unitsWithEmptyTargets.Add(unit);
+                }
+
+                if (qualityFilterEnabled
+                    && unit.Quality.Score.HasValue)
+                {
+                    var threshold = request.QualityThresholdLimit ?? unit.Quality.ScoreThreshold;
+                    if (threshold.HasValue && unit.Quality.Score.Value < threshold.Value)
+                        unitsUnderQualityThreshold.Add(unit);
+                }
+            }
+
+            var unitsToRemove = unitsMatchingState
+                .Concat(unitsWithEmptyTargets)
+                .Concat(unitsUnderQualityThreshold)
+                .ToHashSet();
+
+            var totalSegmentsBefore = units.Sum(unit => unit.Segments.Count);
+            var removedSegmentsByState = unitsMatchingState.Sum(unit => unit.Segments.Count);
+            var removedSegmentsWithEmptyTarget = unitsWithEmptyTargets.Sum(unit => unit.Segments.Count);
+            var removedSegmentsUnderQualityThreshold = unitsUnderQualityThreshold.Sum(unit => unit.Segments.Count);
+
+            RemoveUnits(transformation, unitsToRemove);
+
+            if (request.StripSkeleton != false)
+                RemoveSkeleton(transformation);
+
+            var totalSegmentsAfter = transformation.GetUnits().Sum(unit => unit.Segments.Count);
+            var processedXliff = xliffSerializer(transformation);
+            await using var outputStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
+            var outputFile = await fileManagementClient.UploadAsync(
+                outputStream,
+                request.File.ContentType ?? "application/xliff+xml",
+                request.File.Name);
+
+            return new RemoveXliffUnitsResponse
+            {
+                File = outputFile,
+                TotalSegmentsBefore = totalSegmentsBefore,
+                TotalSegmentsAfter = totalSegmentsAfter,
+                RemovedSegmentsByState = removedSegmentsByState,
+                RemovedSegmentsWithEmptyTarget = removedSegmentsWithEmptyTarget,
+                RemovedSegmentsUnderQualityThreshold = removedSegmentsUnderQualityThreshold,
+            };
+        }
+
         [Action("Add context notes to XLIFF", Description = "Adds notes with optional context to units containing segments not in 'final' state.")]
         public async Task<FileDto> AddNoteToXliff([ActionParameter] AddNoteToXliffRequest request)
         {
@@ -817,6 +913,50 @@ namespace Apps.Utilities.Actions
                 return $"\"{field.Replace("\"", "\"\"")}\"";
 
             return field;
+        }
+
+        private static void RemoveUnits(Transformation transformation, ISet<Unit> unitsToRemove)
+        {
+            for (var index = transformation.Children.Count - 1; index >= 0; index--)
+            {
+                switch (transformation.Children[index])
+                {
+                    case Unit unit when unitsToRemove.Contains(unit):
+                        transformation.Children.RemoveAt(index);
+                        break;
+                    case Blackbird.Filters.Transformations.Group group:
+                        RemoveUnits(group, unitsToRemove);
+                        break;
+                    case Transformation childTransformation:
+                        RemoveUnits(childTransformation, unitsToRemove);
+                        break;
+                }
+            }
+        }
+
+        private static void RemoveUnits(Blackbird.Filters.Transformations.Group group, ISet<Unit> unitsToRemove)
+        {
+            for (var index = group.Children.Count - 1; index >= 0; index--)
+            {
+                switch (group.Children[index])
+                {
+                    case Unit unit when unitsToRemove.Contains(unit):
+                        group.Children.RemoveAt(index);
+                        break;
+                    case Blackbird.Filters.Transformations.Group childGroup:
+                        RemoveUnits(childGroup, unitsToRemove);
+                        break;
+                }
+            }
+        }
+
+        private static void RemoveSkeleton(Transformation transformation)
+        {
+            transformation.Original = null;
+            transformation.OriginalReference = null;
+
+            foreach (var childTransformation in transformation.Children.OfType<Transformation>())
+                RemoveSkeleton(childTransformation);
         }
 
         private static async Task<VersionSerializationResult> SerializeXliffVersion(Stream fileStream)
