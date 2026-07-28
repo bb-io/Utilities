@@ -1,0 +1,12 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: utilities regex test\n"
+"Language: nl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Hello world 123"
+msgstr "Hallo wereld 123"
+
+msgid "Save 456"
+msgstr "Opslaan 456"

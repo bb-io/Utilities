@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="f1" original="source.html">
+    <unit id="u1">
+      <segment id="s1" state="translated">
+        <source>Hello <ph id="ph1" equiv="&lt;br/&gt;"/> world 123</source>
+        <target>Bonjour <ph id="ph1" equiv="&lt;br/&gt;"/> monde 123</target>
+      </segment>
+    </unit>
+    <unit id="u2">
+      <segment id="s2" state="reviewed">
+        <source>Other 456</source>
+        <target>Bonjour autre 456</target>
+      </segment>
+    </unit>
+    <unit id="u3">
+      <segment id="s3" state="translated">
+        <source>Ignored 789</source>
+        <target>Ignore this 789</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

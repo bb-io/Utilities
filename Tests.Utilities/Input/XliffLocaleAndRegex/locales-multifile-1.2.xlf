@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file id="first" source-language="en" target-language="fr" datatype="plaintext" original="first.txt">
+    <body>
+      <trans-unit id="u1">
+        <source>Hello</source>
+        <target>Bonjour</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file id="second" source-language="de" target-language="it" datatype="plaintext" original="second.txt">
+    <body>
+      <trans-unit id="u2">
+        <source>Hallo</source>
+        <target>Ciao</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
