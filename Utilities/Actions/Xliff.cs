@@ -1,4 +1,5 @@
-﻿using Apps.Utilities.Models.Files;
+﻿using Apps.Utilities.DataSourceHandlers;
+using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
@@ -25,6 +26,347 @@ namespace Apps.Utilities.Actions
     [ActionList("XLIFF")]
     public class Xliff(IFileManagementClient fileManagementClient)
     {
+        [Action("Set XLIFF locales", Description = "Set source or target locales and return an XLIFF file with details of the locale changes.")]
+        public async Task<SetXliffLocalesResponse> SetXliffLocales(
+            [ActionParameter] SetXliffLocalesRequest request)
+        {
+            if (request.File is null)
+                throw new PluginMisconfigurationException("File is required. Please provide a supported file.");
+
+            await using var inputStream = await fileManagementClient.DownloadAsync(request.File);
+            await using var bufferedStream = new MemoryStream();
+            await inputStream.CopyToAsync(bufferedStream);
+            bufferedStream.Position = 0;
+
+            var isXliff1 = false;
+            Xliff2Version? xliff2Version = null;
+
+            if (Xliff2Serializer.IsXliff2(bufferedStream, out var xliff2Node))
+            {
+                var version = xliff2Node.Attribute("version")?.Value;
+                xliff2Version = version?.ToXliff2Version()
+                    ?? throw new PluginMisconfigurationException(
+                        $"XLIFF version '{version}' is not supported. Please provide XLIFF 1.2, 2.0, 2.1, or 2.2.");
+            }
+            else
+            {
+                bufferedStream.Position = 0;
+                isXliff1 = Xliff1Serializer.IsXliff1(bufferedStream, out _);
+            }
+
+            bufferedStream.Position = 0;
+            var loadResult = Transformation.Load(
+                bufferedStream,
+                request.File.Name,
+                request.File.ContentType);
+
+            if (!loadResult.Success)
+            {
+                throw new PluginMisconfigurationException(
+                    $"The file could not be parsed. Please provide a file type supported by Blackbird Filters. Details: {loadResult.Error}");
+            }
+
+            var transformation = loadResult.Value;
+            var sourceLocaleChangedFrom = transformation.SourceLanguage;
+            var targetLocaleChangedFrom = transformation.TargetLanguage;
+            var hasNewSourceLocale = !string.IsNullOrWhiteSpace(request.NewSourceLocale);
+            var hasNewTargetLocale = !string.IsNullOrWhiteSpace(request.NewTargetLocale);
+
+            if (hasNewSourceLocale)
+                transformation.SourceLanguage = request.NewSourceLocale;
+            else if (!isXliff1 && xliff2Version is null && string.IsNullOrWhiteSpace(transformation.SourceLanguage))
+                transformation.SourceLanguage = "en";
+
+            if (hasNewTargetLocale)
+                transformation.TargetLanguage = request.NewTargetLocale;
+
+            var nestedTransformations = new Stack<Transformation>(
+                transformation.Children.OfType<Transformation>());
+
+            while (nestedTransformations.TryPop(out var nestedTransformation))
+            {
+                if (hasNewSourceLocale)
+                    nestedTransformation.SourceLanguage = request.NewSourceLocale;
+                if (hasNewTargetLocale)
+                    nestedTransformation.TargetLanguage = request.NewTargetLocale;
+
+                foreach (var child in nestedTransformation.Children.OfType<Transformation>())
+                    nestedTransformations.Push(child);
+            }
+
+            var serializedXliff = isXliff1
+                ? Xliff1Serializer.Serialize(transformation)
+                : Xliff2Serializer.Serialize(
+                    transformation,
+                    xliff2Version ?? Xliff2Version.Xliff22);
+
+            var inputExtension = Path.GetExtension(request.File.Name);
+            var outputName = isXliff1
+                || xliff2Version.HasValue
+                || inputExtension.Equals(".xlf", StringComparison.OrdinalIgnoreCase)
+                || inputExtension.Equals(".xliff", StringComparison.OrdinalIgnoreCase)
+                    ? request.File.Name
+                    : $"{request.File.Name}.xlf";
+            const string outputContentType = "application/xliff+xml";
+            await using var outputStream = new MemoryStream(Encoding.UTF8.GetBytes(serializedXliff));
+            var outputFile = await fileManagementClient.UploadAsync(
+                outputStream,
+                outputContentType,
+                outputName);
+
+            if (string.IsNullOrWhiteSpace(outputFile.Name))
+                outputFile.Name = outputName;
+            outputFile.ContentType ??= outputContentType;
+
+            return new SetXliffLocalesResponse
+            {
+                File = outputFile,
+                SourceLocaleChangedFrom = sourceLocaleChangedFrom,
+                SourceLocaleChangedTo = transformation.SourceLanguage,
+                TargetLocaleChangedFrom = targetLocaleChangedFrom,
+                TargetLocaleChangedTo = transformation.TargetLanguage,
+            };
+        }
+
+        [Action("Replace in targets via regex", Description = "Replace visible target text using a regular expression, with optional target text and segment state filters.")]
+        public async Task<ReplaceInTargetsViaRegexResponse> ReplaceInTargetsViaRegex(
+            [ActionParameter] ReplaceInTargetsViaRegexRequest request)
+        {
+            if (request.File is null)
+                throw new PluginMisconfigurationException("File is required. Please provide a supported file.");
+            if (string.IsNullOrWhiteSpace(request.RegexPattern))
+                throw new PluginMisconfigurationException("Regex pattern is required. Please provide a regular expression.");
+
+            Regex replacementRegex;
+            Regex? targetMatchRegex = null;
+
+            try
+            {
+                replacementRegex = new Regex(request.RegexPattern);
+                if (!string.IsNullOrWhiteSpace(request.TargetMatchPattern))
+                    targetMatchRegex = new Regex(request.TargetMatchPattern);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new PluginMisconfigurationException(
+                    $"A regular expression pattern is invalid. Please correct the pattern. Details: {ex.Message}",
+                    ex);
+            }
+
+            var rawStates = (request.SegmentStates ?? [])
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+            var selectedStates = rawStates
+                .Select(SegmentStateHelper.ToSegmentState)
+                .ToList();
+
+            if (selectedStates.Any(x => x is null))
+            {
+                throw new PluginMisconfigurationException(
+                    "One or more segment states are invalid. Please select supported segment states.");
+            }
+
+            var stateFilter = selectedStates
+                .Select(x => x!.Value)
+                .ToHashSet();
+            var outputFormat = string.IsNullOrWhiteSpace(request.OutputFileFormat)
+                ? XliffOutputFormatDataSourceHandler.Original
+                : request.OutputFileFormat.Trim().ToLowerInvariant();
+
+            if (outputFormat is not (
+                    XliffOutputFormatDataSourceHandler.Original
+                    or XliffOutputFormatDataSourceHandler.Xliff12
+                    or XliffOutputFormatDataSourceHandler.Xliff22))
+            {
+                throw new PluginMisconfigurationException(
+                    "Output file format is invalid. Please select original file, XLIFF 1.2, or XLIFF 2.2.");
+            }
+
+            await using var inputStream = await fileManagementClient.DownloadAsync(request.File);
+            await using var bufferedStream = new MemoryStream();
+            await inputStream.CopyToAsync(bufferedStream);
+            bufferedStream.Position = 0;
+
+            var isXliff1 = false;
+            Xliff2Version? xliff2Version = null;
+
+            if (Xliff2Serializer.IsXliff2(bufferedStream, out var xliff2Node))
+            {
+                var version = xliff2Node.Attribute("version")?.Value;
+                xliff2Version = version?.ToXliff2Version()
+                    ?? throw new PluginMisconfigurationException(
+                        $"XLIFF version '{version}' is not supported. Please provide XLIFF 1.2, 2.0, 2.1, or 2.2.");
+            }
+            else
+            {
+                bufferedStream.Position = 0;
+                isXliff1 = Xliff1Serializer.IsXliff1(bufferedStream, out _);
+            }
+
+            bufferedStream.Position = 0;
+            var loadResult = Transformation.Load(
+                bufferedStream,
+                request.File.Name,
+                request.File.ContentType);
+
+            if (!loadResult.Success)
+            {
+                throw new PluginMisconfigurationException(
+                    $"The file could not be parsed. Please provide a file type supported by Blackbird Filters. Details: {loadResult.Error}");
+            }
+
+            var transformation = loadResult.Value;
+            var units = transformation.GetUnits().ToList();
+
+            if (!loadResult.WasBilingual)
+            {
+                foreach (var segment in units.SelectMany(unit => unit.Segments))
+                    segment.SetTarget(segment.GetSource());
+            }
+
+            foreach (var segment in units.SelectMany(unit => unit.Segments))
+            {
+                var effectiveState = segment.State ?? SegmentState.Initial;
+                if (stateFilter.Count > 0 && !stateFilter.Contains(effectiveState))
+                    continue;
+                if (segment.Target.Count == 0)
+                    continue;
+
+                var visibleTarget = string.Concat(
+                    segment.Target
+                        .Where(part => part is not InlineTag)
+                        .Select(part => part.Value));
+
+                if (targetMatchRegex is not null && !targetMatchRegex.IsMatch(visibleTarget))
+                    continue;
+
+                foreach (var part in segment.Target.Where(part => part is not InlineTag))
+                {
+                    try
+                    {
+                        part.Value = replacementRegex.Replace(
+                            part.Value,
+                            request.Replacement ?? string.Empty);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        throw new PluginMisconfigurationException(
+                            $"Replacement is invalid. Please correct the replacement text. Details: {ex.Message}",
+                            ex);
+                    }
+                }
+            }
+
+            Stream outputStream;
+            string outputContentType;
+            string outputName;
+
+            if (outputFormat == XliffOutputFormatDataSourceHandler.Original
+                && !isXliff1
+                && xliff2Version is null)
+            {
+                var targetResult = transformation.Target();
+                if (!targetResult.Success)
+                {
+                    throw new PluginMisconfigurationException(
+                        $"The updated file could not be rebuilt in its original format. Please use an XLIFF output format instead. Details: {targetResult.Error}");
+                }
+
+                // We need this part because ToStream() currently selects wrong coder for text/plain.
+                // Flow:
+                // Both PoCoder and PlaintextCoder support text/plain.
+                // [CoderFactory.cs (line 42)](/home/terales/coding/bb-filters/Blackbird.Filters/Coders/CoderFactory.cs:42) selects first match.
+                // PoCoder appears first.
+                // For non-PO text, PoCoder.Serialize() returns content.Original.
+                // Regex-modified TextUnits get ignored. Output silently remains unchanged.
+                // Quoted block rebuilds plaintext from modified target units and preserves original newline style. Test failed without it and passed after addition.
+                // Best long-term fix: correct coder selection inside Blackbird.Filters. After Utilities references fixed Filters version, block can become:
+                // outputStream = targetResult.Value.ToStream();
+                // Until then, removing block breaks native .txt output.
+                if (targetResult.Value.OriginalMediaType == "text/plain")
+                {
+                    var originalText = transformation.Original ?? string.Empty;
+                    var newLine = originalText switch
+                    {
+                        _ when originalText.Contains("\r\n", StringComparison.Ordinal) => "\r\n",
+                        _ when originalText.Contains('\n') => "\n",
+                        _ when originalText.Contains('\r') => "\r",
+                        _ => Environment.NewLine
+                    };
+                    var targetText = string.Join(
+                        newLine,
+                        targetResult.Value.TextUnits.Select(unit => unit.GetCodedText()));
+                    outputStream = new MemoryStream(Encoding.UTF8.GetBytes(targetText));
+                }
+                else
+                {
+                    outputStream = targetResult.Value.ToStream();
+                }
+
+                outputContentType = string.IsNullOrWhiteSpace(request.File.ContentType)
+                    ? targetResult.Value.OriginalMediaType
+                    : request.File.ContentType;
+                outputName = request.File.Name;
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(transformation.SourceLanguage))
+                    transformation.SourceLanguage = "en";
+
+                var nestedTransformations = new Stack<Transformation>(
+                    transformation.Children.OfType<Transformation>());
+
+                while (nestedTransformations.TryPop(out var nestedTransformation))
+                {
+                    if (string.IsNullOrWhiteSpace(nestedTransformation.SourceLanguage))
+                        nestedTransformation.SourceLanguage = transformation.SourceLanguage;
+
+                    foreach (var child in nestedTransformation.Children.OfType<Transformation>())
+                        nestedTransformations.Push(child);
+                }
+
+                var serializedXliff = outputFormat switch
+                {
+                    XliffOutputFormatDataSourceHandler.Xliff12 =>
+                        Xliff1Serializer.Serialize(transformation),
+                    XliffOutputFormatDataSourceHandler.Xliff22 =>
+                        Xliff2Serializer.Serialize(transformation, Xliff2Version.Xliff22),
+                    _ when isXliff1 =>
+                        Xliff1Serializer.Serialize(transformation),
+                    _ =>
+                        Xliff2Serializer.Serialize(
+                            transformation,
+                            xliff2Version ?? Xliff2Version.Xliff22),
+                };
+
+                outputStream = new MemoryStream(Encoding.UTF8.GetBytes(serializedXliff));
+                outputContentType = "application/xliff+xml";
+                var inputExtension = Path.GetExtension(request.File.Name);
+                outputName = outputFormat == XliffOutputFormatDataSourceHandler.Original
+                    || inputExtension.Equals(".xlf", StringComparison.OrdinalIgnoreCase)
+                    || inputExtension.Equals(".xliff", StringComparison.OrdinalIgnoreCase)
+                        ? request.File.Name
+                        : $"{request.File.Name}.xlf";
+            }
+
+            await using (outputStream)
+            {
+                var outputFile = await fileManagementClient.UploadAsync(
+                    outputStream,
+                    outputContentType,
+                    outputName);
+
+                if (string.IsNullOrWhiteSpace(outputFile.Name))
+                    outputFile.Name = outputName;
+                outputFile.ContentType ??= outputContentType;
+
+                return new ReplaceInTargetsViaRegexResponse
+                {
+                    File = outputFile,
+                };
+            }
+        }
+
         [Action("Replace XLIFF source with target", Description = "Swap <source> and <target> contents, exchange language attributes, and optionally remove target elements or set a new target language.")]
         public async Task<ConvertTextToDocumentResponse> ReplaceXliffSourceWithTarget([ActionParameter] ReplaceXliffRequest request)
         {
