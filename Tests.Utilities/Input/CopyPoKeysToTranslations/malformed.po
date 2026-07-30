@@ -1,0 +1,5 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: malformed-test\n"
+
+msgid "Missing target"
