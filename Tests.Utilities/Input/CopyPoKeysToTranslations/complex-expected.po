@@ -1,0 +1,30 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: byte-preservation-test\n"
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Translator comment remains unchanged
+#. Extracted comment remains unchanged
+#: src/dialog.cs:42
+#, fuzzy, c-format
+msgid "Hello, %s!"
+msgstr "Hello, %s!"
+
+#| msgid "Previous source"
+#| msgstr "Previous translation"
+msgctxt "confirmation-dialog"
+msgid ""
+"Delete \""
+"selected\" item?\n"
+"This cannot be undone."
+msgstr ""
+"Delete \""
+"selected\" item?\n"
+"This cannot be undone."
+
+msgid "Path: C:\\Temp"
+msgstr "Path: C:\\Temp"
+
+#~ msgid "Obsolete source"
+#~ msgstr "Obsolete translation"
