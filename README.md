@@ -101,6 +101,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 
 ### Texts
 
+- **Remove HTML tags** Converts HTML text or an HTML document to plain text while preserving readable spacing and line breaks.
 - **Count characters in text** returns number of chracters in text.
 - **Count words in text** returns number of words in text.
 - **Sanitize text** removes any defined characters from a text.

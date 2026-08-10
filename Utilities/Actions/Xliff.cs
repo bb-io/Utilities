@@ -560,9 +560,15 @@ namespace Apps.Utilities.Actions
                 || keepEmptyTargetsEnabled
                 || qualityKeepEnabled
                 || request.ChangedAfter.HasValue;
-            var changedAfter = request.ChangedAfter.HasValue
-                ? new DateTimeOffset(request.ChangedAfter.Value)
-                : (DateTimeOffset?)null;
+            DateTimeOffset? changedAfter = null;
+            if (request.ChangedAfter.HasValue)
+            {
+                var changedAfterValue = request.ChangedAfter.Value;
+                if (changedAfterValue.Kind == DateTimeKind.Unspecified)
+                    changedAfterValue = DateTime.SpecifyKind(changedAfterValue, DateTimeKind.Utc);
+
+                changedAfter = new DateTimeOffset(changedAfterValue).ToUniversalTime();
+            }
 
             foreach (var unit in units)
             {
