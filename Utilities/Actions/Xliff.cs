@@ -506,7 +506,7 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Remove segments from XLIFF", Description = "Removes XLIFF segments unless their state, empty target, or quality score matches a keep rule, and optionally sets the state of remaining segments. The resulting XLIFF cannot be merged back into a target file.")]
+        [Action("Remove segments from XLIFF", Description = "Removes XLIFF segments unless they match all enabled state, empty target, quality score, and changed-date filters, and optionally sets the state of remaining segments. The resulting XLIFF cannot be merged back into a target file.")]
         public async Task<RemoveXliffSegmentsResponse> RemoveXliffSegments([ActionParameter] RemoveXliffSegmentsRequest request)
         {
             if (request.QualityThresholdLimit is not null
@@ -555,6 +555,14 @@ namespace Apps.Utilities.Actions
             var emptyUnits = new HashSet<Unit>();
             var qualityKeepEnabled = request.KeepSegmentsUnderQualityThreshold == true
                 || request.QualityThresholdLimit.HasValue;
+            var keepEmptyTargetsEnabled = request.KeepSegmentsWithEmptyTargets == true;
+            var hasKeepFilter = stateSet.Count > 0
+                || keepEmptyTargetsEnabled
+                || qualityKeepEnabled
+                || request.ChangedAfter.HasValue;
+            var changedAfter = request.ChangedAfter.HasValue
+                ? new DateTimeOffset(request.ChangedAfter.Value)
+                : (DateTimeOffset?)null;
 
             foreach (var unit in units)
             {
@@ -562,15 +570,20 @@ namespace Apps.Utilities.Actions
                 var isUnderQualityThreshold = unit.Quality.Score.HasValue
                     && threshold.HasValue
                     && unit.Quality.Score.Value < threshold.Value;
+                var changedAfterCutoff = unit.DateChanged.HasValue
+                    && changedAfter.HasValue
+                    && unit.DateChanged.Value > changedAfter.Value;
 
                 for (var index = unit.Segments.Count - 1; index >= 0; index--)
                 {
                     var segment = unit.Segments[index];
                     var matchesState = stateSet.Contains(segment.State ?? SegmentState.Initial);
                     var hasEmptyTarget = string.IsNullOrWhiteSpace(segment.GetTarget());
-                    var keepSegment = matchesState
-                        || (request.KeepSegmentsWithEmptyTargets == true && hasEmptyTarget)
-                        || (qualityKeepEnabled && isUnderQualityThreshold);
+                    var keepSegment = hasKeepFilter
+                        && (stateSet.Count == 0 || matchesState)
+                        && (!keepEmptyTargetsEnabled || hasEmptyTarget)
+                        && (!qualityKeepEnabled || isUnderQualityThreshold)
+                        && (!changedAfter.HasValue || changedAfterCutoff);
 
                     if (keepSegment)
                     {

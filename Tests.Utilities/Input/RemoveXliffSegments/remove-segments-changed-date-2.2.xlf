@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.2"
+       xmlns:mda="urn:oasis:names:tc:xliff:metadata:2.0"
+       version="2.2" srcLang="en" trgLang="fr">
+  <file id="f1">
+    <unit id="u-before">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="changed-date">2024-01-01T00:00:00.0000000+00:00</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="final"><source>Before</source><target>Avant</target></segment>
+    </unit>
+    <unit id="u-equal">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="changed-date">2024-06-01T00:00:00.0000000+00:00</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="final"><source>Equal</source><target>Égal</target></segment>
+    </unit>
+    <unit id="u-after">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="changed-date">2025-01-01T00:00:00.0000000+00:00</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="final"><source>After</source><target>Après</target></segment>
+    </unit>
+    <unit id="u-after-wrong-state">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="changed-date">2025-02-01T00:00:00.0000000+00:00</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated"><source>After, translated</source><target>Après, traduit</target></segment>
+    </unit>
+    <unit id="u-no-date">
+      <segment state="final"><source>No date</source><target>Sans date</target></segment>
+    </unit>
+  </file>
+</xliff>
