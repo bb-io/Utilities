@@ -5,15 +5,101 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using BleuNet;
+using HtmlAgilityPack;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Apps.Utilities.Actions;
 
 [ActionList("Texts")]
-public class Texts(InvocationContext context) : BaseInvocable(context)
+public class Texts(InvocationContext context, IFileManagementClient fileManagementClient) : BaseInvocable(context)
 {
+    [Action("Remove HTML tags", Description = "Converts HTML text or an HTML document to plain text while preserving readable spacing and line breaks.")]
+    public async Task<string> RemoveHtmlTags([ActionParameter] RemoveHtmlTagsRequest input)
+    {
+        if (input is null)
+            throw new PluginMisconfigurationException("Input is required.");
+
+        var hasHtml = !string.IsNullOrWhiteSpace(input.Html);
+        var hasFile = input.File is not null;
+
+        if (hasHtml == hasFile)
+            throw new PluginMisconfigurationException("Provide either HTML text or an HTML file, but not both.");
+
+        var html = input.Html;
+        if (hasFile)
+        {
+            await using var stream = await fileManagementClient.DownloadAsync(input.File!);
+            using var reader = new StreamReader(stream, Encoding.UTF8, true);
+            html = await reader.ReadToEndAsync();
+        }
+
+        var document = new HtmlDocument();
+        document.LoadHtml(html!);
+
+        var content = document.DocumentNode.SelectSingleNode("//body") ?? document.DocumentNode;
+        var ignoredNodes = content.SelectNodes(".//head|.//script|.//style|.//template|.//noscript");
+        if (ignoredNodes is not null)
+        {
+            foreach (var node in ignoredNodes)
+                node.Remove();
+        }
+
+        const string lineMarker = "\uE000";
+        const string blockMarker = "\uE001";
+        var textNodes = content.DescendantsAndSelf()
+            .OfType<HtmlTextNode>()
+            .ToList();
+
+        foreach (var textNode in textNodes)
+        {
+            var nodeText = textNode.Text ?? string.Empty;
+            textNode.Text = string.IsNullOrWhiteSpace(nodeText)
+                ? " "
+                : Regex.Replace(nodeText, @"\r\n?|\n", lineMarker);
+        }
+
+        var blockElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "address", "article", "aside", "blockquote", "body", "details", "dialog", "div", "dl", "dt", "dd",
+            "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header",
+            "html", "legend", "li", "main", "nav", "ol", "p", "pre", "section", "summary", "table", "tbody",
+            "thead", "tfoot", "tr", "ul"
+        };
+
+        var elements = content.DescendantsAndSelf()
+            .Where(node => node.NodeType == HtmlNodeType.Element)
+            .ToList();
+
+        foreach (var element in elements)
+        {
+            if (element.ParentNode is null)
+                continue;
+
+            if (element.Name.Equals("br", StringComparison.OrdinalIgnoreCase) ||
+                element.Name.Equals("hr", StringComparison.OrdinalIgnoreCase))
+            {
+                element.ParentNode.ReplaceChild(document.CreateTextNode(lineMarker), element);
+                continue;
+            }
+
+            var separator = blockElements.Contains(element.Name) ? blockMarker : " ";
+            element.ParentNode.InsertBefore(document.CreateTextNode(separator), element);
+            element.ParentNode.InsertAfter(document.CreateTextNode(separator), element);
+        }
+
+        var text = HtmlEntity.DeEntitize(content.InnerText) ?? string.Empty;
+        text = Regex.Replace(text, @"\s+", " ");
+        text = Regex.Replace(text, $@" *{lineMarker} *", "\n");
+        text = Regex.Replace(text, $@" *{blockMarker} *", "\n\n");
+        text = Regex.Replace(text, @" *\n *", "\n");
+        text = Regex.Replace(text, @"\n{3,}", "\n\n");
+
+        return text.Trim(' ', '\n');
+    }
+
     [Action("Calculate BLEU score",Description = "Evaluation of the quality of text which has been machine-translated from one natural language to another")]
     public BleuScore CalculateBleuScore(
         [ActionParameter][Display("Reference text", Description = "Reference text (human translation)")] string referenceText, 

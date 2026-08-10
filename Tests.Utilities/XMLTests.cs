@@ -317,7 +317,7 @@ public class XMLTests : TestBase
     [TestMethod]
     public async Task Concat_Strings()
     {
-        var actions = new Texts(InvocationContext);
+        var actions = new Texts(InvocationContext, FileManager);
         var input = new ConcatenateStringsInput { Strings = new List<string>{ "Apple", "Banana", "Cherry" }, Delimiter="," };
         var result = actions.ConcatenateStrings(input);
 
