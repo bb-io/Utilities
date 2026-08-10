@@ -21,7 +21,70 @@ public class TextTests : TestBase
         
         Directory.CreateDirectory(outputDirectory);
 
-        _textActions = new Texts(InvocationContext);
+        _textActions = new Texts(InvocationContext, FileManager);
+    }
+
+    [TestMethod]
+    public async Task RemoveHtmlTags_PreservesBlockAndInlineSpacing()
+    {
+        var input = new RemoveHtmlTagsRequest
+        {
+            Html = """
+                <html><head><style>ignored</style></head><body>
+                <p><span>Hi <strong>Alex</strong>,</span></p>
+                <p>&nbsp;</p>
+                <p>System has <em>already</em> confirmed.
+                Still same paragraph.<br>Next line.</p>
+                <div>Final <span>paragraph</span>.</div>
+                <script>ignored()</script>
+                </body></html>
+                """
+        };
+
+        var result = await _textActions.RemoveHtmlTags(input);
+
+        Assert.AreEqual("Hi Alex,\n\nSystem has already confirmed.\nStill same paragraph.\nNext line.\n\nFinal paragraph.", result);
+        Assert.IsFalse(result.Contains("\n\n\n"));
+        Assert.IsFalse(result.Contains("  "));
+        Assert.IsFalse(result.Contains("ignored"));
+    }
+
+    [TestMethod]
+    public async Task RemoveHtmlTags_KeepsAdjacentInlineTextContiguous()
+    {
+        var result = await _textActions.RemoveHtmlTags(new RemoveHtmlTagsRequest
+        {
+            Html = "<p><span>Hello</span><strong>world</strong><em>!</em></p>",
+        });
+
+        Assert.AreEqual("Helloworld!", result);
+    }
+
+    [TestMethod]
+    public async Task RemoveHtmlTags_ReadsHtmlFile()
+    {
+        var result = await _textActions.RemoveHtmlTags(new RemoveHtmlTagsRequest
+        {
+            File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "test.html" }
+        });
+
+        StringAssert.StartsWith(result, "Blackbird is an integration platform-as-a-service (iPaaS) solution.");
+        Assert.IsFalse(result.Contains('<'));
+        Assert.IsFalse(result.Contains("\n\n\n"));
+    }
+
+    [TestMethod]
+    public async Task RemoveHtmlTags_RequiresExactlyOneInput()
+    {
+        await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
+            () => _textActions.RemoveHtmlTags(new RemoveHtmlTagsRequest()));
+
+        await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+            _textActions.RemoveHtmlTags(new RemoveHtmlTagsRequest
+            {
+                Html = "<p>Text</p>",
+                File = new Blackbird.Applications.Sdk.Common.Files.FileReference { Name = "test.html" }
+            }));
     }
 
     [TestMethod]

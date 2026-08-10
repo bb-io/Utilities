@@ -53,7 +53,7 @@ public class RemoveXliffSegmentsTests : TestBase
     }
 
     [TestMethod]
-    public async Task EnabledKeepRules_UseOrLogicAndCountOverlappingResults()
+    public async Task EnabledKeepRules_UseAndLogicAndCountMatchingAttributes()
     {
         const string fileName = "remove-segments-filters-2.0.xlf";
 
@@ -71,22 +71,22 @@ public class RemoveXliffSegmentsTests : TestBase
         });
 
         Assert.AreEqual(6, result.TotalSegmentsBefore);
-        Assert.AreEqual(4, result.TotalSegmentsAfter);
+        Assert.AreEqual(2, result.TotalSegmentsAfter);
         Assert.AreEqual(2, result.KeptSegmentsByState);
-        Assert.AreEqual(4, result.KeptSegmentsWithEmptyTarget);
+        Assert.AreEqual(2, result.KeptSegmentsWithEmptyTarget);
         Assert.AreEqual(2, result.KeptSegmentsUnderQualityThreshold);
-        Assert.AreEqual(2, result.RemovedSegmentsByState);
-        Assert.AreEqual(0, result.RemovedSegmentsWithEmptyTarget);
+        Assert.AreEqual(4, result.RemovedSegmentsByState);
+        Assert.AreEqual(2, result.RemovedSegmentsWithEmptyTarget);
         Assert.AreEqual(0, result.RemovedSegmentsUnderQualityThreshold);
 
         var output = await LoadOutput(result.File);
         XNamespace ns = "urn:oasis:names:tc:xliff:document:2.0";
         Assert.IsTrue(output.Descendants(ns + "skeleton").Any());
         CollectionAssert.AreEquivalent(
-            new[] { "u-overlap", "u-partly-empty", "u-empty" },
+            new[] { "u-overlap" },
             output.Descendants(ns + "unit").Select(x => x.Attribute("id")!.Value).ToArray());
         CollectionAssert.AreEquivalent(
-            new[] { "s1", "s2", "s3", "s5" },
+            new[] { "s1", "s2" },
             output.Descendants(ns + "segment").Select(x => x.Attribute("id")!.Value).ToArray());
     }
 
@@ -127,7 +127,6 @@ public class RemoveXliffSegmentsTests : TestBase
                 Name = Path.Combine("RemoveXliffSegments", fileName),
                 ContentType = "application/xliff+xml",
             },
-            SegmentStatesToKeep = ["final"],
             KeepSegmentsUnderQualityThreshold = true,
         });
 
@@ -156,7 +155,6 @@ public class RemoveXliffSegmentsTests : TestBase
                 Name = Path.Combine("RemoveXliffSegments", fileName),
                 ContentType = "application/xliff+xml",
             },
-            SegmentStatesToKeep = ["final"],
             QualityThresholdLimit = 60,
         });
 
@@ -221,6 +219,90 @@ public class RemoveXliffSegmentsTests : TestBase
         Assert.AreEqual(
             "final",
             output.Descendants(ns + "target").Single().Attribute("state")?.Value);
+    }
+
+    [TestMethod]
+    public async Task ChangedAfter_KeepsOnlySegmentsWithLaterUnitDate()
+    {
+        const string fileName = "remove-segments-changed-date-2.2.xlf";
+
+        var result = await Actions.RemoveXliffSegments(new RemoveXliffSegmentsRequest
+        {
+            File = new FileReference
+            {
+                Name = Path.Combine("RemoveXliffSegments", fileName),
+                ContentType = "application/xliff+xml",
+            },
+            ChangedAfter = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+        });
+
+        Assert.AreEqual(5, result.TotalSegmentsBefore);
+        Assert.AreEqual(2, result.TotalSegmentsAfter);
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
+        CollectionAssert.AreEquivalent(
+            new[] { "u-after", "u-after-wrong-state" },
+            output.Descendants(ns + "unit").Select(x => x.Attribute("id")!.Value).ToArray());
+    }
+
+    [TestMethod]
+    public async Task ChangedAfter_CombinesWithStateUsingAndLogic()
+    {
+        const string fileName = "remove-segments-changed-date-2.2.xlf";
+
+        var result = await Actions.RemoveXliffSegments(new RemoveXliffSegmentsRequest
+        {
+            File = new FileReference
+            {
+                Name = Path.Combine("RemoveXliffSegments", fileName),
+                ContentType = "application/xliff+xml",
+            },
+            SegmentStatesToKeep = ["final"],
+            ChangedAfter = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+        });
+
+        Assert.AreEqual(1, result.TotalSegmentsAfter);
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
+        Assert.AreEqual("u-after", output.Descendants(ns + "unit").Single().Attribute("id")?.Value);
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public async Task ChangedAfter_TreatsUnspecifiedInputAsUtcInNonUtcTimezone()
+    {
+        const string fileName = "remove-segments-changed-date-2.2.xlf";
+        var originalTimezone = Environment.GetEnvironmentVariable("TZ");
+
+        try
+        {
+            Environment.SetEnvironmentVariable("TZ", "America/St_Johns");
+            TimeZoneInfo.ClearCachedData();
+
+            var result = await Actions.RemoveXliffSegments(new RemoveXliffSegmentsRequest
+            {
+                File = new FileReference
+                {
+                    Name = Path.Combine("RemoveXliffSegments", fileName),
+                    ContentType = "application/xliff+xml",
+                },
+                SegmentStatesToKeep = ["final"],
+                ChangedAfter = new DateTime(2024, 12, 31, 23, 0, 0, DateTimeKind.Unspecified),
+            });
+
+            Assert.AreEqual(1, result.TotalSegmentsAfter);
+
+            var output = await LoadOutput(result.File);
+            XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
+            Assert.AreEqual("u-after", output.Descendants(ns + "unit").Single().Attribute("id")?.Value);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("TZ", originalTimezone);
+            TimeZoneInfo.ClearCachedData();
+        }
     }
 
     [TestMethod]
