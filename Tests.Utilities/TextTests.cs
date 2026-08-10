@@ -43,10 +43,21 @@ public class TextTests : TestBase
 
         var result = await _textActions.RemoveHtmlTags(input);
 
-        Assert.AreEqual("Hi Alex ,\n\nSystem has already confirmed.\nStill same paragraph.\nNext line.\n\nFinal paragraph .", result);
+        Assert.AreEqual("Hi Alex,\n\nSystem has already confirmed.\nStill same paragraph.\nNext line.\n\nFinal paragraph.", result);
         Assert.IsFalse(result.Contains("\n\n\n"));
         Assert.IsFalse(result.Contains("  "));
         Assert.IsFalse(result.Contains("ignored"));
+    }
+
+    [TestMethod]
+    public async Task RemoveHtmlTags_KeepsAdjacentInlineTextContiguous()
+    {
+        var result = await _textActions.RemoveHtmlTags(new RemoveHtmlTagsRequest
+        {
+            Html = "<p><span>Hello</span><strong>world</strong><em>!</em></p>",
+        });
+
+        Assert.AreEqual("Helloworld!", result);
     }
 
     [TestMethod]
