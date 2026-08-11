@@ -46,6 +46,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 
 ### XLIFF files
 
+- **Get locales** Gets the source and target locales from an XLIFF file.
 - **Replace XLIFF source with target** Swap `source` and `target` contents, exchange language attributes, and optionally remove target elements or set a new target language.
 - **Convert HTML to XLIFF** Convert HTML file to XLIFF 1.2 format
 - **Convert XLIFF to HTML** Convert XLIFF file (version 1.2) to HTML file

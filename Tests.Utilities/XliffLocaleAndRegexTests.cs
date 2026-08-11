@@ -25,6 +25,23 @@ public class XliffLocaleAndRegexTests : TestBase
         Directory.CreateDirectory(outputDirectory);
     }
 
+    [DataTestMethod]
+    [DataRow("locales-multifile-1.2.xlf", "en", "fr")]
+    [DataRow("locales-2.1.xlf", "en", "fr")]
+    public async Task GetLocales_ReturnsSourceAndTargetLocales(
+        string fileName,
+        string expectedSourceLocale,
+        string expectedTargetLocale)
+    {
+        var result = await Actions.GetLocales(new GetXliffLocalesRequest
+        {
+            File = CreateFileReference(fileName),
+        });
+
+        Assert.AreEqual(expectedSourceLocale, result.SourceLocale);
+        Assert.AreEqual(expectedTargetLocale, result.TargetLocale);
+    }
+
     [TestMethod]
     public async Task SetLocales_PreservesXliff12AndUpdatesEveryFile()
     {
