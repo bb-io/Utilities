@@ -27,7 +27,7 @@ public class RemoveXliffSegmentsRequest
     [Display("Overwrite quality threshold limit", Description = "Optional score from 0 to 100. When supplied, this limit overrides thresholds stored in the XLIFF and enables keeping segments under the threshold.")]
     public double? QualityThresholdLimit { get; set; }
 
-    [Display("Changed after", Description = "Keep segments whose unit changed date is later than this date and time. Values without timezone information are treated as UTC.")]
+    [Display("Changed after", Description = "Keep segments whose unit changed date is later than this date and time. Units without a changed date are also kept. Values without timezone information are treated as UTC.")]
     public DateTime? ChangedAfter { get; set; }
 
     [Display("Strip skeleton", Description = "Remove the XLIFF skeleton content or reference. Defaults to true.")]
