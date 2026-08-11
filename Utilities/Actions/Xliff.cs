@@ -576,9 +576,8 @@ namespace Apps.Utilities.Actions
                 var isUnderQualityThreshold = unit.Quality.Score.HasValue
                     && threshold.HasValue
                     && unit.Quality.Score.Value < threshold.Value;
-                var changedAfterCutoff = unit.DateChanged.HasValue
-                    && changedAfter.HasValue
-                    && unit.DateChanged.Value > changedAfter.Value;
+                var changedAfterCutoff = !unit.DateChanged.HasValue
+                    || (changedAfter.HasValue && unit.DateChanged.Value > changedAfter.Value);
 
                 for (var index = unit.Segments.Count - 1; index >= 0; index--)
                 {

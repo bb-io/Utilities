@@ -3,7 +3,8 @@ using Apps.Utilities.DataSourceHandlers;
 using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
-using Blackbird.Filters.Bilingual.Po;
+using Blackbird.Filters.Coders;
+using System.Text;
 using System.Xml.Linq;
 using Tests.Utilities.Base;
 
@@ -196,7 +197,10 @@ public class XliffLocaleAndRegexTests : TestBase
         Assert.AreEqual("text/x-gettext-translation", result.File.ContentType);
 
         await using var stream = await FileManager.DownloadAsync(result.File);
-        Assert.IsTrue(PoSerializer.IsPo(stream, out var output));
+        using var reader = new StreamReader(stream);
+        var output = await reader.ReadToEndAsync();
+        using var validationStream = new MemoryStream(Encoding.UTF8.GetBytes(output));
+        Assert.IsNotNull(new PoCoder().TryLoad(validationStream, "text/x-gettext-translation"));
         StringAssert.Contains(output, "msgid \"Hello world 123\"");
         StringAssert.Contains(output, "msgstr \"Hallo wereld [number]\"");
         StringAssert.Contains(output, "msgstr \"Opslaan 456\"");

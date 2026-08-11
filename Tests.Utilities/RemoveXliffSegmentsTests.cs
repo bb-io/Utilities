@@ -222,7 +222,7 @@ public class RemoveXliffSegmentsTests : TestBase
     }
 
     [TestMethod]
-    public async Task ChangedAfter_KeepsOnlySegmentsWithLaterUnitDate()
+    public async Task ChangedAfter_KeepsLaterAndUndatedUnits()
     {
         const string fileName = "remove-segments-changed-date-2.2.xlf";
 
@@ -237,12 +237,12 @@ public class RemoveXliffSegmentsTests : TestBase
         });
 
         Assert.AreEqual(5, result.TotalSegmentsBefore);
-        Assert.AreEqual(2, result.TotalSegmentsAfter);
+        Assert.AreEqual(3, result.TotalSegmentsAfter);
 
         var output = await LoadOutput(result.File);
         XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
         CollectionAssert.AreEquivalent(
-            new[] { "u-after", "u-after-wrong-state" },
+            new[] { "u-after", "u-after-wrong-state", "u-no-date" },
             output.Descendants(ns + "unit").Select(x => x.Attribute("id")!.Value).ToArray());
     }
 
@@ -262,11 +262,13 @@ public class RemoveXliffSegmentsTests : TestBase
             ChangedAfter = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc),
         });
 
-        Assert.AreEqual(1, result.TotalSegmentsAfter);
+        Assert.AreEqual(2, result.TotalSegmentsAfter);
 
         var output = await LoadOutput(result.File);
         XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
-        Assert.AreEqual("u-after", output.Descendants(ns + "unit").Single().Attribute("id")?.Value);
+        CollectionAssert.AreEquivalent(
+            new[] { "u-after", "u-no-date" },
+            output.Descendants(ns + "unit").Select(x => x.Attribute("id")!.Value).ToArray());
     }
 
     [TestMethod]
@@ -292,11 +294,13 @@ public class RemoveXliffSegmentsTests : TestBase
                 ChangedAfter = new DateTime(2024, 12, 31, 23, 0, 0, DateTimeKind.Unspecified),
             });
 
-            Assert.AreEqual(1, result.TotalSegmentsAfter);
+            Assert.AreEqual(2, result.TotalSegmentsAfter);
 
             var output = await LoadOutput(result.File);
             XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
-            Assert.AreEqual("u-after", output.Descendants(ns + "unit").Single().Attribute("id")?.Value);
+            CollectionAssert.AreEquivalent(
+                new[] { "u-after", "u-no-date" },
+                output.Descendants(ns + "unit").Select(x => x.Attribute("id")!.Value).ToArray());
         }
         finally
         {
