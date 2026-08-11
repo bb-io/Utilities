@@ -26,6 +26,32 @@ namespace Apps.Utilities.Actions
     [ActionList("XLIFF")]
     public class Xliff(IFileManagementClient fileManagementClient)
     {
+        [Action("Get locales", Description = "Gets the source and target locales from an XLIFF file.")]
+        public async Task<GetXliffLocalesResponse> GetLocales(
+            [ActionParameter] GetXliffLocalesRequest request)
+        {
+            if (request.File is null)
+                throw new PluginMisconfigurationException("File is required. Please provide an XLIFF file.");
+
+            await using var inputStream = await fileManagementClient.DownloadAsync(request.File);
+            var loadResult = Transformation.Load(
+                inputStream,
+                request.File.Name,
+                request.File.ContentType);
+
+            if (!loadResult.Success)
+            {
+                throw new PluginMisconfigurationException(
+                    $"The XLIFF file could not be parsed. Please provide a valid XLIFF file. Details: {loadResult.Error}");
+            }
+
+            return new GetXliffLocalesResponse
+            {
+                SourceLocale = loadResult.Value.SourceLanguage,
+                TargetLocale = loadResult.Value.TargetLanguage,
+            };
+        }
+
         [Action("Set XLIFF locales", Description = "Set source or target locales and return an XLIFF file with details of the locale changes.")]
         public async Task<SetXliffLocalesResponse> SetXliffLocales(
             [ActionParameter] SetXliffLocalesRequest request)
