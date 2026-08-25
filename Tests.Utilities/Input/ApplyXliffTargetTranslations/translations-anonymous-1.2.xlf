@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns:mda="urn:oasis:names:tc:xliff:metadata:2.0" xmlns:its="http://www.w3.org/2005/11/its" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" id="f1" target-language="fr">
+    <header>
+      <metadata xmlns="http://blackbird.io/">
+        <meta type="original-name" original-name="en.po" p7:category="blackbird" xmlns:p7="http://blackbird.io/"/>
+        <meta type="original-media-type" original-name="text/x-gettext-translation" p7:category="blackbird" xmlns:p7="http://blackbird.io/"/>
+        <meta type="changed-date" original-name="2026-08-25T19:07:12.0000000+00:00" p7:category="blackbird" xmlns:p7="http://blackbird.io/"/>
+        <meta type="leverageId" original-name="50071ddd-11f2-4b8a-ad59-fa22966621cc" p7:category="Blacklake" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Project-Id-Version" original-name="" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Report-Msgid-Bugs-To" original-name="" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="POT-Creation-Date" original-name="2026-07-14 15:35-0500" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="PO-Revision-Date" original-name="2023-01-15 22:24+0000" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Last-Translator" original-name="Sample Translator &amp;lt;translator@example.com>" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Language-Team" original-name="English &amp;lt;https://translate.example.com/projects/sample/sample-project/en/>" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Language" original-name="en" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="MIME-Version" original-name="1.0" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Content-Type" original-name="text/plain; charset=UTF-8" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Content-Transfer-Encoding" original-name="8bit" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="Plural-Forms" original-name="nplurals=2; plural=n != 1;" p7:category="" xmlns:p7="http://blackbird.io/"/>
+        <meta type="X-Generator" original-name="Translation Platform 1.0" p7:category="" xmlns:p7="http://blackbird.io/"/>
+      </metadata>
+    </header>
+    <body>
+      <trans-unit id="u1" resname="New string to test if French can be committed back to Git">
+        <source>New string to test if French can be committed back to Git</source>
+        <target>Nouvelle chaîne pour tester si le français peut être réintégré dans Git</target>
+      </trans-unit>
+      <trans-unit id="u2" resname="New string for low string count">
+        <source>New string for low string count</source>
+        <target>Nouvelle chaîne pour un faible nombre de chaînes</target>
+      </trans-unit>
+      <trans-unit id="u3" resname="First String">
+        <source>First String</source>
+        <target>Première chaîne</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

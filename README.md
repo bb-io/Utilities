@@ -57,7 +57,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Extract context notes from XLIFF** Get notes for each segment.
 - **Check character limits** Checks target text against XLIFF character limits using Unicode grapheme length.
 - **Remove segments from XLIFF** Remove segments unless they match all enabled state, empty-target, quality-score, and changed-after filters. By default, all segments and the file skeleton are removed; empty unit containers are also removed. The resulting XLIFF cannot be merged back into a target file.
-- **Apply XLIFF target translations** Apply target translations from one XLIFF file to another by matching unit and segment IDs. Segments without IDs are matched by exact source content. The updated target file and warnings for skipped translations are provided as output.
+- **Apply XLIFF target translations** Apply target translations from one XLIFF file to another by matching unit and segment IDs. Segments without IDs are matched by exact source content. When a translation segment ID has no match, anonymous target segments can also match by exact source content. The updated target file and warnings for skipped translations are provided as output.
     Advanced settings:
   - **Copy provenance metadata**: Copy unit-level translation and review provenance from matched units. Disabled by default.
   - **Copy quality data**: Copy unit-level quality ratings from matched units. Disabled by default.

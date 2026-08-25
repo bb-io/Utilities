@@ -10,6 +10,7 @@
       <segment><source>Repeated donor source</source><target>Repeated update one</target></segment>
       <segment><source>Repeated donor source</source><target>Repeated update two</target></segment>
       <segment id="s-missing"><source>Missing</source><target>Missing update</target></segment>
+      <segment id="donor-explicit"><source>Explicit ID mismatch</source><target>Explicit mismatch update</target></segment>
     </unit>
     <unit id="u-duplicate"><segment id="s1"><source>One</source><target>Unit update</target></segment></unit>
     <unit id="u-donor-duplicate"><segment id="s1"><source>Three</source><target>Donor update one</target></segment></unit>

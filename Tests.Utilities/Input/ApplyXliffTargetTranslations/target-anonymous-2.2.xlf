@@ -1,0 +1,98 @@
+<xliff srcLang="en" trgLang="fr" version="2.2" xmlns:mda="urn:oasis:names:tc:xliff:metadata:2.0" xmlns:its="http://www.w3.org/2005/11/its" xmlns="urn:oasis:names:tc:xliff:document:2.2">
+  <file id="f1" its:revPerson="Sample Reviewer" its:revTool="Example VCS">
+    <skeleton># 
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-14 15:35-0500\n"
+"PO-Revision-Date: 2023-01-15 22:24+0000\n"
+"Last-Translator: Sample Translator &lt;translator@example.com&gt;\n"
+"Language-Team: English &lt;https://translate.example.com/projects/sample/sample-project/en/&gt;\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Translation Platform 1.0\n"
+"Blackbird-Changed-Date: 2026-08-25T19:07:12.0000000+00:00\n"
+"Blackbird-System-Ucid: sample-user/sample-project:src/main/low-string-po/en.po\n"
+"Blackbird-System-Content-Name: sample-user/sample-project:src/main/low-string-po/en.po\n"
+"Blackbird-System-Admin-Url: https://code.example.com/sample-user/sample-project/-/edit/i18n-low-string-count/src/main/low-string-po/en.po\n"
+"Blackbird-System-System-Name: Example VCS\n"
+"Blackbird-System-System-Ref: https://code.example.com\n"
+"Blackbird-Provenance-Revision-Person: Sample Reviewer\n"
+"Blackbird-Provenance-Revision-Person-Ref: reviewer@example.com\n"
+"Blackbird-Provenance-Revision-Tool: Example VCS\n"
+"Blackbird-Provenance-Revision-Tool-Ref: https://code.example.com/sample-user/sample-project/-/commit/996df8281d5f10b0c1e9e8b87df8dee722bfa4c2\n"
+
+#: src/main/webapp/static/app/js/components/identityverification/GovIdInterstitialPage.tsx:1
+msgid "New string to test if French can be committed back to Git"
+msgstr "New string to test if French can be committed back to Git"
+
+#: src/main/webapp/static/app/js/components/identityverification/GovIdInterstitialPage.tsx:1
+msgid "New string for low string count"
+msgstr "New string for low string count"
+
+#: src/main/webapp/static/app/js/components/identityverification/GovIdInterstitialPage.tsx:1
+msgid "First String"
+msgstr "First String"</skeleton>
+    <mda:metadata>
+      <mda:metaGroup category="blackbird">
+        <mda:meta type="original-name">en.po</mda:meta>
+        <mda:meta type="original-media-type">text/x-gettext-translation</mda:meta>
+        <mda:meta type="changed-date">2026-08-25T19:07:12.0000000+00:00</mda:meta>
+        <mda:meta type="source-ucid">sample-user/sample-project:src/main/low-string-po/en.po</mda:meta>
+        <mda:meta type="source-content-name">sample-user/sample-project:src/main/low-string-po/en.po</mda:meta>
+        <mda:meta type="source-admin-url">https://code.example.com/sample-user/sample-project/-/edit/i18n-low-string-count/src/main/low-string-po/en.po</mda:meta>
+        <mda:meta type="source-system-name">Example VCS</mda:meta>
+        <mda:meta type="source-system-ref">https://code.example.com</mda:meta>
+      </mda:metaGroup>
+      <mda:meta type="Project-Id-Version"></mda:meta>
+      <mda:meta type="Report-Msgid-Bugs-To"></mda:meta>
+      <mda:meta type="POT-Creation-Date">2026-07-14 15:35-0500</mda:meta>
+      <mda:meta type="PO-Revision-Date">2023-01-15 22:24+0000</mda:meta>
+      <mda:meta type="Last-Translator">Sample Translator &lt;translator@example.com&gt;</mda:meta>
+      <mda:meta type="Language-Team">English &lt;https://translate.example.com/projects/sample/sample-project/en/&gt;</mda:meta>
+      <mda:meta type="Language">en</mda:meta>
+      <mda:meta type="MIME-Version">1.0</mda:meta>
+      <mda:meta type="Content-Type">text/plain; charset=UTF-8</mda:meta>
+      <mda:meta type="Content-Transfer-Encoding">8bit</mda:meta>
+      <mda:meta type="Plural-Forms">nplurals=2; plural=n != 1;</mda:meta>
+      <mda:meta type="X-Generator">Translation Platform 1.0</mda:meta>
+      <mda:metaGroup category="Blacklake">
+        <mda:meta type="leverageId">c7fccace-5eee-485a-8b0c-f4198c34d73e</mda:meta>
+      </mda:metaGroup>
+    </mda:metadata>
+    <unit id="u1" name="New string to test if French can be committed back to Git">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="key">New string to test if French can be committed back to Git</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment>
+        <source>New string to test if French can be committed back to Git</source>
+      </segment>
+    </unit>
+    <unit id="u2" name="New string for low string count">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="key">New string for low string count</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment>
+        <source>New string for low string count</source>
+      </segment>
+    </unit>
+    <unit id="u3" name="First String">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="key">First String</mda:meta>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment>
+        <source>First String</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>
