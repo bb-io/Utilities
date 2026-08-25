@@ -8,6 +8,7 @@
       <segment><source>Ambiguous source</source><target>Keep ambiguous one</target></segment>
       <segment><source>Ambiguous source</source><target>Keep ambiguous two</target></segment>
       <segment><source>Repeated donor source</source><target>Keep repeated</target></segment>
+      <segment id="target-explicit"><source>Explicit ID mismatch</source><target>Keep explicit mismatch</target></segment>
     </unit>
     <unit id="u-duplicate"><segment id="s1"><source>One</source><target>Keep one</target></segment></unit>
     <unit id="u-duplicate"><segment id="s1"><source>Two</source><target>Keep two</target></segment></unit>

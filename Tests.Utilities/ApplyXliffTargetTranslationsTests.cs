@@ -152,6 +152,7 @@ public class ApplyXliffTargetTranslationsTests : TestBase
         CollectionAssert.Contains(targets, "Keep ambiguous one");
         CollectionAssert.Contains(targets, "Keep ambiguous two");
         CollectionAssert.Contains(targets, "Keep repeated");
+        CollectionAssert.Contains(targets, "Keep explicit mismatch");
         CollectionAssert.Contains(targets, "Keep one");
         CollectionAssert.Contains(targets, "Keep two");
         CollectionAssert.Contains(targets, "Keep three");
@@ -182,6 +183,33 @@ public class ApplyXliffTargetTranslationsTests : TestBase
         Assert.AreEqual("2.0", output.Root?.Attribute("version")?.Value);
         Assert.AreEqual("Cross-version target", segment.Element(ns + "target")?.Value);
         Assert.AreEqual("reviewed", segment.Attribute("state")?.Value);
+    }
+
+    [TestMethod]
+    public async Task AppliesXliff12TranslationsToAnonymousXliff22Segments()
+    {
+        var result = await Actions.ApplyXliffTargetTranslations(new ApplyXliffTargetTranslationsRequest
+        {
+            TargetFile = CreateFileReference("target-anonymous-2.2.xlf"),
+            TranslationsFile = CreateFileReference("translations-anonymous-1.2.xlf"),
+            CopyProvenanceMetadata = true,
+            CopyQualityData = true,
+        });
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.2";
+        var targets = output.Descendants(ns + "target").Select(target => target.Value).ToList();
+
+        Assert.AreEqual(0, result.Warnings.Count);
+        Assert.AreEqual("2.2", output.Root?.Attribute("version")?.Value);
+        CollectionAssert.AreEqual(
+            new List<string>
+            {
+                "Nouvelle chaîne pour tester si le français peut être réintégré dans Git",
+                "Nouvelle chaîne pour un faible nombre de chaînes",
+                "Première chaîne",
+            },
+            targets);
     }
 
     [TestMethod]

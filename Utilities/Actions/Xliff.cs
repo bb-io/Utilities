@@ -1236,7 +1236,7 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Apply XLIFF target translations", Description = "Applies target translations from one XLIFF file to another by matching unit and segment IDs, or exact source content for segments without IDs. Optionally copies unit provenance and quality data.")]
+        [Action("Apply XLIFF target translations", Description = "Applies target translations from one XLIFF file to another by matching unit and segment IDs. Segments without IDs, including target segments whose translation segment ID has no match, use exact source content. Optionally copies unit provenance and quality data.")]
         public async Task<ApplyXliffTargetTranslationsResponse> ApplyXliffTargetTranslations(
             [ActionParameter] ApplyXliffTargetTranslationsRequest request)
         {
@@ -1282,14 +1282,12 @@ namespace Apps.Utilities.Actions
 
             foreach (var duplicateId in duplicateTargetUnitIds.Order(StringComparer.Ordinal))
             {
-                warnings.Add(
-                    $"Unit ID '{duplicateId}' is duplicated in the target file; all units with this ID were skipped.");
+                warnings.Add($"Unit ID '{duplicateId}' is duplicated in the target file; all units with this ID were skipped.");
             }
 
             foreach (var duplicateId in duplicateTranslationsUnitIds.Order(StringComparer.Ordinal))
             {
-                warnings.Add(
-                    $"Unit ID '{duplicateId}' is duplicated in the translations file; all units with this ID were skipped.");
+                warnings.Add($"Unit ID '{duplicateId}' is duplicated in the translations file; all units with this ID were skipped.");
             }
 
             foreach (var (unitId, translationsUnitGroup) in translationsUnitsById)
@@ -1360,8 +1358,7 @@ namespace Apps.Utilities.Actions
                     foreach (var segment in duplicateGroup)
                         invalidTranslationsSegments.Add(segment);
 
-                    warnings.Add(
-                        $"Translations unit '{translationsUnit.Id}' contains duplicate segment ID '{duplicateGroup.Key}'; all matching segments were skipped.");
+                    warnings.Add( $"Translations unit '{translationsUnit.Id}' contains duplicate segment ID '{duplicateGroup.Key}'; all matching segments were skipped.");
                 }
 
                 foreach (var duplicateGroup in translationsUnit.Segments
@@ -1380,12 +1377,10 @@ namespace Apps.Utilities.Actions
                         ? normalizedSource
                         : $"{normalizedSource[..maximumSourceLength]}…";
 
-                    warnings.Add(
-                        $"Translations unit '{translationsUnit.Id}' contains multiple segments without IDs using source '{shortenedSource}'; all matching segments were skipped.");
+                    warnings.Add($"Translations unit '{translationsUnit.Id}' contains multiple segments without IDs using source '{shortenedSource}'; all matching segments were skipped.");
                 }
 
-                var proposedUpdates =
-                    new List<(Segment TranslationsSegment, Segment TargetSegment, string MatchKey)>();
+                var proposedUpdates = new List<(Segment TranslationsSegment, Segment TargetSegment, string MatchKey)>();
 
                 foreach (var translationsSegment in translationsUnit.Segments)
                 {
@@ -1421,34 +1416,35 @@ namespace Apps.Utilities.Actions
                     if (!string.IsNullOrWhiteSpace(translationsSegment.Id))
                     {
                         matchingTargetSegments = targetUnit.Segments
-                            .Where(segment => string.Equals(
-                                segment.Id,
-                                translationsSegment.Id,
-                                StringComparison.Ordinal))
+                            .Where(segment => string.Equals(segment.Id, translationsSegment.Id, StringComparison.Ordinal))
                             .ToList();
+
+                        if (matchingTargetSegments.Count == 0)
+                        {
+                            var source = translationsSegment.GetSource();
+                            matchingTargetSegments = targetUnit.Segments
+                                .Where(segment => string.IsNullOrWhiteSpace(segment.Id)
+                                                  && string.Equals(segment.GetSource(), source, StringComparison.Ordinal))
+                                .ToList();
+                        }
                     }
                     else
                     {
                         var source = translationsSegment.GetSource();
                         matchingTargetSegments = targetUnit.Segments
-                            .Where(segment => string.Equals(
-                                segment.GetSource(),
-                                source,
-                                StringComparison.Ordinal))
+                            .Where(segment => string.Equals(segment.GetSource(), source, StringComparison.Ordinal))
                             .ToList();
                     }
 
                     if (matchingTargetSegments.Count == 0)
                     {
-                        warnings.Add(
-                            $"Translations unit '{translationsUnit.Id}', {matchKey} has no matching target segment and was skipped.");
+                        warnings.Add($"Translations unit '{translationsUnit.Id}', {matchKey} has no matching target segment and was skipped.");
                         continue;
                     }
 
                     if (matchingTargetSegments.Count > 1)
                     {
-                        warnings.Add(
-                            $"Translations unit '{translationsUnit.Id}', {matchKey} matches multiple target segments and was skipped.");
+                        warnings.Add($"Translations unit '{translationsUnit.Id}', {matchKey} matches multiple target segments and was skipped.");
                         continue;
                     }
 
@@ -1479,13 +1475,11 @@ namespace Apps.Utilities.Actions
             var processedXliff = targetSerializer(targetTransformation);
             await using var processedXliffStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
             var contentType = request.TargetFile.ContentType ?? "application/xliff+xml";
-            var outputFile = await fileManagementClient.UploadAsync(
-                processedXliffStream,
-                contentType,
-                request.TargetFile.Name);
+            var outputFile = await fileManagementClient.UploadAsync(processedXliffStream, contentType, request.TargetFile.Name);
 
             if (string.IsNullOrWhiteSpace(outputFile.Name))
                 outputFile.Name = request.TargetFile.Name;
+
             outputFile.ContentType ??= contentType;
 
             return new ApplyXliffTargetTranslationsResponse
