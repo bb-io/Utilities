@@ -11,4 +11,7 @@ public class NameResponse
     public string NameWithExtension { get; set; }
 
     public string Extension { get; set; }
+
+    [Display("Full path")]
+    public string? FullPath { get; set; }
 }
