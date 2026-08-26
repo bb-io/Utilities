@@ -34,7 +34,8 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
         {
             NameWithoutExtension = Path.GetFileNameWithoutExtension(file.File.Name),
             NameWithExtension = Path.GetFileName(file.File.Name),
-            Extension = Path.GetExtension(file.File.Name)
+            Extension = Path.GetExtension(file.File.Name),
+            FullPath = file.File.Name
         };
     }
 
