@@ -46,6 +46,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 
 ### XLIFF files
 
+- **Add provenance** Add translation or review provenance to any file supported by Blackbird Filters and return an XLIFF 2.2 file. Person, organization, tool, and their reference alternatives are optional.
 - **Get locales** Gets the source and target locales from an XLIFF file.
 - **Replace XLIFF source with target** Swap `source` and `target` contents, exchange language attributes, and optionally remove target elements or set a new target language.
 - **Convert HTML to XLIFF** Convert HTML file to XLIFF 1.2 format
