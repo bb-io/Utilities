@@ -22,6 +22,22 @@ public class ArrayTests : TestBase
     }
 
     [TestMethod]
+    public void ArrayContains_ThrowsMisconfiguration_WhenArrayIsNull()
+    {
+        var actions = new Arrays(InvocationContext);
+        var request = new ArrayContainsRequest
+        {
+            Array = null!,
+            Entry = "value"
+        };
+
+        var exception = Assert.ThrowsException<Blackbird.Applications.Sdk.Common.Exceptions.PluginMisconfigurationException>(
+            () => actions.ArrayContains(request, null));
+
+        Assert.AreEqual("Array is required and cannot be null.", exception.Message);
+    }
+
+    [TestMethod]
     public void ExtractArrayUsingRegex_ReturnsCountWords()
     {
         var input = new TextsDto { Texts = ["en", "DE", "fr-CH", "ES_mx", "en-US", "EN_gb", "eng", "eng-US"] };

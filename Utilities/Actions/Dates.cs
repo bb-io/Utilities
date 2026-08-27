@@ -151,6 +151,12 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
     [Action("Convert text to date", Description = "Converts text input to date.")]
     public DateResponse ConvertTextToDate([ActionParameter] TextToDateRequest input)
     {
+        if (input is null)
+            throw new PluginMisconfigurationException("Input is required.");
+
+        if (string.IsNullOrWhiteSpace(input.Text))
+            throw new PluginMisconfigurationException("Text is required and cannot be null or empty.");
+
         try
         {
             var culture = !string.IsNullOrEmpty(input.Culture)
