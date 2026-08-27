@@ -19,6 +19,15 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
     [ActionParameter] [Display("Case sensitive", Description = "By default, this action is case sensitive.")] bool? CaseSensitive
 )
     {
+        if (input is null)
+            throw new PluginMisconfigurationException("Input is required.");
+
+        if (input.Array is null)
+            throw new PluginMisconfigurationException("Array is required and cannot be null.");
+
+        if (input.Entry is null)
+            throw new PluginMisconfigurationException("Entry is required and cannot be null.");
+
         bool caseSensitive = CaseSensitive ?? true; 
 
         bool contains = caseSensitive

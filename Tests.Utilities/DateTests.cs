@@ -26,6 +26,18 @@ public class DateTests : TestBase
     }
 
     [TestMethod]
+    public void ConvertTextToDate_ThrowsMisconfiguration_WhenTextIsNull()
+    {
+        var action = new Dates(InvocationContext);
+        var request = new TextToDateRequest { Text = null! };
+
+        var exception = Assert.ThrowsException<Blackbird.Applications.Sdk.Common.Exceptions.PluginMisconfigurationException>(
+            () => action.ConvertTextToDate(request));
+
+        Assert.AreEqual("Text is required and cannot be null or empty.", exception.Message);
+    }
+
+    [TestMethod]
     public async Task GenerateDate_IssSuccess()
     {
         var action = new Dates(InvocationContext);

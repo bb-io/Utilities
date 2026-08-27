@@ -39,6 +39,15 @@ namespace Tests.Utilities
         }
 
         [TestMethod]
+        public async Task GetJsonValue_ThrowsMisconfiguration_WhenInputIsNull()
+        {
+            var exception = await Assert.ThrowsExceptionAsync<Blackbird.Applications.Sdk.Common.Exceptions.PluginMisconfigurationException>(
+                () => _jsonActions.GetJsonPropertyValue(null!));
+
+            Assert.AreEqual("Input is required.", exception.Message);
+        }
+
+        [TestMethod]
         public async Task Lookup()
         {
             var input = new JsonLookupInput
