@@ -4,6 +4,7 @@ using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
+using Blackbird.Filters.Enums;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities
@@ -126,6 +127,94 @@ namespace Tests.Utilities
             // Assert
             Console.WriteLine(result);
             Assert.IsTrue(result != 0);
+        }
+
+        [TestMethod]
+        public async Task GetWordCountInFile_Xliff12_CountsSourceAndExcludesPlaceholders()
+        {
+            var request = new FileDto
+            {
+                File = new FileReference { Name = "WordCount/word-count-1.2.xliff" }
+            };
+
+            var result = await _fileActions.GetWordCountInFile(request);
+
+            Assert.AreEqual(6d, result);
+        }
+
+        [TestMethod]
+        public async Task GetWordCountInFile_Xliff22WithXmlExtension_FiltersMultipleStatuses()
+        {
+            var request = new FileDto
+            {
+                File = new FileReference { Name = "WordCount/word-count-2.2.xml" }
+            };
+            var options = new XliffWordCountOptions
+            {
+                SegmentStates =
+                [
+                    SegmentStateHelper.Serialize(SegmentState.Translated),
+                    SegmentStateHelper.Serialize(SegmentState.Final),
+                ]
+            };
+
+            var result = await _fileActions.GetWordCountInFile(request, options);
+
+            Assert.AreEqual(3d, result);
+        }
+
+        [TestMethod]
+        public async Task GetWordCountInFile_Xliff22_TreatsMissingStatusAsInitial()
+        {
+            var request = new FileDto
+            {
+                File = new FileReference { Name = "WordCount/word-count-2.2.xml" }
+            };
+            var options = new XliffWordCountOptions
+            {
+                SegmentStates = [SegmentStateHelper.Serialize(SegmentState.Initial)]
+            };
+
+            var result = await _fileActions.GetWordCountInFile(request, options);
+
+            Assert.AreEqual(2d, result);
+        }
+
+        [TestMethod]
+        public async Task GetWordCountInFiles_AppliesStatusFilterOnlyToXliffFiles()
+        {
+            var request = new FilesWordCountRequest
+            {
+                Files =
+                [
+                    new FileReference { Name = "WordCount/word-count-2.2.xml" },
+                    new FileReference { Name = "WordCount/word-count-plain.txt" },
+                ]
+            };
+            var options = new XliffWordCountOptions
+            {
+                SegmentStates = [SegmentStateHelper.Serialize(SegmentState.Reviewed)]
+            };
+
+            var result = await _fileActions.GetWordCountInFiles(request, options);
+
+            Assert.AreEqual(8d, result.WordCount);
+            Assert.AreEqual(3d, result.FilesWithWordCount[0].WordCount);
+            Assert.AreEqual(5d, result.FilesWithWordCount[1].WordCount);
+        }
+
+        [TestMethod]
+        public async Task GetWordCountInFile_InvalidDeclaredXliff_ThrowsMisconfigurationException()
+        {
+            var request = new FileDto
+            {
+                File = new FileReference { Name = "WordCount/invalid.xlf" }
+            };
+
+            var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
+                () => _fileActions.GetWordCountInFile(request));
+
+            StringAssert.Contains(exception.Message, "not a valid XLIFF file");
         }
 
         [TestMethod]

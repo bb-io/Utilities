@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="word-count.txt" source-language="en" target-language="fr" datatype="plaintext">
+    <body>
+      <trans-unit id="final">
+        <source>One <ph id="placeholder">&lt;br /&gt;</ph> two.</source>
+        <target state="final">This target has several additional words.</target>
+      </trans-unit>
+      <trans-unit id="translated">
+        <source>Three four five.</source>
+        <target state="translated">Translation.</target>
+      </trans-unit>
+      <trans-unit id="initial">
+        <source>Six.</source>
+        <target>This untranslated target has extra words.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.2" srcLang="en" trgLang="fr" xmlns="urn:oasis:names:tc:xliff:document:2.2">
+  <file id="f1">
+    <unit id="translated">
+      <originalData>
+        <data id="d1">&lt;br /&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Alpha <ph id="p1" dataRef="d1" /> beta.</source>
+        <target>This target has several additional words.</target>
+      </segment>
+    </unit>
+    <unit id="reviewed">
+      <segment state="reviewed">
+        <source>Gamma delta epsilon.</source>
+        <target>Translation.</target>
+      </segment>
+    </unit>
+    <unit id="final">
+      <segment state="final">
+        <source>Zeta.</source>
+        <target>This target contains extra words.</target>
+      </segment>
+    </unit>
+    <unit id="initial">
+      <segment>
+        <source>Eta theta.</source>
+        <target>Translation.</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

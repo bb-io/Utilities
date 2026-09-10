@@ -6,8 +6,14 @@ using Apps.Utilities.Utils.DocumentReader;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
+using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Blackbird.Filters.Bilingual.Xliff1;
+using Blackbird.Filters.Bilingual.Xliff2;
+using Blackbird.Filters.Content;
+using Blackbird.Filters.Enums;
+using Blackbird.Filters.Transformations;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -530,28 +536,23 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     }
 
     [Action("Get file word count", Description = "Returns number of words in the file")]
-    public async Task<double> GetWordCountInFile([ActionParameter] FileDto file)
+    public Task<double> GetWordCountInFile(
+        [ActionParameter] FileDto file,
+        [ActionParameter] XliffWordCountOptions? xliffOptions = null)
     {
-        var stream = await fileManagementClient.DownloadAsync(file.File);
-
-        var extension = Path.GetExtension(file.File.Name).ToLowerInvariant();
-        IDocumentReader reader = DocumentReaderFactory.GetReader(extension);
-
-        string fileContent = await reader.Read(stream);
-
-        char[] punctuationCharacters = fileContent.Where(char.IsPunctuation).Distinct().ToArray();
-        var words = fileContent.Split().Select(x => x.Trim(punctuationCharacters));
-        return words.Count(x => !string.IsNullOrWhiteSpace(x));
+        return GetWordCount(file.File, xliffOptions?.SegmentStates);
     }
 
     [Action("Get files word count", Description = "Returns number of words in the files")]
-    public async Task<FilesWordCountResponse> GetWordCountInFiles([ActionParameter] FilesWordCountRequest request)
+    public async Task<FilesWordCountResponse> GetWordCountInFiles(
+        [ActionParameter] FilesWordCountRequest request,
+        [ActionParameter] XliffWordCountOptions? xliffOptions = null)
     {
         double totalWordCount = 0;
         var files = new List<WordCountItem>();
         foreach (var file in request.Files)
         {
-            var wordCount = await GetWordCountInFile(new FileDto { File = file });
+            var wordCount = await GetWordCount(file, xliffOptions?.SegmentStates);
             totalWordCount += wordCount;
             files.Add(new WordCountItem
             {
@@ -565,6 +566,96 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
             WordCount = totalWordCount,
             FilesWithWordCount = files
         };
+    }
+
+    private async Task<double> GetWordCount(FileReference file, IEnumerable<string>? rawSegmentStates)
+    {
+        await using var downloadedStream = await fileManagementClient.DownloadAsync(file);
+        await using var bufferedStream = new MemoryStream();
+        await downloadedStream.CopyToAsync(bufferedStream);
+
+        if (TryDeserializeXliff(bufferedStream, out var transformation))
+        {
+            var segmentStates = ParseSegmentStates(rawSegmentStates);
+            var sourceText = string.Join(
+                Environment.NewLine,
+                transformation.GetUnits()
+                    .SelectMany(unit => unit.Segments)
+                    .Where(segment => segmentStates.Count == 0
+                        || segmentStates.Contains(segment.State ?? SegmentState.Initial))
+                    .Select(segment => string.Concat(
+                        segment.Source
+                            .Where(part => part is not InlineTag)
+                            .Select(part => part.Value))));
+
+            return CountWords(sourceText);
+        }
+
+        if (IsDeclaredAsXliff(file))
+        {
+            throw new PluginMisconfigurationException(
+                "The provided file is not a valid XLIFF file.");
+        }
+
+        bufferedStream.Position = 0;
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        var reader = DocumentReaderFactory.GetReader(extension);
+        var fileContent = await reader.Read(bufferedStream);
+
+        return CountWords(fileContent);
+    }
+
+    private static HashSet<SegmentState> ParseSegmentStates(IEnumerable<string>? rawSegmentStates)
+    {
+        var parsedStates = (rawSegmentStates ?? [])
+            .Where(state => !string.IsNullOrWhiteSpace(state))
+            .Select(SegmentStateHelper.ToSegmentState)
+            .ToList();
+
+        if (parsedStates.Any(state => state is null))
+        {
+            throw new PluginMisconfigurationException(
+                "One or more segment statuses are invalid. Please select supported segment statuses.");
+        }
+
+        return parsedStates
+            .Select(state => state!.Value)
+            .ToHashSet();
+    }
+
+    private static bool TryDeserializeXliff(Stream stream, out Transformation transformation)
+    {
+        stream.Position = 0;
+        if (Xliff2Serializer.IsXliff2(stream, out var xliff2Node))
+        {
+            transformation = Xliff2Serializer.Deserialize(xliff2Node);
+            return true;
+        }
+
+        stream.Position = 0;
+        if (Xliff1Serializer.IsXliff1(stream, out var xliff1Node))
+        {
+            transformation = Xliff1Serializer.Deserialize(xliff1Node);
+            return true;
+        }
+
+        transformation = null!;
+        return false;
+    }
+
+    private static bool IsDeclaredAsXliff(FileReference file)
+    {
+        var extension = Path.GetExtension(file.Name);
+        return extension.Equals(".xlf", StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(".xliff", StringComparison.OrdinalIgnoreCase)
+            || file.ContentType?.Contains("xliff", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private static double CountWords(string text)
+    {
+        var punctuationCharacters = text.Where(char.IsPunctuation).Distinct().ToArray();
+        var words = text.Split().Select(word => word.Trim(punctuationCharacters));
+        return words.Count(word => !string.IsNullOrWhiteSpace(word));
     }
 
     [Action("Replace using Regex in document", Description = "Replace text in a document using Regex. Works only with text based files (txt, html, etc.). Action is pretty similar to 'Replace using Regex' but works with files")]
