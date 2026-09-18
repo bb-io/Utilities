@@ -29,6 +29,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Change file name** takes a file and a text input. The filename (without extension) is renamed and the file is returned as output.
 - **Sanitize file name** removes any defined characters from a file name (without extension).
 - **Get file size** returns the size of a file in bytes.
+- **Change file encoding** changes a text file to UTF-8 without BOM, UTF-8 with BOM, or UTF-16LE with BOM, preserving its text, line endings, name, and extension. Target encoding is required. Source encoding is optional: when omitted, encoding is detected from BOM or defaults to UTF-8. Invalid input bytes and conflicting source encoding/BOM produce an error. Use only with text files; embedded encoding declarations in XML, HTML, or PO content are not updated.
 - **Replace using Regex in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace using Regex' but works with files.
 - **Replace multiple Regex patterns in document** works only with text based files (txt, html, etc.). This action is similar to 'Replace multiple Regex patterns' but works with files.
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
