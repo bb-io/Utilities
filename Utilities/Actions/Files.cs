@@ -32,6 +32,72 @@ namespace Apps.Utilities.Actions;
 public class Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient)
     : BaseInvocable(invocationContext)
 {
+    [Action("Change file encoding", Description = "Changes a text file's encoding while preserving its text, name, and extension.")]
+    public async Task<FileDto> ChangeFileEncoding([ActionParameter] ChangeFileEncodingRequest request)
+    {
+        if (request?.File is null)
+            throw new PluginMisconfigurationException("File is required.");
+
+        var targetEncoding = ResolveFileEncoding(request.TargetEncoding);
+        var sourceEncoding = string.IsNullOrWhiteSpace(request.SourceEncoding)
+            ? null
+            : ResolveFileEncoding(request.SourceEncoding);
+
+        await using var input = await fileManagementClient.DownloadAsync(request.File);
+        using var buffer = new MemoryStream();
+        await input.CopyToAsync(buffer);
+        var bytes = buffer.ToArray();
+
+        // Check UTF-32 before UTF-16 because their little-endian BOMs share a prefix.
+        Encoding[] bomEncodings =
+        [
+            new UTF32Encoding(false, true, true),
+            new UTF32Encoding(true, true, true),
+            new UTF8Encoding(true, true),
+            new UnicodeEncoding(false, true, true),
+            new UnicodeEncoding(true, true, true)
+        ];
+        var detectedEncoding = bomEncodings.FirstOrDefault(encoding =>
+            bytes.AsSpan().StartsWith(encoding.GetPreamble()));
+        if (sourceEncoding is not null && detectedEncoding is not null &&
+            sourceEncoding.CodePage != detectedEncoding.CodePage)
+            throw new PluginMisconfigurationException("Source encoding does not match the file's BOM.");
+
+        sourceEncoding ??= detectedEncoding ?? new UTF8Encoding(false, true);
+        var offset = detectedEncoding?.GetPreamble().Length ?? 0;
+        byte[] outputBytes;
+        try
+        {
+            var text = sourceEncoding.GetString(bytes, offset, bytes.Length - offset);
+            outputBytes = targetEncoding.GetPreamble().Concat(targetEncoding.GetBytes(text)).ToArray();
+        }
+        catch (DecoderFallbackException)
+        {
+            throw new PluginMisconfigurationException(
+                "The file contains invalid bytes for the source encoding. Specify the correct source encoding and provide a text file.");
+        }
+        catch (EncoderFallbackException)
+        {
+            throw new PluginMisconfigurationException("The file contains characters that cannot be represented in the target encoding.");
+        }
+
+        using var output = new MemoryStream(outputBytes);
+        var contentType = string.IsNullOrWhiteSpace(request.File.ContentType)
+            ? MediaTypeNames.Text.Plain
+            : request.File.ContentType;
+        var uploaded = await fileManagementClient.UploadAsync(output, contentType, request.File.Name);
+        uploaded.ContentType = contentType;
+        return new FileDto { File = uploaded };
+    }
+
+    private static Encoding ResolveFileEncoding(string? key) => key?.Trim().ToLowerInvariant() switch
+    {
+        "utf8" => new UTF8Encoding(false, true),
+        "utf8bom" => new UTF8Encoding(true, true),
+        "utf16le" => new UnicodeEncoding(false, true, true),
+        _ => throw new PluginMisconfigurationException("Select a supported encoding: UTF-8 (no BOM), UTF-8 with BOM, or UTF-16LE.")
+    };
+
     [Action("Get file name information", 
         Description = "Returns the name of a file, with or without extension, and the extension.")]
     public NameResponse GetFileName([ActionParameter] FileDto file)
