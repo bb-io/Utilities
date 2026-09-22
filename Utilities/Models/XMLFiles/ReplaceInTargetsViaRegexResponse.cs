@@ -5,6 +5,6 @@ namespace Apps.Utilities.Models.XMLFiles;
 
 public class ReplaceInTargetsViaRegexResponse
 {
-    [Display("File", Description = "File containing the updated target text.")]
+    [Display("File", Description = "File containing the updated target text, source text, or both.")]
     public required FileReference File { get; set; }
 }

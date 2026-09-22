@@ -63,11 +63,13 @@ You do not need to create a connection to use Utilities. Instead, you can find U
   - **Copy provenance metadata**: Copy unit-level translation and review provenance from matched units. Disabled by default.
   - **Copy quality data**: Copy unit-level quality ratings from matched units. Disabled by default.
 - **Set XLIFF locales** Set source or target locales in an XLIFF file. Other file types supported by Blackbird Filters are converted to XLIFF 2.2. Existing XLIFF versions are preserved.
-- **Replace in targets via regex** Replace visible target text while preserving inline codes. Optionally restrict replacement by segment state or a regular expression matched against the complete visible target.
+- **Replace in targets via regex** Replace visible text in targets, sources, or both while preserving inline codes. Defaults to targets only. Optionally restrict replacement by segment state or a regular expression matched against the complete visible target.
     Advanced settings:
-  - **Target match pattern**: Process only targets whose complete visible text matches this regular expression.
+  - **Replace in**: Choose **Target only (default)**, **Source only**, or **Both target and source**.
+  - **Replacement**: Replacement text. Leave empty to remove matching text.
+  - **Target match pattern**: Process only segments whose complete visible target text matches this regular expression, including when replacing source text.
   - **Segment states**: Process only segments in selected interoperable states.
-  - **Output file format**: Return the original format by default, or return XLIFF 1.2 or XLIFF 2.2.
+  - **Output file format**: Output the original format by default, or output XLIFF 1.2 or XLIFF 2.2.
 
 ### XML files
 
