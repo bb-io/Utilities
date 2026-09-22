@@ -316,6 +316,13 @@ namespace Apps.Utilities.Actions
                         $"The updated file could not be rebuilt in its original format. Please use an XLIFF output format instead. Details: {targetResult.Error}");
                 }
 
+                if (!loadResult.WasBilingual)
+                {
+                    // Keep the native file's metadata regardless of which text was edited.
+                    targetResult.Value.SystemReference = transformation.SourceSystemReference;
+                    targetResult.Value.Language = transformation.SourceLanguage;
+                }
+
                 // We need this part because ToStream() currently selects wrong coder for text/plain.
                 // Flow:
                 // Both PoCoder and PlaintextCoder support text/plain.

@@ -4,6 +4,9 @@ using Apps.Utilities.Models.XMLFiles;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Filters.Coders;
+using Blackbird.Filters.Shared;
+using Blackbird.Filters.Transformations;
+using Newtonsoft.Json;
 using System.Text;
 using System.Xml.Linq;
 using Tests.Utilities.Base;
@@ -313,6 +316,112 @@ public class XliffLocaleAndRegexTests : TestBase
         StringAssert.Contains(output, "msgid \"Hello world 123\"");
         StringAssert.Contains(output, "msgstr \"Hallo wereld [number]\"");
         StringAssert.Contains(output, "msgstr \"Opslaan 456\"");
+    }
+
+    [DataTestMethod]
+    [DataRow(null, @"\d+", "Example translation NUM")]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Source, @"\d+", "Example translation NUM")]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Both, @"\d+", "Example translation NUM")]
+    [DataRow(null, "does-not-match", "Example translation 123")]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Source, "does-not-match", "Example translation 123")]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Both, "does-not-match", "Example translation 123")]
+    public async Task ReplaceTargets_PoPreservesMetadataHeaders(
+        string? replaceIn, string regexPattern, string expectedTranslation)
+    {
+        var input = await File.ReadAllLinesAsync(
+            Path.Combine(GetTestFolderPath(), "Input", TestFilesFolder, "regex-metadata.po"));
+
+        var result = await Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+        {
+            File = CreateFileReference("regex-metadata.po", "text/x-gettext-translation"),
+            RegexPattern = regexPattern,
+            Replacement = "NUM",
+            ReplaceIn = replaceIn,
+        });
+
+        await using var stream = await FileManager.DownloadAsync(result.File);
+        using var reader = new StreamReader(stream);
+        var output = await reader.ReadToEndAsync();
+        using var validationStream = new MemoryStream(Encoding.UTF8.GetBytes(output));
+        Assert.IsNotNull(new PoCoder().TryLoad(validationStream, "text/x-gettext-translation"));
+
+        foreach (var header in input.Where(line => line.StartsWith('"')))
+            StringAssert.Contains(output, header);
+
+        StringAssert.Contains(output, "msgid \"Example source 123\"");
+        StringAssert.Contains(output, $"msgstr \"{expectedTranslation}\"");
+    }
+
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Source)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Both)]
+    public async Task ReplaceTargets_PreservesDistinctXliffMetadata(string? replaceIn)
+    {
+        await using var input = await FileManager.DownloadAsync(CreateFileReference("regex-2.0.xlf"));
+        var original = Transformation.Load(input, "regex-2.0.xlf", "application/xliff+xml").Value;
+        original.SourceSystemReference = new SystemReference
+        {
+            ContentId = "example/source",
+            ContentName = "Example source",
+            AdminUrl = "https://source.example.com/edit",
+            PublicUrl = "https://source.example.com/view",
+            SystemName = "Example source system",
+            SystemRef = "https://source.example.com",
+        };
+        original.TargetSystemReference = new SystemReference
+        {
+            ContentId = "example/target",
+            ContentName = "Example target",
+            AdminUrl = "https://target.example.com/edit",
+            PublicUrl = "https://target.example.com/view",
+            SystemName = "Example target system",
+            SystemRef = "https://target.example.com",
+        };
+        original.Provenance.Translation.Person = "Example Translator";
+        original.Provenance.Review.Person = "Example Reviewer";
+        original.DateChanged = DateTimeOffset.Parse("2026-01-02T12:00:00+00:00");
+        await using var prepared = original.ToStream();
+        var file = await FileManager.UploadAsync(prepared, "application/xliff+xml", "distinct-metadata.xlf");
+
+        var result = await Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+        {
+            File = file,
+            RegexPattern = @"\d+",
+            Replacement = "NUM",
+            ReplaceIn = replaceIn,
+        });
+
+        await using var output = await FileManager.DownloadAsync(result.File);
+        var updated = Transformation.Load(output, result.File.Name, result.File.ContentType).Value;
+        Assert.AreEqual(JsonConvert.SerializeObject(original.SourceSystemReference),
+            JsonConvert.SerializeObject(updated.SourceSystemReference));
+        Assert.AreEqual(JsonConvert.SerializeObject(original.TargetSystemReference),
+            JsonConvert.SerializeObject(updated.TargetSystemReference));
+        Assert.AreEqual(JsonConvert.SerializeObject(original.Provenance),
+            JsonConvert.SerializeObject(updated.Provenance));
+        Assert.AreEqual(original.DateChanged, updated.DateChanged);
+        Assert.AreEqual(original.SourceLanguage, updated.SourceLanguage);
+        Assert.AreEqual(original.TargetLanguage, updated.TargetLanguage);
+    }
+
+    [TestMethod]
+    public async Task ReplaceTargets_NativeToXliffPreservesMetadataWithoutAddingTargetIdentity()
+    {
+        var result = await Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+        {
+            File = CreateFileReference("regex-metadata.po", "text/x-gettext-translation"),
+            RegexPattern = @"\d+",
+            Replacement = "NUM",
+            OutputFileFormat = XliffOutputFormatDataSourceHandler.Xliff22,
+        });
+
+        await using var output = await FileManager.DownloadAsync(result.File);
+        var updated = Transformation.Load(output, result.File.Name, result.File.ContentType).Value;
+        Assert.AreEqual("example/project:locales/en.po", updated.SourceSystemReference.ContentId);
+        Assert.AreEqual(JsonConvert.SerializeObject(new SystemReference()),
+            JsonConvert.SerializeObject(updated.TargetSystemReference));
+        Assert.AreEqual("Example Reviewer", updated.Provenance.Review.Person);
     }
 
     [DataTestMethod]
