@@ -138,6 +138,98 @@ public class XliffLocaleAndRegexTests : TestBase
             segments["s3"].Elements().Single(element => element.Name.LocalName == "target").Value);
     }
 
+    [DataTestMethod]
+    [DataRow(null, false, true)]
+    [DataRow("", false, true)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Target, false, true)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Source, true, false)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Both, true, true)]
+    public async Task ReplaceTargets_SelectedScopePreservesOtherContentAndAppliesFilters(
+        string? replaceIn, bool replaceSource, bool replaceTarget)
+    {
+        var result = await Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+        {
+            File = CreateFileReference("regex-2.0.xlf"),
+            RegexPattern = @"(\d+)",
+            Replacement = "[$1]",
+            ReplaceIn = replaceIn,
+            TargetMatchPattern = @"^Bonjour\s+monde 123$",
+            SegmentStates = ["translated"],
+        });
+
+        var output = await LoadOutputXml(result.File);
+        var segments = output.Descendants()
+            .Where(element => element.Name.LocalName == "segment")
+            .ToDictionary(element => element.Attribute("id")!.Value);
+        var source = segments["s1"].Elements().Single(element => element.Name.LocalName == "source");
+        var target = segments["s1"].Elements().Single(element => element.Name.LocalName == "target");
+
+        Assert.AreEqual(replaceSource ? "Hello  world [123]" : "Hello  world 123", source.Value);
+        Assert.AreEqual(replaceTarget ? "Bonjour  monde [123]" : "Bonjour  monde 123", target.Value);
+        Assert.AreEqual("ph1", source.Elements().Single().Attribute("id")?.Value);
+        Assert.AreEqual("ph1", target.Elements().Single().Attribute("id")?.Value);
+        Assert.AreEqual("Other 456", segments["s2"].Elements().Single(x => x.Name.LocalName == "source").Value);
+        Assert.AreEqual("Bonjour autre 456", segments["s2"].Elements().Single(x => x.Name.LocalName == "target").Value);
+        Assert.AreEqual("Ignored 789", segments["s3"].Elements().Single(x => x.Name.LocalName == "source").Value);
+        Assert.AreEqual("Ignore this 789", segments["s3"].Elements().Single(x => x.Name.LocalName == "target").Value);
+    }
+
+    [DataTestMethod]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Source)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Both)]
+    public async Task ReplaceTargets_SourceWithoutTargetIsUpdated(string replaceIn)
+    {
+        var input = XDocument.Load(Path.Combine(GetTestFolderPath(), "Input", TestFilesFolder, "regex-2.0.xlf"));
+        input.Descendants().Where(x => x.Name.LocalName == "target").Remove();
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(input.ToString()));
+        var file = await FileManager.UploadAsync(stream, "application/xliff+xml", "no-target.xlf");
+
+        var result = await Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+        {
+            File = file,
+            RegexPattern = @"\d+",
+            ReplaceIn = replaceIn,
+        });
+
+        var output = await LoadOutputXml(result.File);
+        Assert.AreEqual("Hello  world ", output.Descendants().First(x => x.Name.LocalName == "source").Value);
+        Assert.IsFalse(output.Descendants().Any(x => x.Name.LocalName == "target" && x.Value.Length > 0));
+    }
+
+    [DataTestMethod]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Source)]
+    [DataRow(XliffReplacementScopeDataSourceHandler.Both)]
+    public async Task ReplaceTargets_SelectedScopeUpdatesNativeText(string replaceIn)
+    {
+        var result = await Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+        {
+            File = CreateFileReference("source.txt", "text/plain"),
+            RegexPattern = @"\d+",
+            Replacement = "NUM",
+            ReplaceIn = replaceIn,
+        });
+
+        await using var stream = await FileManager.DownloadAsync(result.File);
+        using var reader = new StreamReader(stream);
+        var output = await reader.ReadToEndAsync();
+        StringAssert.Contains(output, "Alpha NUM");
+        StringAssert.Contains(output, "Beta NUM");
+    }
+
+    [TestMethod]
+    public async Task ReplaceTargets_InvalidScopeThrows()
+    {
+        var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+            Actions.ReplaceInTargetsViaRegex(new ReplaceInTargetsViaRegexRequest
+            {
+                File = CreateFileReference("regex-2.0.xlf"),
+                RegexPattern = @"\d+",
+                ReplaceIn = "unsupported",
+            }));
+
+        StringAssert.Contains(exception.Message, "Replace in is invalid");
+    }
+
     [TestMethod]
     public async Task ReplaceTargets_EmptyReplacementRemovesMatchingText()
     {

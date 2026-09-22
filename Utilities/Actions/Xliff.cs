@@ -154,7 +154,7 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Replace in targets via regex", Description = "Replace visible target text using a regular expression, with optional target text and segment state filters.")]
+        [Action("Replace in targets via regex", Description = "Replace visible text in targets, sources, or both using a regular expression while preserving inline codes. Defaults to targets only, with optional target text and segment state filters.")]
         public async Task<ReplaceInTargetsViaRegexResponse> ReplaceInTargetsViaRegex(
             [ActionParameter] ReplaceInTargetsViaRegexRequest request)
         {
@@ -162,6 +162,18 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("File is required. Please provide a supported file.");
             if (string.IsNullOrWhiteSpace(request.RegexPattern))
                 throw new PluginMisconfigurationException("Regex pattern is required. Please provide a regular expression.");
+
+            var replaceIn = string.IsNullOrWhiteSpace(request.ReplaceIn)
+                ? XliffReplacementScopeDataSourceHandler.Target
+                : request.ReplaceIn.Trim().ToLowerInvariant();
+
+            if (replaceIn is not (XliffReplacementScopeDataSourceHandler.Target
+                or XliffReplacementScopeDataSourceHandler.Source
+                or XliffReplacementScopeDataSourceHandler.Both))
+            {
+                throw new PluginMisconfigurationException(
+                    "Replace in is invalid. Please select target only, source only, or both target and source.");
+            }
 
             Regex replacementRegex;
             Regex? targetMatchRegex = null;
@@ -255,9 +267,6 @@ namespace Apps.Utilities.Actions
                 var effectiveState = segment.State ?? SegmentState.Initial;
                 if (stateFilter.Count > 0 && !stateFilter.Contains(effectiveState))
                     continue;
-                if (segment.Target.Count == 0)
-                    continue;
-
                 var visibleTarget = string.Concat(
                     segment.Target
                         .Where(part => part is not InlineTag)
@@ -266,7 +275,14 @@ namespace Apps.Utilities.Actions
                 if (targetMatchRegex is not null && !targetMatchRegex.IsMatch(visibleTarget))
                     continue;
 
-                foreach (var part in segment.Target.Where(part => part is not InlineTag))
+                var selectedParts = replaceIn switch
+                {
+                    XliffReplacementScopeDataSourceHandler.Source => segment.Source,
+                    XliffReplacementScopeDataSourceHandler.Both => segment.Target.Concat(segment.Source),
+                    _ => segment.Target.AsEnumerable(),
+                };
+
+                foreach (var part in selectedParts.Where(part => part is not InlineTag))
                 {
                     try
                     {
@@ -291,7 +307,9 @@ namespace Apps.Utilities.Actions
                 && !isXliff1
                 && xliff2Version is null)
             {
-                var targetResult = transformation.Target();
+                var targetResult = replaceIn == XliffReplacementScopeDataSourceHandler.Source && !loadResult.WasBilingual
+                    ? transformation.Source()
+                    : transformation.Target();
                 if (!targetResult.Success)
                 {
                     throw new PluginMisconfigurationException(
