@@ -1,7 +1,8 @@
 ﻿using Apps.Utilities.Actions;
-using Apps.Utilities.Models.Arrays.Request;
 using Apps.Utilities.Models.Json;
-using Microsoft.Extensions.Configuration;
+using Blackbird.Applications.Sdk.Common.Exceptions;
+using Blackbird.Applications.Sdk.Common.Files;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Tests.Utilities.Base;
 
 namespace Tests.Utilities
@@ -41,10 +42,72 @@ namespace Tests.Utilities
         [TestMethod]
         public async Task GetJsonValue_ThrowsMisconfiguration_WhenInputIsNull()
         {
-            var exception = await Assert.ThrowsExceptionAsync<Blackbird.Applications.Sdk.Common.Exceptions.PluginMisconfigurationException>(
+            var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(
                 () => _jsonActions.GetJsonPropertyValue(null!));
 
             Assert.AreEqual("Input is required.", exception.Message);
+        }
+
+        [TestMethod]
+        public async Task GetJsonValue_ThrowsMisconfiguration_WhenJsonStringIsInvalid()
+        {
+            var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+                _jsonActions.GetJsonPropertyValue(new GetJsonPropertyInput
+                {
+                    JsonString = "Garbage",
+                    PropertyPath = "value"
+                }));
+
+            Assert.AreEqual(
+                "The provided JSON string is not valid JSON. Please check its format and try again.",
+                exception.Message);
+        }
+
+        [TestMethod]
+        public async Task GetJsonValue_ThrowsMisconfiguration_WhenArrayIndexIsOutOfRange()
+        {
+            var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+                _jsonActions.GetJsonPropertyValue(new GetJsonPropertyInput
+                {
+                    JsonString = "{\"items\":[\"first\"]}",
+                    PropertyPath = "items[-2]"
+                }));
+
+            StringAssert.Contains(exception.Message, "array index outside the available range");
+        }
+
+        [TestMethod]
+        public async Task GetJsonValue_ThrowsMisconfiguration_WhenFileDownloadUrlIsMissing()
+        {
+            var actions = new Json(InvocationContext, new MissingDownloadUrlFileManager());
+
+            var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+                actions.GetJsonPropertyValue(new GetJsonPropertyInput
+                {
+                    File = new FileReference { Name = "input.json" },
+                    PropertyPath = "value"
+                }));
+
+            Assert.AreEqual(
+                "The provided JSON file reference is invalid because it does not contain a download URL. Please re-map or upload the file.",
+                exception.Message);
+        }
+
+        [TestMethod]
+        public async Task GetJsonValue_ThrowsApplicationException_WhenFileServiceRequestFails()
+        {
+            var actions = new Json(InvocationContext, new UnavailableFileManager());
+
+            var exception = await Assert.ThrowsExceptionAsync<PluginApplicationException>(() =>
+                actions.GetJsonPropertyValue(new GetJsonPropertyInput
+                {
+                    File = new FileReference { Name = "input.json" },
+                    PropertyPath = "value"
+                }));
+
+            Assert.AreEqual(
+                "The JSON file could not be downloaded because the file service request failed. Please try again later.",
+                exception.Message);
         }
 
         [TestMethod]
@@ -85,6 +148,24 @@ namespace Tests.Utilities
             });
 
             Console.WriteLine(check.Value);
+        }
+
+        private sealed class MissingDownloadUrlFileManager : IFileManagementClient
+        {
+            public Task<Stream> DownloadAsync(FileReference reference) =>
+                Task.FromException<Stream>(new InvalidOperationException("Url for downloading is null"));
+
+            public Task<FileReference> UploadAsync(Stream stream, string contentType, string fileName) =>
+                throw new NotSupportedException();
+        }
+
+        private sealed class UnavailableFileManager : IFileManagementClient
+        {
+            public Task<Stream> DownloadAsync(FileReference reference) =>
+                Task.FromException<Stream>(new HttpRequestException("Service unavailable"));
+
+            public Task<FileReference> UploadAsync(Stream stream, string contentType, string fileName) =>
+                throw new NotSupportedException();
         }
     }
 }

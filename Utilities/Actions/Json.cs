@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Apps.Utilities.ErrorWrapper;
 using Apps.Utilities.Models.Enums;
 using Apps.Utilities.Models.Json;
 using Blackbird.Applications.Sdk.Common;
@@ -36,11 +35,11 @@ namespace Apps.Utilities.Actions
             JToken jsonObj;
             if (input.File != null)
             {
-                jsonObj = await ErrorWrapperExecute.ExecuteSafely(() => GetParsedJson(input.File));
+                jsonObj = await GetParsedJson(input.File);
             }
             else
             {
-                jsonObj = ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString!));
+                jsonObj = ParseJsonString(input.JsonString!);
             }
 
             var token = GetTokenAtPath(jsonObj, input.PropertyPath);
@@ -93,8 +92,8 @@ namespace Apps.Utilities.Actions
                 throw new PluginMisconfigurationException("Either a JSON file or JSON string must be provided");
 
             var jsonObj = input.File != null
-                ? await ErrorWrapperExecute.ExecuteSafely(() => GetParsedJson(input.File))
-                : ErrorWrapperExecute.ExecuteSafely(() => JToken.Parse(input.JsonString ?? string.Empty));
+                ? await GetParsedJson(input.File)
+                : ParseJsonString(input.JsonString!);
 
             var token = GetTokenAtPath(jsonObj, input.PropertyPath)
                 ?? throw new PluginMisconfigurationException($"Property '{input.PropertyPath}' not found in JSON.");
@@ -170,13 +169,48 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        private JToken? SafeSelectFirstToken(JToken root, string path) => ErrorWrapperExecute.ExecuteSafely(() => root.SelectTokens(path).FirstOrDefault());
+        private static JToken? SafeSelectFirstToken(JToken root, string path)
+        {
+            try
+            {
+                return root.SelectTokens(path).FirstOrDefault();
+            }
+            catch (Exception ex) when (IsInvalidJsonPathException(ex))
+            {
+                throw CreateInvalidPropertyPathException(path, ex);
+            }
+        }
 
         private async Task<JObject> GetParsedJson(FileReference file)
         {
-            var fileStream = await _fileManagementClient.DownloadAsync(file);
+            Stream fileStream;
+            try
+            {
+                fileStream = await _fileManagementClient.DownloadAsync(file);
+            }
+            catch (Exception ex) when (ex.Message.Contains("Url for downloading is null", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PluginMisconfigurationException(
+                    "The provided JSON file reference is invalid because it does not contain a download URL. Please re-map or upload the file.", ex);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new PluginMisconfigurationException(
+                    "The provided JSON file reference is invalid. Please re-map or upload the file.", ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new PluginApplicationException(
+                    "The JSON file could not be downloaded because the file service request failed. Please try again later.", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new PluginApplicationException(
+                    "The JSON file download timed out. Please try again later.", ex);
+            }
 
             string jsonString;
+            await using (fileStream)
             using (var reader = new StreamReader(fileStream))
             {
                 jsonString = await reader.ReadToEndAsync();
@@ -191,24 +225,42 @@ namespace Apps.Utilities.Actions
             {
                 return JObject.Parse(jsonString);
             }
-            catch (JsonReaderException)
+            catch (JsonReaderException ex)
             {
                 throw new PluginMisconfigurationException(
-                    "The file content is not valid JSON. Please check the file input");
+                    "The provided file does not contain valid JSON. Please check the file content and try again.", ex);
             }
         }
 
-        private JToken? GetTokenAtPath(JToken jsonObj, string path)
+        private static JToken ParseJsonString(string jsonString)
+        {
+            try
+            {
+                return JToken.Parse(jsonString);
+            }
+            catch (JsonReaderException ex)
+            {
+                throw new PluginMisconfigurationException(
+                    "The provided JSON string is not valid JSON. Please check its format and try again.", ex);
+            }
+        }
+
+        private static JToken? GetTokenAtPath(JToken jsonObj, string path)
         {
             try
             {
                 return jsonObj.SelectToken(path);
             }
-            catch (JsonException ex)
+            catch (Exception ex) when (IsInvalidJsonPathException(ex))
             {
-                throw new PluginMisconfigurationException(
-                    $"The provided property path is invalid. Check the file/string you are sending and the property path. Error details: {ex.Message}");
+                throw CreateInvalidPropertyPathException(path, ex);
             }
         }
+
+        private static bool IsInvalidJsonPathException(Exception exception) =>
+            exception is JsonException or ArgumentException or IndexOutOfRangeException;
+
+        private static PluginMisconfigurationException CreateInvalidPropertyPathException(string path, Exception innerException) =>
+            new($"The property path '{path}' is invalid or contains an array index outside the available range. Please check it against the JSON structure.", innerException);
     }
 }
