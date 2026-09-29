@@ -143,7 +143,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Remove entry from array** returns the array without the specified entry.
 - **Get first entry from array** returns the first element in the array.
 - **Get last entry from array** returns the last element in the array.
-- **Get entry by position** returns the element in the specified position within the array. Initial position is 1.
+- **Get entry by position** returns the element in the specified position within the array. Initial position is 1, positions outside the array bounds (less than 1 or greater than the array length) return an empty string.
 - **Retain specified entries in array** returns the original array without the entries that were not present in the provided control group (entries to keep). The input can only be an array
 - **Array intersection** returns the intersection of two input arrays (returns the elements contained in both arrays).
 - **Extract matches from array using Regex** Extracts all matches from each string in the input array using the provided Regular Expression and returns them as a single array of matches.
