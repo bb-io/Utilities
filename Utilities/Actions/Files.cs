@@ -915,7 +915,26 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
     public async Task<FileDto> ConcatenateFiles(
     [ActionParameter] MultipleFilesRequest request)
     {
-        var firstFile = request.Files.FirstOrDefault();
+        if (request?.Files is null)
+        {
+            throw new PluginMisconfigurationException(
+                "Files are required. Please provide at least one text file.");
+        }
+
+        var files = request.Files.ToList();
+        if (files.Count == 0)
+        {
+            throw new PluginMisconfigurationException(
+                "At least one text file must be provided for concatenation.");
+        }
+
+        if (files.Any(file => file is null))
+        {
+            throw new PluginMisconfigurationException(
+                "The files list contains an invalid file reference. Please re-map the input files.");
+        }
+
+        var firstFile = files[0];
         var extension = Path.GetExtension(firstFile.Name);
         var mimeType = firstFile.ContentType;
 
@@ -925,7 +944,7 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
 
         using (var outputWriter = new StreamWriter(outputStream, encoding, leaveOpen: true))
         {
-            foreach (var fileRef in request.Files)
+            foreach (var fileRef in files)
             {
                 var file = await fileManagementClient.DownloadAsync(fileRef);
 

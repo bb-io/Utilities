@@ -32,6 +32,9 @@ namespace Apps.Utilities.Actions
             if (input.File is null && input.JsonString is null)
                 throw new PluginMisconfigurationException("Either a JSON file or JSON string must be provided");
 
+            if (string.IsNullOrWhiteSpace(input.PropertyPath))
+                throw new PluginMisconfigurationException("Property path is required.");
+
             JToken jsonObj;
             if (input.File != null)
             {
@@ -112,6 +115,15 @@ namespace Apps.Utilities.Actions
         [Action("Change JSON property value")]
         public async Task<ChangeJsonPropertyOutput> ChangeJsonProperty([ActionParameter] ChangeJsonPropertyInput input)
         {
+            if (input is null)
+                throw new PluginMisconfigurationException("Input is required.");
+
+            if (input.File is null)
+                throw new PluginMisconfigurationException("A JSON file is required.");
+
+            if (string.IsNullOrWhiteSpace(input.PropertyPath))
+                throw new PluginMisconfigurationException("Property path is required.");
+
             var nullValueHandling = input.GetNullValueHandlingStrategy();
             if(nullValueHandling == NullValueHandlingStrategy.Ignore && string.IsNullOrEmpty(input.NewValue))
             {
@@ -177,12 +189,15 @@ namespace Apps.Utilities.Actions
             }
             catch (Exception ex) when (IsInvalidJsonPathException(ex))
             {
-                throw CreateInvalidPropertyPathException(path, ex);
+                throw CreateInvalidPropertyPathException(path);
             }
         }
 
         private async Task<JObject> GetParsedJson(FileReference file)
         {
+            if (file is null)
+                throw new PluginMisconfigurationException("A JSON file is required.");
+
             Stream fileStream;
             try
             {
@@ -228,7 +243,7 @@ namespace Apps.Utilities.Actions
             catch (JsonReaderException ex)
             {
                 throw new PluginMisconfigurationException(
-                    "The provided file does not contain valid JSON. Please check the file content and try again.", ex);
+                    CreateInvalidJsonMessage("file", ex));
             }
         }
 
@@ -241,7 +256,7 @@ namespace Apps.Utilities.Actions
             catch (JsonReaderException ex)
             {
                 throw new PluginMisconfigurationException(
-                    "The provided JSON string is not valid JSON. Please check its format and try again.", ex);
+                    CreateInvalidJsonMessage("JSON string", ex));
             }
         }
 
@@ -253,14 +268,23 @@ namespace Apps.Utilities.Actions
             }
             catch (Exception ex) when (IsInvalidJsonPathException(ex))
             {
-                throw CreateInvalidPropertyPathException(path, ex);
+                throw CreateInvalidPropertyPathException(path);
             }
         }
 
         private static bool IsInvalidJsonPathException(Exception exception) =>
             exception is JsonException or ArgumentException or IndexOutOfRangeException;
 
-        private static PluginMisconfigurationException CreateInvalidPropertyPathException(string path, Exception innerException) =>
-            new($"The property path '{path}' is invalid or contains an array index outside the available range. Please check it against the JSON structure.", innerException);
+        private static string CreateInvalidJsonMessage(string source, JsonReaderException exception)
+        {
+            var path = string.IsNullOrWhiteSpace(exception.Path)
+                ? string.Empty
+                : $", path '{exception.Path}'";
+
+            return $"The provided {source} is not valid JSON at line {exception.LineNumber}, position {exception.LinePosition}{path}. Please check the JSON syntax.";
+        }
+
+        private static PluginMisconfigurationException CreateInvalidPropertyPathException(string path) =>
+            new($"The property path '{path}' is not a valid JSONPath expression. Please check its brackets, quotes, dots, and array indexes.");
     }
 }
