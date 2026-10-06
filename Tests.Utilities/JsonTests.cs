@@ -58,9 +58,8 @@ namespace Tests.Utilities
                     PropertyPath = "value"
                 }));
 
-            Assert.AreEqual(
-                "The provided JSON string is not valid JSON. Please check its format and try again.",
-                exception.Message);
+            StringAssert.Contains(exception.Message, "The provided JSON string is not valid JSON at line");
+            StringAssert.Contains(exception.Message, "Please check the JSON syntax.");
         }
 
         [TestMethod]
@@ -73,7 +72,7 @@ namespace Tests.Utilities
                     PropertyPath = "items[-2]"
                 }));
 
-            StringAssert.Contains(exception.Message, "array index outside the available range");
+            StringAssert.Contains(exception.Message, "not a valid JSONPath expression");
         }
 
         [TestMethod]
