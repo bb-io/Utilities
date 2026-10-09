@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using Apps.Utilities.Models.Files;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Tests.Utilities.Base;
+using Blackbird.Filters.Content;
 
 namespace Tests.Utilities;
 
@@ -212,7 +213,23 @@ public class XliffTests: TestBase
         
         Assert.IsNotNull(result);
     }
-    
+
+    [TestMethod]
+    [DataRow("zendesk.html.xlf")]
+    public async Task ExtractTargetFile(string fileName)
+    {
+        // Arrange
+        var actions = new Xliff(FileManager);
+        var input = new FileDto { File = new FileReference { Name = fileName } };
+
+        // Act
+        var result = await actions.ConvertXliffToTarget(input);
+
+        // Assert
+
+        Assert.IsNotNull(result.File);
+    }
+
     private static void DeleteOutputFile(string fileName)
     {
         var path = Path.Combine(GetTestFolderPath(), "Output", fileName);

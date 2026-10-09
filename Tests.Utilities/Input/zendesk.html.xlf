@@ -1,0 +1,1768 @@
+<xliff srcLang="en-us" trgLang="nl" version="2.2" xmlns:mda="urn:oasis:names:tc:xliff:metadata:2.0" xmlns:its="http://www.w3.org/2005/11/its" xmlns:fs="urn:oasis:names:tc:xliff:fs:2.0" xmlns="urn:oasis:names:tc:xliff:document:2.2">
+  <file id="f1" its:revPerson="Mathijs Sonnemans" its:revTool="Zendesk">
+    <skeleton>&lt;html lang="en-us"&gt;&lt;head&gt;&lt;title data-blackbird-key="49012085160593-title"&gt;Troubleshooting Common Security Dashboard Errors!&lt;/title&gt;&lt;meta name="blackbird-reference-id" content="49012085160593"&gt;&lt;meta name="blackbird-ucid" content="49012085160593"&gt;&lt;meta name="blackbird-content-name" content="Troubleshooting Common Security Dashboard Errors!"&gt;&lt;meta name="blackbird-admin-url" content="https://d3v-blackbird.zendesk.com/knowledge/editor/49012085160593/en-us"&gt;&lt;meta name="blackbird-public-url" content="https://d3v-blackbird.zendesk.com/hc/en-us/articles/49012085160593"&gt;&lt;meta name="blackbird-system-name" content="Zendesk"&gt;&lt;meta name="blackbird-system-ref" content="https://www.zendesk.com"&gt;&lt;/head&gt;&lt;body its-rev-tool="Zendesk" its-rev-tool-ref="https://www.zendesk.com" its-rev-person="Mathijs Sonnemans"&gt;&lt;p&gt;&lt;strong&gt;Product:&lt;/strong&gt; Xeno Threat Detection&lt;br&gt;&lt;strong&gt;Category:&lt;/strong&gt; Security Dashboard&lt;br&gt;&lt;strong&gt;Last Updated:&lt;/strong&gt; July 2026&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Overview&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;This article covers the most common issues users encounter when using the &lt;strong&gt;Xeno Threat Detection Security Dashboard&lt;/strong&gt; and provides recommended troubleshooting steps before contacting Weyland Security Support.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Dashboard is not loading&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="e6764649057a6cfec2737ffb510f14646"&gt;Blank dashboard after signing in&lt;/li&gt;
+&lt;li data-list-item-id="e0a972ef1ee6ed328fddee9fcae21920a"&gt;Loading spinner never completes&lt;/li&gt;
+&lt;li data-list-item-id="e6f954950184938f0f35247efe609fcfe"&gt;Widgets display &lt;strong&gt;"Unable to load data"&lt;/strong&gt;
+&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;ol style="list-style-type: decimal;" type="1"&gt;
+&lt;li data-list-item-id="ee0b38f01b53e0efe15a10873c6df3078"&gt;Refresh the browser.&lt;/li&gt;
+&lt;li data-list-item-id="e4b9c7bdf08b0e80624bf84ab687eb98a"&gt;Verify your internet connection.&lt;/li&gt;
+&lt;li data-list-item-id="e222b367001338c79155c465c0cd7df17"&gt;Confirm that your user account has &lt;strong&gt;Security Dashboard&lt;/strong&gt; permissions.&lt;/li&gt;
+&lt;li data-list-item-id="ed350bb6db4fb5aab9d5c4bccb716c16a"&gt;Clear your browser cache and cookies.&lt;/li&gt;
+&lt;li data-list-item-id="ee46b5b1f728fe995ceca3b269fb58659"&gt;Check the &lt;strong&gt;System Status&lt;/strong&gt; indicator in the top navigation. If the platform is undergoing maintenance, wait a few minutes before trying again.&lt;/li&gt;
+&lt;/ol&gt;&lt;p&gt;&lt;strong&gt;Open Critical Vulnerabilities count is incorrect&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="e3496c0bb43cb059c5bd5c62748153637"&gt;Vulnerability count appears lower or higher than expected.&lt;/li&gt;
+&lt;li data-list-item-id="eb3bf2b9bc7b7d957f4931ee08dde81fc"&gt;Dashboard totals do not match exported reports.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="ec376e5bd16dab180147dec8925ec8b80"&gt;Verify that the selected time range is correct.&lt;/li&gt;
+&lt;li data-list-item-id="e22e5ec420dbc810976d3692b0e0f26a6"&gt;Confirm filters (Business Unit, Environment, Severity, Region) have not been applied.&lt;/li&gt;
+&lt;li data-list-item-id="ea392a45cfd0edea9efabe6dfe974f2df"&gt;Allow up to five minutes for newly discovered vulnerabilities to be processed.&lt;/li&gt;
+&lt;li data-list-item-id="e3f8876c7ffa57116ba5cfd8b3dd5b33a"&gt;Select &lt;strong&gt;Refresh Dashboard&lt;/strong&gt; to force a synchronization.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Assets Logged widget shows missing assets&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="ee6c516f90be73ea6c47cd55dd17c8c6f"&gt;Recently deployed endpoints do not appear.&lt;/li&gt;
+&lt;li data-list-item-id="e7f0c26f13de49be0e66137647da11d4f"&gt;Asset count decreases unexpectedly.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="e44f8d9d7c3be86688037568a040a2255"&gt;Confirm that the endpoint connector is online.&lt;/li&gt;
+&lt;li data-list-item-id="ef22b0dda9fe115d73275c091776b9383"&gt;Verify API credentials have not expired.&lt;/li&gt;
+&lt;li data-list-item-id="e9fafe68e29e868b2b4acdf20dbc37cd4"&gt;Review the &lt;strong&gt;Logs&lt;/strong&gt; section for synchronization failures.&lt;/li&gt;
+&lt;li data-list-item-id="e18b949245ba3d9427fd4bf33e1dd8a60"&gt;Ensure the asset has successfully completed its initial scan.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Failure Warning icon is displayed&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;A yellow or red &lt;strong&gt;Failure Warning&lt;/strong&gt; appears on the dashboard.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Possible Causes&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="ead0114ea1cdef182d2238ce041e3a003"&gt;Connector authentication failure&lt;/li&gt;
+&lt;li data-list-item-id="e3dfe624fb2513829de4538cdd9fa8de5"&gt;Scheduled scan timeout&lt;/li&gt;
+&lt;li data-list-item-id="eb6f9fafb04a7a75a64fdb6ed015085cc"&gt;Threat intelligence feed unavailable&lt;/li&gt;
+&lt;li data-list-item-id="e4ede5cc904e07deaa2110e84a9d25c8f"&gt;Cloud provider API rate limits&lt;/li&gt;
+&lt;li data-list-item-id="eee09ebbd5e85d960032f31a72c22b461"&gt;Network connectivity interruption&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;ol style="list-style-type: decimal;" type="1"&gt;
+&lt;li data-list-item-id="ea0488db6a18f79200c24787b07abeeeb"&gt;Open &lt;strong&gt;Logs&lt;/strong&gt; from the navigation menu.&lt;/li&gt;
+&lt;li data-list-item-id="ec3c512667a92d3d4d2b68e4159008b9d"&gt;Locate the most recent warning event.&lt;/li&gt;
+&lt;li data-list-item-id="ee395ec89d2ae8174dbba4fede4385ce6"&gt;Review the detailed error message.&lt;/li&gt;
+&lt;li data-list-item-id="e197700a4f8d4705fe9f9bbb8bf8868b8"&gt;Resolve the underlying connector or network issue.&lt;/li&gt;
+&lt;li data-list-item-id="e8ac6ebc9ea73c6f84f7940949decdfe4"&gt;Restart the affected integration if necessary.&lt;/li&gt;
+&lt;/ol&gt;&lt;p&gt;&lt;strong&gt;Dashboard data is outdated&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;The &lt;strong&gt;Last Updated&lt;/strong&gt; timestamp is older than expected.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="e643f402bc8ce5db68276a86d18b8da85"&gt;Verify that data collection services are running.&lt;/li&gt;
+&lt;li data-list-item-id="e94c4b3f7949ae189927a40145318d572"&gt;Confirm scheduled scans are completing successfully.&lt;/li&gt;
+&lt;li data-list-item-id="ea945f40bdb1d878f0dde9d6eaab3e8f5"&gt;Check connector health from the Integrations page.&lt;/li&gt;
+&lt;li data-list-item-id="e7dc34ded97ac8b5b6b4fcc144bc7dc0e"&gt;Manually initiate a new scan using &lt;strong&gt;Start Scan&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Start Scan button is disabled&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;The &lt;strong&gt;Start Scan&lt;/strong&gt; button cannot be selected.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;This typically occurs when:&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="e9e33df54275764cc7b3f6c61ea7f921e"&gt;Another scan is already running.&lt;/li&gt;
+&lt;li data-list-item-id="e41598cd5ad93dacfbb55f632866f14a6"&gt;Your account has read-only permissions.&lt;/li&gt;
+&lt;li data-list-item-id="edabcf51858dfda41b08d16ddf9276a5b"&gt;The selected project is archived.&lt;/li&gt;
+&lt;li data-list-item-id="e68c91a97abf8754440a7af624450f388"&gt;System maintenance is currently in progress.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;Wait for the active scan to finish or contact your administrator to verify your permissions.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Unable to open Projects&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Symptoms&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Projects fail to load or display an access error.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Resolution&lt;/strong&gt;&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="eee2c76cf76a8d92b5498d5d7bdd4ca4b"&gt;Verify you have access to the selected project.&lt;/li&gt;
+&lt;li data-list-item-id="e138c1fb7b7b53bcbd35267774c385cb8"&gt;Confirm the project has not been archived.&lt;/li&gt;
+&lt;li data-list-item-id="ef093aa486f7222badc4dd51abdb1d89b"&gt;Refresh your session by signing out and back in.&lt;/li&gt;
+&lt;li data-list-item-id="ebbc3fe43d9b7e37ef717e464f4fe4cf9"&gt;Contact your workspace administrator if the problem persists.&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;&lt;strong&gt;Reviewing diagnostic logs&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;If you're experiencing unexpected behavior, open the &lt;strong&gt;Logs&lt;/strong&gt; section and look for:&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="eacb015ededcb38d186764c2d36ed37ed"&gt;Connector authentication failures&lt;/li&gt;
+&lt;li data-list-item-id="e195e84f0ee5f985bb2f07544fe166fb8"&gt;API timeout errors&lt;/li&gt;
+&lt;li data-list-item-id="ed0514cb1ff200f7255c3fea5273ac9cf"&gt;Synchronization failures&lt;/li&gt;
+&lt;li data-list-item-id="e79c377224cdca7d448aeedcb547f321b"&gt;Scan completion events&lt;/li&gt;
+&lt;li data-list-item-id="e327d0eeab6603fda60f6e831b102a404"&gt;Threat intelligence update failures&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;The log history often provides enough detail to identify the source of the issue before opening a support request.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Need additional help?&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;If the issue continues after following the steps above, contact &lt;strong&gt;Weyland Security Support&lt;/strong&gt; and include:&lt;/p&gt;&lt;ul style="list-style-type: disc;"&gt;
+&lt;li data-list-item-id="efb53a27cc02b8ad9567be1d3a0302882"&gt;Timestamp of the issue&lt;/li&gt;
+&lt;li data-list-item-id="e86f471d5de964a948eeac44b77e106a4"&gt;Screenshot of the Security Dashboard&lt;/li&gt;
+&lt;li data-list-item-id="e440ce0fab13175079f1f5450fa3b780d"&gt;Relevant log entries&lt;/li&gt;
+&lt;li data-list-item-id="e88fb75fe9b94774a787c3886c3734d94"&gt;Browser and version&lt;/li&gt;
+&lt;li data-list-item-id="e8194ded29a0f46916e48404f8401463c"&gt;A brief description of the problem and the steps you've already taken&lt;/li&gt;
+&lt;/ul&gt;&lt;p&gt;Providing this information helps our support engineers investigate and resolve your issue more quickly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</skeleton>
+    <mda:metadata>
+      <mda:metaGroup category="blackbird">
+        <mda:meta type="original-name">Troubleshooting Common Security Dashboard Errors!.html</mda:meta>
+        <mda:meta type="original-media-type">text/html</mda:meta>
+        <mda:meta type="source-ucid">49012085160593</mda:meta>
+        <mda:meta type="source-content-name">Troubleshooting Common Security Dashboard Errors!</mda:meta>
+        <mda:meta type="source-admin-url">https://d3v-blackbird.zendesk.com/knowledge/editor/49012085160593/en-us</mda:meta>
+        <mda:meta type="source-public-url">https://d3v-blackbird.zendesk.com/hc/en-us/articles/49012085160593</mda:meta>
+        <mda:meta type="source-system-name">Zendesk</mda:meta>
+        <mda:meta type="source-system-ref">https://www.zendesk.com</mda:meta>
+      </mda:metaGroup>
+      <mda:metaGroup category="Blacklake">
+        <mda:meta type="leverageId">3c8a41bc-2ec5-479e-bab9-d30f82cfdf15</mda:meta>
+      </mda:metaGroup>
+      <mda:metaGroup>
+        <mda:meta type="blackbird-reference-id">49012085160593</mda:meta>
+      </mda:metaGroup>
+    </mda:metadata>
+    <notes>
+      <note category="Audience and messaging">Frame training around strength, energy, health and feeling good, not around weight loss, calorie burning or body shame. Examples: "Word sterker, elke week"; not "Verbrand die kerstkilo's".</note>
+      <note category="Audience and messaging">Never use guilt, fear or "bikini body" style pressure as motivation. Do not imply the reader's current body is a problem to be fixed.</note>
+      <note category="Audience and messaging">Assume the reader is busy and knows the basics. Reference real-life context such as werk, studie, reistijd and een druk weekend, and offer realistic options (15-minuten workout, thuis of in de gym).</note>
+      <note category="Audience and messaging">Avoid patronising or diminutive language. Do not use "meisje", "dametjes", "lieverd" or feminised product talk such as "gewichtjes" and "roze dumbbells". Address the reader as an adult athlete.</note>
+      <note category="Dates and times">Use the 24-hour clock with a colon as separator and write dates in day-month-year order. Examples: 07:30; 19:15; 4 januari 2027; 04-01-2027. Do not capitalise weekdays or months.</note>
+      <note category="Formatting">Front-load the benefit in headings and keep them under 60 characters. Use bullet lists for exercises, tips and steps rather than long paragraphs.</note>
+      <note category="Formatting">Use emoji generously to add energy and rhythm. Headings, social posts and short body copy may carry several, and bullet lists can be led by a fitting emoji per item. Favour sport, energy and celebration emoji. Examples: "Sterker in 4 weken"; "Rustdag = groeidag"; "Klaar voor leg day?". Keep them out of legal text, disclaimers and product specifications.</note>
+      <note category="Inclusivity">Write for all bodies and all levels. Mention beginner-friendly alternatives and equipment-free variations, and do not assume a specific body type, fitness level, relationship status or parenthood.</note>
+      <note category="Numbers and units">Use the metric system with a non-breaking space between number and unit. Examples: 5 km; 20 kg; 45 min; 2,5 kg. Use a comma as decimal separator and a period as thousands separator.</note>
+      <note category="Numbers and units">Write sets and reps in the conventional short form with a multiplication sign. Examples: 3 x 12 reps; 4 x 8 squats. Spell out numbers one to twelve in running text, but always use digits for sets, reps, weights and distances.</note>
+      <note category="Spelling and grammar">Write English loanwords as compounds according to Dutch rules, with a hyphen only where it aids readability. Examples: workoutschema; crossfitbox; hiit-training; core-oefening. Not: workout schema; core oefening.</note>
+      <note category="Spelling and grammar">Avoid writing entire words or sentences in capitals, except for acronyms and official names. Examples: HIIT; PR; AMRAP.</note>
+      <note category="Style and tone">Address the reader informally with "je" and "jij", never "u". The voice is a training buddy, not a coach barking orders. Examples: "Klaar voor je volgende PR?"; not "Bent u klaar voor uw volgende PR?".</note>
+      <note category="Style and tone">Keep the energy up but stay authentic: enthusiastic and encouraging, never shouty or hype-driven. Avoid exclamation-mark stacking and all-caps motivation. Examples: "Lekker bezig."; not "JIJ BENT EEN BEEST!!!".</note>
+      <note category="Style and tone">Write short, punchy sentences. Aim for a maximum of 20 words per sentence and one idea per sentence, so content stays scannable on mobile.</note>
+      <note category="Style and tone">Use active voice and direct calls to action. Examples: "Boek je proefles"; not "Er kan een proefles geboekt worden".</note>
+      <note category="Terminology">Keep established English fitness terms that this audience actually uses, and do not translate them into stiff Dutch. Examples: workout; core; squat; deadlift; reps; sets; warming-up; cooling-down; PR; rustdag. Not: opdrukoefening voor push-up; herhalingen voor reps.</note>
+      <note category="Terminology">Limit unnecessary anglicisms outside fitness jargon. Use the Dutch word when it is just as natural. Examples: "doel" instead of "goal"; "schema" instead of "schedule"; "voeding" instead of "nutrition".</note>
+      <note category="Terminology">Explain physiological or training-science terms in plain language the first time they appear. Examples: "progressive overload (steeds iets zwaarder of vaker trainen)"; "DOMS (spierpijn een dag of twee later)".</note>
+      <note category="Terminology">Never present training or nutrition advice as medical advice. Refer to a huisarts, fysiotherapeut or dietist for injuries, pregnancy, cycle-related complaints or eating concerns.</note>
+      <note category="Dates and times">Write years in full. Examples: 1989; 2025.</note>
+      <note category="Dates and times">Use the 24-hour clock with a colon as separator. Examples: 08:30; 17:00; 22:15.</note>
+      <note category="Spelling and grammar">Avoid writing entire words or sentences in capitals, except for acronyms, initialisms, and official names.</note>
+      <note category="Style and tone">Address the reader informally using “je”.</note>
+      <note category="Style and tone">Use a warm, friendly, and accessible tone.</note>
+      <note category="Style and tone">Prefer gender-neutral words and job titles where possible. Examples: voorzitter; medewerker; politieagent.</note>
+      <note category="Other">Write for a younger audience ages 20-35</note>
+    </notes>
+    <unit id="u1" name="/html[1]/head[1]/title[1]" its:locQualityRatingScore="0.8167600035667419" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="title">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:meta type="key">49012085160593-title</mda:meta>
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">110</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Troubleshooting Common Security Dashboard Errors!</source>
+        <target>Veelvoorkomende fouten in het beveiligingsdashboard oplossen!</target>
+      </segment>
+    </unit>
+    <unit id="u2" name="/html[1]/body[1]/p[1]" its:locQualityRatingScore="0.9469900131225586" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">289</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+        <data id="d3">&lt;br&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Product:<ec dataRef="d2" startRef="1" /> Xeno Threat Detection<ph id="2" dataRef="d3" fs:fs="br" /><sc id="3" dataRef="d1" fs:fs="strong" />Category:<ec dataRef="d2" startRef="3" /> Security Dashboard<ph id="4" dataRef="d3" fs:fs="br" /><sc id="5" dataRef="d1" fs:fs="strong" />Last Updated:<ec dataRef="d2" startRef="5" /> July 2026</source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Product:<ec dataRef="d2" startRef="1" /> Xeno Threat Detection<ph id="2" dataRef="d3" fs:fs="br" /><sc id="3" dataRef="d1" fs:fs="strong" />Categorie:<ec dataRef="d2" startRef="3" /> Beveiligingsdashboard<ph id="4" dataRef="d3" fs:fs="br" /><sc id="5" dataRef="d1" fs:fs="strong" />Laatst bijgewerkt:<ec dataRef="d2" startRef="5" /> juli 2026</target>
+      </segment>
+    </unit>
+    <unit id="u3" name="/html[1]/body[1]/p[2]" its:locQualityRatingScore="0.9497799873352051" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Overview<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Overzicht<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u4" name="/html[1]/body[1]/p[3]" its:locQualityRatingScore="0.9300900101661682" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">492</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>This article covers the most common issues users encounter when using the <sc id="1" dataRef="d1" fs:fs="strong" />Xeno Threat Detection Security Dashboard<ec dataRef="d2" startRef="1" /> and provides recommended troubleshooting steps before contacting Weyland Security Support.</source>
+        <target>Dit artikel behandelt de meest voorkomende problemen die gebruikers tegenkomen bij het gebruik van het <sc id="1" dataRef="d1" fs:fs="strong" />Xeno Threat Detection-beveiligingsdashboard<ec dataRef="d2" startRef="1" /> en biedt aanbevolen stappen voor probleemoplossing voordat u contact opneemt met Weyland Security Support.</target>
+      </segment>
+    </unit>
+    <unit id="u5" name="/html[1]/body[1]/p[4]" its:locQualityRatingScore="0.9658899903297424" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">86</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Dashboard is not loading<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Dashboard wordt niet geladen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u6" name="/html[1]/body[1]/p[5]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u7" name="/html[1]/body[1]/ul[1]/li[1]" its:locQualityRatingScore="0.9333299994468689" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">62</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Blank dashboard after signing in</source>
+        <target>Leeg dashboard na het inloggen</target>
+      </segment>
+    </unit>
+    <unit id="u8" name="/html[1]/body[1]/ul[1]/li[2]" its:locQualityRatingScore="0.754040002822876" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">68</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Loading spinner never completes</source>
+        <target>De laadindicator wordt nooit voltooid</target>
+      </segment>
+    </unit>
+    <unit id="u9" name="/html[1]/body[1]/ul[1]/li[3]" its:locQualityRatingScore="0.8705999851226807" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">122</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Widgets display <sc id="1" dataRef="d1" fs:fs="strong" />"Unable to load data"<ec dataRef="d2" startRef="1" /></source>
+        <target>Widgets tonen <sc id="1" dataRef="d1" fs:fs="strong" />"Gegevens kunnen niet worden geladen"<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u10" name="/html[1]/body[1]/p[6]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u11" name="/html[1]/body[1]/ol[1]/li[1]" its:locQualityRatingScore="0.9455599784851074" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">40</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Refresh the browser.</source>
+        <target>Vernieuw de browser.</target>
+      </segment>
+    </unit>
+    <unit id="u12" name="/html[1]/body[1]/ol[1]/li[2]" its:locQualityRatingScore="0.9316200017929077" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">65</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Verify your internet connection.</source>
+        <target>Controleer uw internetverbinding.</target>
+      </segment>
+    </unit>
+    <unit id="u13" name="/html[1]/body[1]/ol[1]/li[3]" its:locQualityRatingScore="0.8435199856758118" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">196</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Confirm that your user account has <sc id="1" dataRef="d1" fs:fs="strong" />Security Dashboard<ec dataRef="d2" startRef="1" /> permissions.</source>
+        <target>Controleer of uw gebruikersaccount over de machtigingen voor het <sc id="1" dataRef="d1" fs:fs="strong" />beveiligingsdashboard<ec dataRef="d2" startRef="1" /> beschikt.</target>
+      </segment>
+    </unit>
+    <unit id="u14" name="/html[1]/body[1]/ol[1]/li[4]" its:locQualityRatingScore="0.9429399967193604" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">76</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Clear your browser cache and cookies.</source>
+        <target>Wis de cache en cookies van uw browser.</target>
+      </segment>
+    </unit>
+    <unit id="u15" name="/html[1]/body[1]/ol[1]/li[5]" its:locQualityRatingScore="0.857230007648468" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">335</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Check the <sc id="1" dataRef="d1" fs:fs="strong" />System Status<ec dataRef="d2" startRef="1" /> indicator in the top navigation. If the platform is undergoing maintenance, wait a few minutes before trying again.</source>
+        <target>Controleer de indicator <sc id="1" dataRef="d1" fs:fs="strong" />Systeemstatus<ec dataRef="d2" startRef="1" /> in de bovenste navigatiebalk. Als het platform wordt onderhouden, wacht dan een paar minuten voordat u het opnieuw probeert.</target>
+      </segment>
+    </unit>
+    <unit id="u16" name="/html[1]/body[1]/p[7]" its:locQualityRatingScore="0.8725299835205078" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">132</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Open Critical Vulnerabilities count is incorrect<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Het aantal open kritieke kwetsbaarheden is onjuist<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u17" name="/html[1]/body[1]/p[8]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u18" name="/html[1]/body[1]/ul[2]/li[1]" its:locQualityRatingScore="0.9061999917030334" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">118</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Vulnerability count appears lower or higher than expected.</source>
+        <target>Het aantal kwetsbaarheden lijkt lager of hoger dan verwacht.</target>
+      </segment>
+    </unit>
+    <unit id="u19" name="/html[1]/body[1]/ul[2]/li[2]" its:locQualityRatingScore="0.8498899936676025" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">123</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Dashboard totals do not match exported reports.</source>
+        <target>De totalen van het dashboard komen niet overeen met geëxporteerde rapporten.</target>
+      </segment>
+    </unit>
+    <unit id="u20" name="/html[1]/body[1]/p[9]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u21" name="/html[1]/body[1]/ul[3]/li[1]" its:locQualityRatingScore="0.920520007610321" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">100</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Verify that the selected time range is correct.</source>
+        <target>Controleer of het geselecteerde tijdsbereik juist is.</target>
+      </segment>
+    </unit>
+    <unit id="u22" name="/html[1]/body[1]/ul[3]/li[2]" its:locQualityRatingScore="0.79448002576828" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">170</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Confirm filters (Business Unit, Environment, Severity, Region) have not been applied.</source>
+        <target>Controleer of er geen filters (Business Unit, Omgeving, Ernst, Regio) zijn toegepast.</target>
+      </segment>
+    </unit>
+    <unit id="u23" name="/html[1]/body[1]/ul[3]/li[3]" its:locQualityRatingScore="0.8788800239562988" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">165</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Allow up to five minutes for newly discovered vulnerabilities to be processed.</source>
+        <target>Geef nieuw ontdekte kwetsbaarheden maximaal vijf minuten de tijd om te worden verwerkt.</target>
+      </segment>
+    </unit>
+    <unit id="u24" name="/html[1]/body[1]/ul[3]/li[4]" its:locQualityRatingScore="0.8810999989509583" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">153</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Select <sc id="1" dataRef="d1" fs:fs="strong" />Refresh Dashboard<ec dataRef="d2" startRef="1" /> to force a synchronization.</source>
+        <target>Selecteer <sc id="1" dataRef="d1" fs:fs="strong" />Dashboard vernieuwen<ec dataRef="d2" startRef="1" /> om een synchronisatie af te dwingen.</target>
+      </segment>
+    </unit>
+    <unit id="u25" name="/html[1]/body[1]/p[10]" its:locQualityRatingScore="0.8519099950790405" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">128</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Assets Logged widget shows missing assets<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Widget Geregistreerde assets toont ontbrekende assets<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u26" name="/html[1]/body[1]/p[11]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u27" name="/html[1]/body[1]/ul[4]/li[1]" its:locQualityRatingScore="0.9328200221061707" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">100</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Recently deployed endpoints do not appear.</source>
+        <target>Recent geïmplementeerde endpoints worden niet weergegeven.</target>
+      </segment>
+    </unit>
+    <unit id="u28" name="/html[1]/body[1]/ul[4]/li[2]" its:locQualityRatingScore="0.8617299795150757" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">73</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Asset count decreases unexpectedly.</source>
+        <target>Het aantal assets neemt onverwacht af.</target>
+      </segment>
+    </unit>
+    <unit id="u29" name="/html[1]/body[1]/p[12]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u30" name="/html[1]/body[1]/ul[5]/li[1]" its:locQualityRatingScore="0.42135998606681824" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">92</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Confirm that the endpoint connector is online.</source>
+        <target>Controleer of de endpoint-connector online is.</target>
+      </segment>
+    </unit>
+    <unit id="u31" name="/html[1]/body[1]/ul[5]/li[2]" its:locQualityRatingScore="0.8697599768638611" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">94</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Verify API credentials have not expired.</source>
+        <target>Controleer of de API-inloggegevens niet zijn verlopen.</target>
+      </segment>
+    </unit>
+    <unit id="u32" name="/html[1]/body[1]/ul[5]/li[3]" its:locQualityRatingScore="0.8525400161743164" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">141</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Review the <sc id="1" dataRef="d1" fs:fs="strong" />Logs<ec dataRef="d2" startRef="1" /> section for synchronization failures.</source>
+        <target>Bekijk het gedeelte <sc id="1" dataRef="d1" fs:fs="strong" />Logboeken<ec dataRef="d2" startRef="1" /> op synchronisatiefouten.</target>
+      </segment>
+    </unit>
+    <unit id="u33" name="/html[1]/body[1]/ul[5]/li[4]" its:locQualityRatingScore="0.8744199872016907" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">127</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Ensure the asset has successfully completed its initial scan.</source>
+        <target>Zorg ervoor dat de asset de eerste scan met succes heeft voltooid.</target>
+      </segment>
+    </unit>
+    <unit id="u34" name="/html[1]/body[1]/p[13]" its:locQualityRatingScore="0.876550018787384" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">115</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Failure Warning icon is displayed<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Het pictogram Foutwaarschuwing wordt weergegeven<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u35" name="/html[1]/body[1]/p[14]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u36" name="/html[1]/body[1]/p[15]" its:locQualityRatingScore="0.8997099995613098" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">156</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>A yellow or red <sc id="1" dataRef="d1" fs:fs="strong" />Failure Warning<ec dataRef="d2" startRef="1" /> appears on the dashboard.</source>
+        <target>Er verschijnt een gele of rode <sc id="1" dataRef="d1" fs:fs="strong" />Foutwaarschuwing<ec dataRef="d2" startRef="1" /> op het dashboard.</target>
+      </segment>
+    </unit>
+    <unit id="u37" name="/html[1]/body[1]/p[16]" its:locQualityRatingScore="0.9643399715423584" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">67</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Possible Causes<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Mogelijke oorzaken<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u38" name="/html[1]/body[1]/ul[6]/li[1]" its:locQualityRatingScore="0.8920199871063232" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">66</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Connector authentication failure</source>
+        <target>Authenticatiefout van de connector</target>
+      </segment>
+    </unit>
+    <unit id="u39" name="/html[1]/body[1]/ul[6]/li[2]" its:locQualityRatingScore="0.7993699908256531" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">48</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Scheduled scan timeout</source>
+        <target>Time-out van geplande scan</target>
+      </segment>
+    </unit>
+    <unit id="u40" name="/html[1]/body[1]/ul[6]/li[3]" its:locQualityRatingScore="0.9360600113868713" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">77</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Threat intelligence feed unavailable</source>
+        <target>Threat intelligence-feed niet beschikbaar</target>
+      </segment>
+    </unit>
+    <unit id="u41" name="/html[1]/body[1]/ul[6]/li[4]" its:locQualityRatingScore="0.8283399939537048" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">79</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Cloud provider API rate limits</source>
+        <target>Snelheidslimieten van de API van de cloudprovider</target>
+      </segment>
+    </unit>
+    <unit id="u42" name="/html[1]/body[1]/ul[6]/li[5]" its:locQualityRatingScore="0.8770400285720825" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">70</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Network connectivity interruption</source>
+        <target>Onderbreking van de netwerkverbinding</target>
+      </segment>
+    </unit>
+    <unit id="u43" name="/html[1]/body[1]/p[17]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u44" name="/html[1]/body[1]/ol[2]/li[1]" its:locQualityRatingScore="0.9281200170516968" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">106</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Open <sc id="1" dataRef="d1" fs:fs="strong" />Logs<ec dataRef="d2" startRef="1" /> from the navigation menu.</source>
+        <target>Open <sc id="1" dataRef="d1" fs:fs="strong" />Logboeken<ec dataRef="d2" startRef="1" /> via het navigatiemenu.</target>
+      </segment>
+    </unit>
+    <unit id="u45" name="/html[1]/body[1]/ol[2]/li[2]" its:locQualityRatingScore="0.9014099836349487" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">84</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Locate the most recent warning event.</source>
+        <target>Zoek de meest recente waarschuwingsgebeurtenis.</target>
+      </segment>
+    </unit>
+    <unit id="u46" name="/html[1]/body[1]/ol[2]/li[3]" its:locQualityRatingScore="0.8826599717140198" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">71</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Review the detailed error message.</source>
+        <target>Bekijk de gedetailleerde foutmelding.</target>
+      </segment>
+    </unit>
+    <unit id="u47" name="/html[1]/body[1]/ol[2]/li[4]" its:locQualityRatingScore="0.9129199981689453" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">116</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Resolve the underlying connector or network issue.</source>
+        <target>Los het onderliggende probleem met de connector of het netwerk op.</target>
+      </segment>
+    </unit>
+    <unit id="u48" name="/html[1]/body[1]/ol[2]/li[5]" its:locQualityRatingScore="0.8549000024795532" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">99</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Restart the affected integration if necessary.</source>
+        <target>Start indien nodig de betreffende integratie opnieuw.</target>
+      </segment>
+    </unit>
+    <unit id="u49" name="/html[1]/body[1]/p[18]" its:locQualityRatingScore="0.9692599773406982" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">92</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Dashboard data is outdated<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Dashboardgegevens zijn verouderd<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u50" name="/html[1]/body[1]/p[19]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u51" name="/html[1]/body[1]/p[20]" its:locQualityRatingScore="0.9128199815750122" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">139</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>The <sc id="1" dataRef="d1" fs:fs="strong" />Last Updated<ec dataRef="d2" startRef="1" /> timestamp is older than expected.</source>
+        <target>De tijdstempel <sc id="1" dataRef="d1" fs:fs="strong" />Laatst bijgewerkt<ec dataRef="d2" startRef="1" /> is ouder dan verwacht.</target>
+      </segment>
+    </unit>
+    <unit id="u52" name="/html[1]/body[1]/p[21]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u53" name="/html[1]/body[1]/ul[7]/li[1]" its:locQualityRatingScore="0.8964800238609314" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">112</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Verify that data collection services are running.</source>
+        <target>Controleer of de services voor gegevensverzameling actief zijn.</target>
+      </segment>
+    </unit>
+    <unit id="u54" name="/html[1]/body[1]/ul[7]/li[2]" its:locQualityRatingScore="0.8748599886894226" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">107</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Confirm scheduled scans are completing successfully.</source>
+        <target>Controleer of geplande scans succesvol worden voltooid.</target>
+      </segment>
+    </unit>
+    <unit id="u55" name="/html[1]/body[1]/ul[7]/li[3]" its:locQualityRatingScore="0.8469899892807007" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">113</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Check connector health from the Integrations page.</source>
+        <target>Controleer de status van de connector op de pagina Integraties.</target>
+      </segment>
+    </unit>
+    <unit id="u56" name="/html[1]/body[1]/ul[7]/li[4]" its:locQualityRatingScore="0.8782299757003784" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">129</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>Manually initiate a new scan using <sc id="1" dataRef="d1" fs:fs="strong" />Start Scan<ec dataRef="d2" startRef="1" />.</source>
+        <target>Start handmatig een nieuwe scan met <sc id="1" dataRef="d1" fs:fs="strong" />Scan starten<ec dataRef="d2" startRef="1" />.</target>
+      </segment>
+    </unit>
+    <unit id="u57" name="/html[1]/body[1]/p[22]" its:locQualityRatingScore="0.911270022392273" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">100</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Start Scan button is disabled<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />De knop Scan starten is uitgeschakeld<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u58" name="/html[1]/body[1]/p[23]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u59" name="/html[1]/body[1]/p[24]" its:locQualityRatingScore="0.9216700196266174" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">125</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>The <sc id="1" dataRef="d1" fs:fs="strong" />Start Scan<ec dataRef="d2" startRef="1" /> button cannot be selected.</source>
+        <target>De knop <sc id="1" dataRef="d1" fs:fs="strong" />Scan starten<ec dataRef="d2" startRef="1" /> kan niet worden geselecteerd.</target>
+      </segment>
+    </unit>
+    <unit id="u60" name="/html[1]/body[1]/p[25]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u61" name="/html[1]/body[1]/p[26]" its:locQualityRatingScore="0.9683399796485901" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">55</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="final">
+        <source>This typically occurs when:</source>
+        <target>Dit gebeurt meestal wanneer:</target>
+      </segment>
+    </unit>
+    <unit id="u62" name="/html[1]/body[1]/ul[8]/li[1]" its:locQualityRatingScore="0.8016200065612793" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">71</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Another scan is already running.</source>
+        <target>Er al een andere scan wordt uitgevoerd.</target>
+      </segment>
+    </unit>
+    <unit id="u63" name="/html[1]/body[1]/ul[8]/li[2]" its:locQualityRatingScore="0.6542500257492065" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">81</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Your account has read-only permissions.</source>
+        <target>Uw account alleen-lezenmachtigingen heeft.</target>
+      </segment>
+    </unit>
+    <unit id="u64" name="/html[1]/body[1]/ul[8]/li[3]" its:locQualityRatingScore="0.9208599925041199" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">75</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>The selected project is archived.</source>
+        <target>Het geselecteerde project is gearchiveerd.</target>
+      </segment>
+    </unit>
+    <unit id="u65" name="/html[1]/body[1]/ul[8]/li[4]" its:locQualityRatingScore="0.6605899930000305" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">91</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>System maintenance is currently in progress.</source>
+        <target>Er momenteel systeemonderhoud wordt uitgevoerd.</target>
+      </segment>
+    </unit>
+    <unit id="u66" name="/html[1]/body[1]/p[27]" its:locQualityRatingScore="0.9114300012588501" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">206</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Wait for the active scan to finish or contact your administrator to verify your permissions.</source>
+        <target>Wacht tot de actieve scan is voltooid of neem contact op met uw beheerder om uw machtigingen te laten controleren.</target>
+      </segment>
+    </unit>
+    <unit id="u67" name="/html[1]/body[1]/p[28]" its:locQualityRatingScore="0.9382200241088867" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">93</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Unable to open Projects<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Projecten kunnen niet worden geopend<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u68" name="/html[1]/body[1]/p[29]" its:locQualityRatingScore="0.9884300231933594" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">51</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="final">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptoms<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Symptomen<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u69" name="/html[1]/body[1]/p[30]" its:locQualityRatingScore="0.928380012512207" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">120</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Projects fail to load or display an access error.</source>
+        <target>Projecten worden niet geladen of er wordt een toegangsfout weergegeven.</target>
+      </segment>
+    </unit>
+    <unit id="u70" name="/html[1]/body[1]/p[31]" its:locQualityRatingScore="0.6916800141334534" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">53</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Resolution<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Oplossing<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u71" name="/html[1]/body[1]/ul[9]/li[1]" its:locQualityRatingScore="0.9477900266647339" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">106</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Verify you have access to the selected project.</source>
+        <target>Controleer of u toegang hebt tot het geselecteerde project.</target>
+      </segment>
+    </unit>
+    <unit id="u72" name="/html[1]/body[1]/ul[9]/li[2]" its:locQualityRatingScore="0.9045600295066833" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">89</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Confirm the project has not been archived.</source>
+        <target>Controleer of het project niet is gearchiveerd.</target>
+      </segment>
+    </unit>
+    <unit id="u73" name="/html[1]/body[1]/ul[9]/li[3]" its:locQualityRatingScore="0.888759970664978" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">112</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Refresh your session by signing out and back in.</source>
+        <target>Vernieuw uw sessie door u af te melden en opnieuw aan te melden.</target>
+      </segment>
+    </unit>
+    <unit id="u74" name="/html[1]/body[1]/ul[9]/li[4]" its:locQualityRatingScore="0.9006699919700623" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">150</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Contact your workspace administrator if the problem persists.</source>
+        <target>Neem contact op met de beheerder van uw werkruimte als het probleem zich blijft voordoen.</target>
+      </segment>
+    </unit>
+    <unit id="u75" name="/html[1]/body[1]/p[32]" its:locQualityRatingScore="0.8878600001335144" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">91</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Reviewing diagnostic logs<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Diagnostische logboeken bekijken<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u76" name="/html[1]/body[1]/p[33]" its:locQualityRatingScore="0.9255899786949158" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">191</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>If you're experiencing unexpected behavior, open the <sc id="1" dataRef="d1" fs:fs="strong" />Logs<ec dataRef="d2" startRef="1" /> section and look for:</source>
+        <target>Als u onverwacht gedrag ervaart, open dan het gedeelte <sc id="1" dataRef="d1" fs:fs="strong" />Logboeken<ec dataRef="d2" startRef="1" /> en zoek naar:</target>
+      </segment>
+    </unit>
+    <unit id="u77" name="/html[1]/body[1]/ul[10]/li[1]" its:locQualityRatingScore="0.8642899990081787" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">68</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Connector authentication failures</source>
+        <target>Authenticatiefouten van connectoren</target>
+      </segment>
+    </unit>
+    <unit id="u78" name="/html[1]/body[1]/ul[10]/li[2]" its:locQualityRatingScore="0.11984000355005264" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">36</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>API timeout errors</source>
+        <target>API-time-outfouten</target>
+      </segment>
+    </unit>
+    <unit id="u79" name="/html[1]/body[1]/ul[10]/li[3]" its:locQualityRatingScore="0.9479699730873108" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">44</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Synchronization failures</source>
+        <target>Synchronisatiefouten</target>
+      </segment>
+    </unit>
+    <unit id="u80" name="/html[1]/body[1]/ul[10]/li[4]" its:locQualityRatingScore="0.624809980392456" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">56</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Scan completion events</source>
+        <target>Gebeurtenissen voor scanvoltooiing</target>
+      </segment>
+    </unit>
+    <unit id="u81" name="/html[1]/body[1]/ul[10]/li[5]" its:locQualityRatingScore="0.7951700091362" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">83</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Threat intelligence update failures</source>
+        <target>Fouten bij het bijwerken van threat intelligence</target>
+      </segment>
+    </unit>
+    <unit id="u82" name="/html[1]/body[1]/p[34]" its:locQualityRatingScore="0.9089499711990356" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">247</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>The log history often provides enough detail to identify the source of the issue before opening a support request.</source>
+        <target>De logboekgeschiedenis bevat vaak genoeg details om de oorzaak van het probleem te achterhalen voordat u een supportaanvraag indient.</target>
+      </segment>
+    </unit>
+    <unit id="u83" name="/html[1]/body[1]/p[35]" its:locQualityRatingScore="0.9455699920654297" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">71</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Need additional help?<ec dataRef="d2" startRef="1" /></source>
+        <target>
+          <sc id="1" dataRef="d1" fs:fs="strong" />Meer hulp nodig?<ec dataRef="d2" startRef="1" /></target>
+      </segment>
+    </unit>
+    <unit id="u84" name="/html[1]/body[1]/p[36]" its:locQualityRatingScore="0.8903499841690063" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">293</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <originalData>
+        <data id="d1">&lt;strong&gt;</data>
+        <data id="d2">&lt;/strong&gt;</data>
+      </originalData>
+      <segment state="translated">
+        <source>If the issue continues after following the steps above, contact <sc id="1" dataRef="d1" fs:fs="strong" />Weyland Security Support<ec dataRef="d2" startRef="1" /> and include:</source>
+        <target>Als het probleem zich blijft voordoen nadat u de bovenstaande stappen hebt gevolgd, neem dan contact op met <sc id="1" dataRef="d1" fs:fs="strong" />Weyland Security Support<ec dataRef="d2" startRef="1" /> en voeg het volgende toe:</target>
+      </segment>
+    </unit>
+    <unit id="u85" name="/html[1]/body[1]/ul[11]/li[1]" its:locQualityRatingScore="0.6085399985313416" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">50</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Timestamp of the issue</source>
+        <target>Tijdstempel van het probleem</target>
+      </segment>
+    </unit>
+    <unit id="u86" name="/html[1]/body[1]/ul[11]/li[2]" its:locQualityRatingScore="0.8484200239181519" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">79</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Screenshot of the Security Dashboard</source>
+        <target>Schermafbeelding van het Security Dashboard</target>
+      </segment>
+    </unit>
+    <unit id="u87" name="/html[1]/body[1]/ul[11]/li[3]" its:locQualityRatingScore="0.902239978313446" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">49</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Relevant log entries</source>
+        <target>Relevante logboekvermeldingen</target>
+      </segment>
+    </unit>
+    <unit id="u88" name="/html[1]/body[1]/ul[11]/li[4]" its:locQualityRatingScore="0.9673299789428711" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">36</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="final">
+        <source>Browser and version</source>
+        <target>Browser en versie</target>
+      </segment>
+    </unit>
+    <unit id="u89" name="/html[1]/body[1]/ul[11]/li[5]" its:locQualityRatingScore="0.9482799768447876" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="li">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">147</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>A brief description of the problem and the steps you've already taken</source>
+        <target>Een korte beschrijving van het probleem en de stappen die u al hebt ondernomen</target>
+      </segment>
+    </unit>
+    <unit id="u90" name="/html[1]/body[1]/p[37]" its:locQualityRatingScore="0.9041399955749512" its:locQualityRatingScoreThreshold="0.949999988079071" its:locQualityRatingProfileRef="https://api.taus.net/2.0/estimate" fs:fs="p">
+      <mda:metadata>
+        <mda:metaGroup category="blackbird">
+          <mda:metaGroup category="usage">
+            <mda:metaGroup category="TAUS QE">
+              <mda:meta type="value">200</mda:meta>
+              <mda:meta type="unit">characters</mda:meta>
+            </mda:metaGroup>
+          </mda:metaGroup>
+        </mda:metaGroup>
+      </mda:metadata>
+      <segment state="translated">
+        <source>Providing this information helps our support engineers investigate and resolve your issue more quickly.</source>
+        <target>Dankzij deze informatie kunnen onze supportengineers uw probleem sneller onderzoeken en oplossen.</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>
