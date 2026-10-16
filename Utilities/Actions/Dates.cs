@@ -35,7 +35,13 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
                 fixedTimeSpan = parsedTime;
             }
 
-            var referenceDate = input.Date ?? DateTime.Now;
+            var timeZone = string.IsNullOrEmpty(input.Timezone)
+                ? TimeZoneInfo.Utc
+                : TimeZoneInfo.FindSystemTimeZoneById(input.Timezone);
+
+            // All calculations run on the wall clock of the selected timezone, so that "today",
+            // business days/hours and "Set time" are all interpreted in that timezone.
+            var referenceDate = ToWallClock(input.Date ?? DateTime.UtcNow, timeZone);
 
             if (input.BusinessDays.HasValue)
                 referenceDate = AddBusinessDays(referenceDate, (int)input.BusinessDays.Value);
@@ -65,8 +71,8 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
                     .AddMinutes(input.AddMinutes ?? 0);
             }
 
-            var dateTimeOffset = CreateDateTimeOffset(adjustedDate, input.Timezone);
-            return new DateResponse { Date = dateTimeOffset.DateTime };
+            var dateTimeOffset = new DateTimeOffset(adjustedDate, timeZone.GetUtcOffset(adjustedDate));
+            return new DateResponse { Date = dateTimeOffset.UtcDateTime };
         }
         catch (TimeZoneNotFoundException ex)
         {
@@ -209,6 +215,15 @@ public class Dates(InvocationContext context) : BaseInvocable(context)
         {
             throw new PluginApplicationException($"Timezone '{input.Timezone}' not recognized.", ex);
         }
+    }
+
+    private static DateTime ToWallClock(DateTime date, TimeZoneInfo timeZone)
+    {
+        // Unspecified dates are treated as already being in the selected timezone
+        if (date.Kind == DateTimeKind.Unspecified)
+            return date;
+
+        return DateTime.SpecifyKind(TimeZoneInfo.ConvertTime(date, timeZone), DateTimeKind.Unspecified);
     }
 
     private static DateTime AddBusinessDays(DateTime date, int days)
