@@ -13,7 +13,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 
 ### Dates
 
-- **Generate date** generates the date and time at the moment of _execution_. Optionally, you can add or subtract days, hours and minutes. Useful for setting deadlines in the future or for generating time intervals for querying data. Optionally, you can also add your own value for date. The new generated date will be relative to this date.
+- **Generate date** generates the date and time at the moment of _execution_. Optionally, you can add or subtract days, hours and minutes. Useful for setting deadlines in the future or for generating time intervals for querying data. Optionally, you can also add your own value for date. The new generated date will be relative to this date. When a timezone is selected, the current day, business days/hours and 'Set time' are calculated in that timezone (including daylight saving time); otherwise UTC is used. The result is always returned in UTC.
 - **Format date** takes a date and formats it into a human readable string. The selectable format documentation can be found [here](https://ss64.com/ps/syntax-dateformats.html). Optionally a culture (locale) can be added as well.
 - **Get date difference** returns the difference between the two inputted days in total seconds, minutes, hours and days.
 - **Convert text to date** Converts text input to date. Optionally a culture (locale) can be specified. If timezone is not specified, UTC is used.

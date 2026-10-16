@@ -24,10 +24,10 @@ public class GenerateDateRequest
     [Display("Date")]
     public DateTime? Date { get; set; }
 
-    [Display("Timezone")]
+    [Display("Timezone", Description = "Timezone used to calculate the date, business days/hours and 'Set time'. UTC if empty.")]
     [StaticDataSource(typeof(TimeZoneSourceHandler))]
     public string? Timezone { get; set; }
 
-    [Display("Set time (HH:mm)", Description = "Standard 24-hour format like \"HH:mm\" (e.g., \"14:30\")")]
+    [Display("Set time (HH:mm)", Description = "Standard 24-hour format like \"HH:mm\" (e.g., \"14:30\"), in the selected timezone")]
     public string? FixedTime { get; set; }
 }

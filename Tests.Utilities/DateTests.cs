@@ -53,4 +53,94 @@ public class DateTests : TestBase
         Console.WriteLine(json);
         Assert.IsNotNull(result);
     }
+
+    [TestMethod]
+    public void GenerateDate_SetTimeWithTimezone_IsAppliedInThatTimezone()
+    {
+        var action = new Dates(InvocationContext);
+
+        // Thursday Oct 8, 15:51 CDT (UTC-5) + 2 business days at 17:00 CT
+        var result = action.GenerateDate(new GenerateDateRequest
+        {
+            Date = new DateTime(2026, 10, 8, 20, 51, 0, DateTimeKind.Utc),
+            BusinessDays = 2,
+            Timezone = "America/Chicago",
+            FixedTime = "17:00"
+        });
+
+        Assert.AreEqual(new DateTime(2026, 10, 12, 22, 0, 0, DateTimeKind.Utc), result.Date);
+        Assert.AreEqual(DateTimeKind.Utc, result.Date.Kind);
+    }
+
+    [TestMethod]
+    public void GenerateDate_Timezone_UsesTimezoneDayNotUtcDay()
+    {
+        var action = new Dates(InvocationContext);
+
+        // Thursday Oct 8, 20:00 CDT is already Friday Oct 9 in UTC
+        var result = action.GenerateDate(new GenerateDateRequest
+        {
+            Date = new DateTime(2026, 10, 9, 1, 0, 0, DateTimeKind.Utc),
+            BusinessDays = 2,
+            Timezone = "America/Chicago",
+            FixedTime = "17:00"
+        });
+
+        Assert.AreEqual(new DateTime(2026, 10, 12, 22, 0, 0, DateTimeKind.Utc), result.Date);
+    }
+
+    [TestMethod]
+    public void GenerateDate_Timezone_RespectsDaylightSavingChange()
+    {
+        var action = new Dates(InvocationContext);
+
+        // After Nov 1 Central Time is CST (UTC-6)
+        var result = action.GenerateDate(new GenerateDateRequest
+        {
+            Date = new DateTime(2026, 11, 3, 15, 0, 0, DateTimeKind.Utc),
+            BusinessDays = 1,
+            Timezone = "America/Chicago",
+            FixedTime = "17:00"
+        });
+
+        Assert.AreEqual(new DateTime(2026, 11, 4, 23, 0, 0, DateTimeKind.Utc), result.Date);
+    }
+
+    [TestMethod]
+    public void GenerateDate_SetTimeWithoutTimezone_IsUtc()
+    {
+        var action = new Dates(InvocationContext);
+
+        var result = action.GenerateDate(new GenerateDateRequest
+        {
+            Date = new DateTime(2026, 10, 8, 20, 51, 0, DateTimeKind.Utc),
+            FixedTime = "17:00"
+        });
+
+        Assert.AreEqual(new DateTime(2026, 10, 8, 17, 0, 0, DateTimeKind.Utc), result.Date);
+    }
+
+    [TestMethod]
+    public void GenerateDate_UnspecifiedDateWithTimezone_IsTreatedAsTimezoneTime()
+    {
+        var action = new Dates(InvocationContext);
+
+        var result = action.GenerateDate(new GenerateDateRequest
+        {
+            Date = new DateTime(2026, 10, 8, 10, 0, 0, DateTimeKind.Unspecified),
+            Timezone = "America/Chicago"
+        });
+
+        Assert.AreEqual(new DateTime(2026, 10, 8, 15, 0, 0, DateTimeKind.Utc), result.Date);
+    }
+
+    [TestMethod]
+    public void GenerateDate_NowWithTimezone_ReturnsCurrentMoment()
+    {
+        var action = new Dates(InvocationContext);
+
+        var result = action.GenerateDate(new GenerateDateRequest { Timezone = "America/Chicago" });
+
+        Assert.IsTrue(Math.Abs((result.Date - DateTime.UtcNow).TotalMinutes) < 1);
+    }
 }
