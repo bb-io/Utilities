@@ -84,6 +84,33 @@ public class Arrays(InvocationContext invocationContext) : BaseInvocable(invocat
         return new(results);
     }
 
+    [Action("Find matching text value in array", Description = "Returns the entire first array element containing a regex match. Partial matches are accepted. Returns empty text if no element matches.")]
+    public ArrayFindMatchingTextValueResponse FindMatchingTextValueInArray(
+        [ActionParameter] ArrayFindMatchingTextValueRequest input)
+    {
+        if (input?.Array == null)
+            throw new PluginMisconfigurationException("Input array cannot be null.");
+
+        if (string.IsNullOrWhiteSpace(input.Regex))
+            throw new PluginMisconfigurationException("Regular expression cannot be null or empty.");
+
+        Regex regex;
+        try
+        {
+            var options = RegexOptionsUtillity.GetRegexOptions(input.Flags);
+            regex = new Regex(input.Regex, options);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
+        {
+            throw new PluginMisconfigurationException("The provided regular expression or regex flags are invalid.", ex);
+        }
+
+        return new ArrayFindMatchingTextValueResponse
+        {
+            MatchingText = input.Array.FirstOrDefault(value => value != null && regex.IsMatch(value)) ?? string.Empty
+        };
+    }
+
     [Action("Deduplicate array", Description = "Returns only unique elements")]
     public ArrayResponse DeduplicateArray([ActionParameter] ArrayCountRequest input,
     [ActionParameter][Display("Remove empty/null values")] bool? removeEmpty = false)
