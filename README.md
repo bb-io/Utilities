@@ -148,6 +148,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Array intersection** returns the intersection of two input arrays (returns the elements contained in both arrays).
 - **Extract matches from array using Regex** Extracts all matches from each string in the input array using the provided Regular Expression and returns them as a single array of matches.
 - **Find maximum value** Returns the maximum value in the array.
+- **Find matching text value in array** Returns the entire first array element containing a regex match. Partial matches are accepted: for example, `\d+` matches `abc123` and returns `abc123`. Use `\A(?:pattern)\z` when the entire element must match. Supports optional regex flags and returns empty text when no element matches.
 
 
 ### Numbers
