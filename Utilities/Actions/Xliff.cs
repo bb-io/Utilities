@@ -20,6 +20,7 @@ using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Utils;
 using Blackbird.Filters.Bilingual.Xliff1;
 using Blackbird.Filters.Bilingual.Xliff2;
+using Blackbird.Filters.Transformations.Tags;
 
 namespace Apps.Utilities.Actions
 {
@@ -1280,6 +1281,112 @@ namespace Apps.Utilities.Actions
             };
         }
 
+        [Action("Translate XLIFF file from translation memory", Description = "Applies exact source matches from a TMX translation memory to XLIFF targets while preserving compatible inline tags.")]
+        public async Task<TranslateXliffFromTranslationMemoryResponse> TranslateXliffFromTranslationMemory(
+            [ActionParameter] TranslateXliffFromTranslationMemoryRequest request)
+        {
+            await using var xliffStream = await fileManagementClient.DownloadAsync(request.XliffFile);
+            var (transformation, serializer) = await SerializeXliffVersion(xliffStream);
+
+            var sourceLanguage = string.IsNullOrWhiteSpace(request.SourceLanguage)
+                ? transformation.SourceLanguage
+                : request.SourceLanguage;
+            var targetLanguage = string.IsNullOrWhiteSpace(request.TargetLanguage)
+                ? transformation.TargetLanguage
+                : request.TargetLanguage;
+
+            if (string.IsNullOrWhiteSpace(sourceLanguage))
+            {
+                throw new PluginMisconfigurationException(
+                    "The source language could not be determined from the XLIFF file. Please specify it explicitly.");
+            }
+
+            if (string.IsNullOrWhiteSpace(targetLanguage))
+            {
+                throw new PluginMisconfigurationException(
+                    "The target language could not be determined from the XLIFF file. Please specify it explicitly.");
+            }
+
+            TmxTranslationMemory translationMemory;
+            await using var translationMemoryStream =
+                await fileManagementClient.DownloadAsync(request.TranslationMemory);
+            try
+            {
+                translationMemory = await TmxTranslationMemory.Load(
+                    translationMemoryStream,
+                    sourceLanguage,
+                    targetLanguage,
+                    request.IgnoreSourceCase == true);
+            }
+            catch (PluginMisconfigurationException)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                throw new PluginMisconfigurationException(
+                    $"The translation memory could not be parsed. Please provide a valid TMX file. Details: {exception.Message}",
+                    exception);
+            }
+
+            var warnings = translationMemory.Warnings.ToList();
+            var translated = 0;
+            var withoutMatch = 0;
+            var skipped = 0;
+            var segments = transformation.GetUnits()
+                .SelectMany(unit => unit.Segments)
+                .ToList();
+
+            for (var index = 0; index < segments.Count; index++)
+            {
+                var segment = segments[index];
+                // Segment.GetSource() may serialize XLIFF-native markup (for example <pc>),
+                // while the line elements expose the original inline-code values stored in
+                // originalData. TMX bpt/ept entries resolve to those original values.
+                var source = string.Concat(segment.Source.Select(part => part.Value));
+                if (!translationMemory.TryGetTranslation(source, out var target))
+                {
+                    withoutMatch++;
+                    continue;
+                }
+
+                if (!TryCreateTargetWithSourceInlineTags(segment, target, out var targetParts, out var reason))
+                {
+                    skipped++;
+                    var identifier = string.IsNullOrWhiteSpace(segment.Id)
+                        ? $"at position {index + 1}"
+                        : $"with ID '{segment.Id}'";
+                    warnings.Add($"XLIFF segment {identifier} matched the TMX source but was skipped: {reason}");
+                    continue;
+                }
+
+                segment.Target = targetParts;
+                translated++;
+            }
+
+            var processedXliff = serializer(transformation);
+            await using var outputStream = new MemoryStream(Encoding.UTF8.GetBytes(processedXliff));
+            var contentType = request.XliffFile.ContentType ?? "application/xliff+xml";
+            var outputFile = await fileManagementClient.UploadAsync(
+                outputStream,
+                contentType,
+                request.XliffFile.Name);
+
+            if (string.IsNullOrWhiteSpace(outputFile.Name))
+                outputFile.Name = request.XliffFile.Name;
+
+            outputFile.ContentType ??= contentType;
+
+            return new TranslateXliffFromTranslationMemoryResponse
+            {
+                File = outputFile,
+                SegmentsTranslated = translated,
+                SegmentsWithoutMatch = withoutMatch,
+                SegmentsSkipped = skipped,
+                Warnings = warnings,
+            };
+        }
+
         [Action("Apply XLIFF target translations", Description = "Applies target translations from one XLIFF file to another by matching unit and segment IDs. Segments without IDs, including target segments whose translation segment ID has no match, use exact source content. Optionally copies unit provenance and quality data.")]
         public async Task<ApplyXliffTargetTranslationsResponse> ApplyXliffTargetTranslations(
             [ActionParameter] ApplyXliffTargetTranslationsRequest request)
@@ -1623,6 +1730,124 @@ namespace Apps.Utilities.Actions
 
             return field;
         }
+
+        private static bool TryCreateTargetWithSourceInlineTags(
+            Segment segment,
+            string translatedTarget,
+            out List<LineElement> targetParts,
+            out string reason)
+        {
+            targetParts = [];
+            reason = string.Empty;
+            var sourceTags = segment.Source.OfType<InlineTag>().ToList();
+
+            if (sourceTags.Count == 0)
+            {
+                if (ContainsMarkup(translatedTarget))
+                {
+                    reason = "the TMX target contains inline markup that is not present in the XLIFF source";
+                    return false;
+                }
+
+                targetParts.Add(new LineElement { Value = translatedTarget });
+                return true;
+            }
+
+            if (sourceTags.Any(tag => string.IsNullOrEmpty(tag.Value)))
+            {
+                reason = "the XLIFF source contains an inline code without a reusable value";
+                return false;
+            }
+
+            var remainingTags = sourceTags
+                .Select((tag, order) => new InlineTagMatch(tag, order))
+                .ToList();
+            var openTags = new Stack<StartTag>();
+            var position = 0;
+
+            while (position < translatedTarget.Length)
+            {
+                var nextMatch = remainingTags
+                    .Select(match => new
+                    {
+                        Match = match,
+                        Position = translatedTarget.IndexOf(
+                            match.Tag.Value,
+                            position,
+                            StringComparison.Ordinal),
+                    })
+                    .Where(candidate => candidate.Position >= 0)
+                    .OrderBy(candidate => candidate.Position)
+                    .ThenByDescending(candidate => candidate.Match.Tag.Value.Length)
+                    .ThenBy(candidate => candidate.Match.Order)
+                    .FirstOrDefault();
+
+                if (nextMatch is null)
+                {
+                    AddTargetText(targetParts, translatedTarget[position..]);
+                    position = translatedTarget.Length;
+                    break;
+                }
+
+                AddTargetText(targetParts, translatedTarget[position..nextMatch.Position]);
+                var inlineTag = nextMatch.Match.Tag;
+                targetParts.Add(inlineTag);
+                remainingTags.Remove(nextMatch.Match);
+                position = nextMatch.Position + inlineTag.Value.Length;
+
+                switch (inlineTag)
+                {
+                    case StartTag startTag:
+                        openTags.Push(startTag);
+                        break;
+                    case EndTag endTag when openTags.Count == 0
+                                                || !InlineTagsArePaired(openTags.Peek(), endTag):
+                        reason = "the TMX target changes the pairing or nesting of XLIFF inline codes";
+                        return false;
+                    case EndTag:
+                        openTags.Pop();
+                        break;
+                }
+            }
+
+            if (remainingTags.Count > 0)
+            {
+                reason = "the TMX target does not contain all inline codes from the XLIFF source";
+                return false;
+            }
+
+            if (openTags.Count > 0)
+            {
+                reason = "the TMX target contains unclosed inline codes";
+                return false;
+            }
+
+            if (targetParts.OfType<LineElement>()
+                .Where(part => part is not InlineTag)
+                .Any(part => ContainsMarkup(part.Value)))
+            {
+                reason = "the TMX target contains inline markup that has no matching XLIFF source code";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void AddTargetText(List<LineElement> targetParts, string value)
+        {
+            if (value.Length > 0)
+                targetParts.Add(new LineElement { Value = value });
+        }
+
+        private static bool ContainsMarkup(string value) =>
+            Regex.IsMatch(value, @"</?[A-Za-z][^>]*>", RegexOptions.CultureInvariant);
+
+        private static bool InlineTagsArePaired(StartTag startTag, EndTag endTag) =>
+            ReferenceEquals(startTag, endTag.StartTag)
+            || (!string.IsNullOrWhiteSpace(startTag.Id)
+                && string.Equals(startTag.Id, endTag.Id, StringComparison.Ordinal));
+
+        private sealed record InlineTagMatch(InlineTag Tag, int Order);
 
         private static void RemoveUnits(Transformation transformation, ISet<Unit> unitsToRemove)
         {

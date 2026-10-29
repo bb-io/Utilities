@@ -62,6 +62,9 @@ You do not need to create a connection to use Utilities. Instead, you can find U
     Advanced settings:
   - **Copy provenance metadata**: Copy unit-level translation and review provenance from matched units. Disabled by default.
   - **Copy quality data**: Copy unit-level quality ratings from matched units. Disabled by default.
+- **Translate XLIFF file from translation memory** Apply exact source matches from a TMX translation memory to XLIFF targets. Source and target languages default to the XLIFF locales, compatible inline tags are preserved, and ambiguous or incompatible matches are reported as warnings.
+    Advanced settings:
+  - **Ignore source case**: Match XLIFF and TMX sources without considering letter case. Disabled by default.
 - **Set XLIFF locales** Set source or target locales in an XLIFF file. Other file types supported by Blackbird Filters are converted to XLIFF 2.2. Existing XLIFF versions are preserved.
 - **Replace in targets via regex** Replace visible text in targets, sources, or both while preserving inline codes. Defaults to targets only. Optionally restrict replacement by segment state or a regular expression matched against the complete visible target.
     Advanced settings:
