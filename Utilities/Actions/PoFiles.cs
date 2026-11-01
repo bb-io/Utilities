@@ -426,7 +426,7 @@ public class PoFiles(InvocationContext invocationContext, IFileManagementClient 
 
 
 
-    [Action("Get PO header", Description = "Gets the value of a header in a PO file.")]
+    [Action("Get PO header", Description = "Outputs the value of a named PO header. Header names are matched without case; a missing header causes an error.")]
     public async Task<PoHeaderValueResponse> GetPoHeader([ActionParameter] FileDto file, [ActionParameter] PoHeaderRequest request)
     {
         ValidateHeaderName(request.HeaderName);
@@ -438,7 +438,7 @@ public class PoFiles(InvocationContext invocationContext, IFileManagementClient 
         return new PoHeaderValueResponse { HeaderValue = header.Value };
     }
 
-    [Action("Set PO header", Description = "Updates a PO header or appends it if it does not exist.")]
+    [Action("Set PO header", Description = "Updates a named PO header or appends it if missing, and outputs the modified file and all headers.")]
     public async Task<SetPoHeaderResponse> SetPoHeader([ActionParameter] FileDto file, [ActionParameter] SetPoHeaderRequest request)
     {
         ValidateHeaderName(request.HeaderName);

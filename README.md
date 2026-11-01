@@ -42,6 +42,12 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Count file pages** Counts pages in PDF and DOCX files and returns total page count.
 - **Convert HTML file to DOCX**
 
+### PO files
+
+- **Copy PO keys to translations** Copy source keys into their translations while preserving the rest of the file. For plural entries, the first translation uses the singular source and subsequent translations use the plural source.
+- **Get PO header** Output the value of a named header from a PO file. Header names are matched without case; a missing header causes an error.
+- **Set PO header** Update a named header or append it after the existing headers if it is missing. Output the modified PO file and all headers as name and value pairs. Header names are matched without case, and the value must be a single line. For example, copy the value of `Plural-Forms` into `Blackbird-Target-Plural-Forms-fr` to set a French target plural rule.
+
 ### TBX files
 - **Reduce multilingual glossary to bilingual** Convert a multilingual TBX file to bilingual by keeping only the specified language pair.
 
