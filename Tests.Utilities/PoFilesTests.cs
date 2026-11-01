@@ -1,5 +1,6 @@
 using Apps.Utilities.Actions;
 using Apps.Utilities.Models.Files;
+using Apps.Utilities.Models.Po;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using System.Text;
@@ -8,11 +9,11 @@ using Tests.Utilities.Base;
 namespace Tests.Utilities;
 
 [TestClass]
-public class CopyPoKeysToTranslationsTests : TestBase
+public class PoFilesTests : TestBase
 {
     private const string TestFilesFolder = "CopyPoKeysToTranslations";
 
-    private Files Actions => new(InvocationContext, FileManager);
+    private PoFiles Actions => new(InvocationContext, FileManager);
 
     [TestInitialize]
     public void Init()
@@ -171,5 +172,72 @@ public class CopyPoKeysToTranslationsTests : TestBase
         using var buffer = new MemoryStream();
         await stream.CopyToAsync(buffer);
         return buffer.ToArray();
+    }
+
+    [TestMethod]
+    public async Task UpdateHeader_ReadsContinuedValueAndPreservesFileContent()
+    {
+        var name = $"PoFilesTests/{Guid.NewGuid()}.po";
+        var input = "# Header\r\nmsgid \"\"\r\nmsgstr \"\"\r\n\"Language: f\"\r\n\"r\\n\"\r\n\"X-Other: a:b\\n\"\r\n\r\nmsgid \"Hi\"\r\nmsgstr \"Salut\"";
+        var file = CreateInput(name, input, new UTF8Encoding(true));
+        try
+        {
+            var original = await Actions.GetPoHeader(file, new PoHeaderRequest { HeaderName = "language" });
+            Assert.AreEqual("fr", original.HeaderValue);
+            var result = await Actions.SetPoHeader(file, new SetPoHeaderRequest { HeaderName = "Language", HeaderValue = "a \"quote\" \\ path" });
+            Assert.AreEqual(2, result.Headers.Count());
+            Assert.AreEqual("a \"quote\" \\ path", result.Headers.First().Value);
+            var bytes = File.ReadAllBytes(Path.Combine(GetTestFolderPath(), "Output", name));
+            Assert.IsTrue(bytes.AsSpan().StartsWith(Encoding.UTF8.GetPreamble()));
+            var output = Encoding.UTF8.GetString(bytes[3..]);
+            StringAssert.Contains(output, "\"Language: a \\\"quote\\\" \\\\ path\\n\"\r\n\"X-Other: a:b\\n\"");
+            StringAssert.EndsWith(output, "\r\n\r\nmsgid \"Hi\"\r\nmsgstr \"Salut\"");
+            var readBack = await Actions.GetPoHeader(file, new PoHeaderRequest { HeaderName = "language" });
+            Assert.AreEqual(result.Headers.First().Value, readBack.HeaderValue);
+        }
+        finally { Cleanup(name); }
+    }
+
+    [TestMethod]
+    public async Task AppendHeader_ReturnsAllHeadersAndKeepsTranslation()
+    {
+        var name = $"PoFilesTests/{Guid.NewGuid()}.po";
+        var file = CreateInput(name, "msgid \"\"\nmsgstr \"\"\n\"Language: fr\\n\"\n\nmsgid \"key\"\nmsgstr \"value\"\n", new UTF8Encoding(false));
+        try
+        {
+            var result = await Actions.SetPoHeader(file, new SetPoHeaderRequest { HeaderName = "X-New", HeaderValue = "new" });
+            CollectionAssert.AreEqual(new[] { "Language", "X-New" }, result.Headers.Select(x => x.Name).ToArray());
+            var output = File.ReadAllText(Path.Combine(GetTestFolderPath(), "Output", name));
+            StringAssert.Contains(output, "\"Language: fr\\n\"\n\"X-New: new\\n\"\n\nmsgid \"key\"");
+        }
+        finally { Cleanup(name); }
+    }
+
+    [TestMethod]
+    public async Task MissingHeader_ReportsError()
+    {
+        var name = $"PoFilesTests/{Guid.NewGuid()}.po";
+        var file = CreateInput(name, "msgid \"\"\nmsgstr \"\"\n\"Language: fr\\n\"\n", new UTF8Encoding(false));
+        try
+        {
+            await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+                Actions.GetPoHeader(file, new PoHeaderRequest { HeaderName = "Missing" }));
+        }
+        finally { Cleanup(name); }
+    }
+
+    private static FileDto CreateInput(string name, string text, Encoding encoding)
+    {
+        var path = Path.Combine(GetTestFolderPath(), "Input", name);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, text, encoding);
+        return new FileDto { File = new FileReference { Name = name, ContentType = "text/x-gettext-translation" } };
+    }
+
+    private static void Cleanup(string name)
+    {
+        File.Delete(Path.Combine(GetTestFolderPath(), "Input", name));
+        var outputPath = Path.Combine(GetTestFolderPath(), "Output", name);
+        if (File.Exists(outputPath)) File.Delete(outputPath);
     }
 }
