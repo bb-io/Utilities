@@ -14,7 +14,7 @@ namespace Apps.Utilities.Actions
 
         [Action("Get flight context", Description = "Get various variables that have to do with the flight including IDs, URLs, etc.")]
         public FlightContext GetFlightContext()
-        {
+        {            
             return new()
             {
                 FlightId = InvocationContext.Flight?.Id,
@@ -22,7 +22,9 @@ namespace Apps.Utilities.Actions
                 BirdId = InvocationContext.Bird?.Id.ToString(),
                 BirdName = InvocationContext.Bird?.Name,
                 NestId = InvocationContext.Workspace?.Id.ToString(),
-                NestName = InvocationContext.Workspace?.Name
+                NestName = InvocationContext.Workspace?.Name,
+                TriggeredByUserEmail = InvocationContext.Flight?.TriggeredByUser?.Email,
+                TriggeredByUserName = InvocationContext.Flight?.TriggeredByUser?.FirstName is not null ? (InvocationContext.Flight?.TriggeredByUser?.FirstName + " " + InvocationContext.Flight?.TriggeredByUser?.LastName) : null,
             };
         }
     }
