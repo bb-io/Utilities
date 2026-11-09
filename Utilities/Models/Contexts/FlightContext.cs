@@ -21,5 +21,11 @@ namespace Apps.Utilities.Models.Contexts
 
         [Display("Nest name")]
         public string? NestName { get; set; }
+
+        [Display("Triggered by user first name")]
+        public string? TriggeredByUserName { get; set; }
+
+        [Display("Triggered by user email")]
+        public string? TriggeredByUserEmail { get; set; }
     }
 }
