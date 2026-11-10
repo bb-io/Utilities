@@ -3,6 +3,7 @@ using Apps.Utilities.Models.Files;
 using Apps.Utilities.Models.Shared;
 using Apps.Utilities.Models.Texts;
 using Apps.Utilities.Utils.DocumentReader;
+using Apps.Utilities.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
@@ -32,6 +33,67 @@ namespace Apps.Utilities.Actions;
 public class Files(InvocationContext invocationContext, IFileManagementClient fileManagementClient)
     : BaseInvocable(invocationContext)
 {
+    [Action("Pseudolocalize files", Description = "Pseudolocalizes source text into targets and returns XLIFF 2.2 files. Processes one file at a time, preserving inline codes and placeholders.")]
+    public async Task<PseudolocalizeFilesResponse> PseudolocalizeFiles(
+        [ActionParameter] PseudolocalizeFilesRequest request)
+    {
+        var files = request?.Files?.ToList();
+        if (files is null || files.Count == 0 || files.Any(file => file is null || string.IsNullOrWhiteSpace(file.Name)))
+            throw new PluginMisconfigurationException("Provide at least one file, with a name for every file.");
+        var expansion = request!.ExpansionPercentage ?? 0;
+        if (expansion < 0)
+            throw new PluginMisconfigurationException("Expansion percentage must be a non-negative integer.");
+
+        var states = new HashSet<SegmentState>();
+        foreach (var value in (request.StatesToPseudolocalize ?? []).Where(value => !string.IsNullOrWhiteSpace(value)))
+        {
+            var state = value.Trim().ToLowerInvariant().ToSegmentState();
+            if (state is null)
+                throw new PluginMisconfigurationException($"Invalid segment state '{value}'. Select Initial, Translated, Reviewed, or Final.");
+            states.Add(state.Value);
+        }
+        if (states.Count == 0)
+            states.Add(SegmentState.Initial);
+
+        var response = new PseudolocalizeFilesResponse();
+        foreach (var file in files)
+        {
+            try
+            {
+                await using var input = await fileManagementClient.DownloadAsync(file);
+                var result = Transformation.Load(input, file.Name, file.ContentType);
+                if (!result.Success)
+                    throw new PluginMisconfigurationException($"The file could not be parsed by Blackbird Filters. Details: {result.Error}");
+
+                var transformation = result.Value;
+                if (string.IsNullOrWhiteSpace(transformation.SourceLanguage))
+                    transformation.SourceLanguage = "en";
+                Pseudolocalizer.Apply(transformation, states, expansion);
+
+                var extension = Path.GetExtension(file.Name);
+                var outputName = extension.Equals(".xlf", StringComparison.OrdinalIgnoreCase)
+                    || extension.Equals(".xliff", StringComparison.OrdinalIgnoreCase)
+                        ? file.Name : file.Name + ".xlf";
+                const string contentType = "application/xliff+xml";
+                await using var output = new MemoryStream(Encoding.UTF8.GetBytes(
+                    Xliff2Serializer.Serialize(transformation, Xliff2Version.Xliff22)));
+                var uploaded = await fileManagementClient.UploadAsync(output, contentType, outputName);
+                uploaded.Name = outputName;
+                uploaded.ContentType = contentType;
+                response.Files.Add(uploaded);
+            }
+            catch (PluginMisconfigurationException ex)
+            {
+                throw new PluginMisconfigurationException($"Could not pseudolocalize '{file.Name}'. {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new PluginApplicationException($"Could not pseudolocalize '{file.Name}'. {ex.Message}");
+            }
+        }
+        return response;
+    }
+
     [Action("Change file encoding", Description = "Changes a text file's encoding while preserving its text, name, and extension.")]
     public async Task<FileDto> ChangeFileEncoding([ActionParameter] ChangeFileEncodingRequest request)
     {
