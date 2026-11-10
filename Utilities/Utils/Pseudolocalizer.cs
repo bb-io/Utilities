@@ -14,7 +14,7 @@ internal static class Pseudolocalizer
     private const string Lowercase = "áƀçďéƒğĥíĵķľḿńóṕɋŕšţúṽŵẋýž";
     private const string Uppercase = "ÁɃÇĎÉƑĞĤÍĴĶĽḾŃÓṔɊŔŠŢÚṼŴẊÝŽ";
     private static readonly Regex PrintfPlaceholder = new(
-        @"\G%(?:%|(?:\d+\$)?[-+#0 ']*(?:\d+|\*(?:\d+\$)?)?(?:\.(?:\d+|\*(?:\d+\$)?))?(?:hh|ll|[hljztL])?[diuoxXfFeEgGaAcspn])",
+        @"\G%(?:%|(?:\d+\$)?[-+#0']*(?:\d+|\*(?:\d+\$)?)?(?:\.(?:\d+|\*(?:\d+\$)?))?(?:hh|ll|[hljztL])?[diuoxXfFeEgGaAcspn])",
         RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
 
     public static void Apply(Node node, ISet<SegmentState> states, int expansion, bool translatable = true)

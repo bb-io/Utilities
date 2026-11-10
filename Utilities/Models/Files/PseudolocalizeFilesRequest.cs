@@ -14,6 +14,6 @@ public class PseudolocalizeFilesRequest
     [StaticDataSource(typeof(XliffInteroperableStatesDataSourceHandler))]
     public IEnumerable<string>? StatesToPseudolocalize { get; set; }
 
-    [Display("Expansion percentage", Description = "Extra padding as a percentage of translatable source text. Defaults to 0.")]
+    [Display("Expansion percentage", Description = "Extra padding as a percentage of translatable source text. Accepts integers from 0 to 1000. Defaults to 0.")]
     public int? ExpansionPercentage { get; set; }
 }

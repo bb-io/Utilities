@@ -41,8 +41,8 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
         if (files is null || files.Count == 0 || files.Any(file => file is null || string.IsNullOrWhiteSpace(file.Name)))
             throw new PluginMisconfigurationException("Provide at least one file, with a name for every file.");
         var expansion = request!.ExpansionPercentage ?? 0;
-        if (expansion < 0)
-            throw new PluginMisconfigurationException("Expansion percentage must be a non-negative integer.");
+        if (expansion is < 0 or > 1000)
+            throw new PluginMisconfigurationException("Expansion percentage must be an integer from 0 to 1000.");
 
         var states = new HashSet<SegmentState>();
         foreach (var value in (request.StatesToPseudolocalize ?? []).Where(value => !string.IsNullOrWhiteSpace(value)))
