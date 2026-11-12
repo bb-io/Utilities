@@ -12,10 +12,8 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Filters.Bilingual.Xliff1;
 using Blackbird.Filters.Bilingual.Xliff2;
-using Blackbird.Filters.Content;
 using Blackbird.Filters.Enums;
 using Blackbird.Filters.Transformations;
-using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using ICSharpCode.SharpZipLib.Zip;
@@ -640,7 +638,7 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
 
         using (var seekableStream = new MemoryStream())
         {
-            file.CopyTo(seekableStream);
+            await file.CopyToAsync(seekableStream);
             seekableStream.Position = 0;
 
             using (var zip = new ICSharpCode.SharpZipLib.Zip.ZipFile(seekableStream))
@@ -650,19 +648,18 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
                     if (!entry.CanDecompress || entry.IsDirectory)
                         continue;
 
-                    using (var entryStream = zip.GetInputStream(entry))
-                    using (var buffer = new MemoryStream())
-                    {
-                        entryStream.CopyTo(buffer);
-                        buffer.Position = 0;
+                    await using var entryStream = zip.GetInputStream(entry);
+                    using var buffer = new MemoryStream();
+                    await entryStream.CopyToAsync(buffer);
+                    buffer.Position = 0;
+                    
+                    // The core engine will fail without this: it will try to locate a file in the storage blob using this path
+                    // Path.GetFileName(entry.Name) will cause collisions because a file with the same name
+                    // can be located in different folders of the same archive
+                    string fileName = entry.Name.Replace('/', '_');
 
-                        var uploadedFile = await fileManagementClient.UploadAsync(
-                            buffer,
-                            MimeTypes.GetMimeType(entry.Name),
-                            entry.Name
-                        );
-                        files.Add(new FileDto { File = uploadedFile });
-                    }
+                    var uploadedFile = await fileManagementClient.UploadAsync(buffer, MimeTypes.GetMimeType(fileName), fileName);
+                    files.Add(new FileDto { File = uploadedFile });
                 }
             }
         }
