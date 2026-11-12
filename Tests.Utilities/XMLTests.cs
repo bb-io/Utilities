@@ -21,7 +21,7 @@ public class XMLTests : TestBase
         if (Directory.Exists(outputDirectory))
             Directory.Delete(outputDirectory, true);
         Directory.CreateDirectory(outputDirectory);
-        _xmlActions = new XMLFiles(FileManager);
+        _xmlActions = new XMLFiles(InvocationContext, FileManager);
         _fileActions = new Files(InvocationContext, FileManager);
     }
 
@@ -459,14 +459,12 @@ public class XMLTests : TestBase
         Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
         Assert.IsNotNull(result);
     }
-
-
+    
     [TestMethod]
     public async Task ConvertMultilingualToBilingual_ReturnsSucces()
     {
-        var actions = new XMLFiles(FileManager);
         var input = new ConvertTbxToBilingualRequest { File = new FileReference { Name = "Original.tbx" }, SourceLanguage = "de", TargetLanguage = "nl" };
-        var result = actions.ConvertTbxToBilingual(input);
+        var result = _xmlActions.ConvertTbxToBilingual(input);
 
         Console.WriteLine(result);
         Assert.IsNotNull(result);
