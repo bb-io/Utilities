@@ -14,7 +14,8 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 namespace Apps.Utilities.Actions
 {
     [ActionList("XML files")]
-    public class XMLFiles(InvocationContext invocationContext, IFileManagementClient fileManagementClient)
+    public class XMLFiles(InvocationContext invocationContext, IFileManagementClient fileManagementClient) 
+        : BaseInvocable(invocationContext)
     {
         [Action("Reduce multilingual glossary to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified language pair")]
         public async Task<ConvertTextToDocumentResponse> ConvertTbxToBilingual(
@@ -444,7 +445,7 @@ namespace Apps.Utilities.Actions
         
         private GetXMLPropertyResponse EmptyResponse(string reason)
         {
-            invocationContext.Logger?.LogError(reason, []);
+            InvocationContext.Logger?.LogError(reason, []);
             return new GetXMLPropertyResponse { Value = string.Empty };
         }
     }
