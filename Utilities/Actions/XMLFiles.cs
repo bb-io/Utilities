@@ -9,11 +9,12 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using System.Text;
 using System.Xml.XPath;
 using Apps.Utilities.Utils;
+using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.Utilities.Actions
 {
     [ActionList("XML files")]
-    public class XMLFiles(IFileManagementClient fileManagementClient)
+    public class XMLFiles(InvocationContext invocationContext, IFileManagementClient fileManagementClient)
     {
         [Action("Reduce multilingual glossary to bilingual", Description = "Convert a multilingual TBX file to bilingual by keeping only the specified language pair")]
         public async Task<ConvertTextToDocumentResponse> ConvertTbxToBilingual(
@@ -400,24 +401,17 @@ namespace Apps.Utilities.Actions
                     nsManager.AddNamespace("ns", request.Namespace);
                 
                 var nodes = xmlDoc.SelectNodes(request.XPath, nsManager);
-
                 if (nodes == null || nodes.Count == 0)
-                    throw new PluginMisconfigurationException("No elements found for the specified XPath.");
+                    return EmptyResponse($"No elements found for XPath '{request.XPath}'.");
 
                 var node = nodes[0];
-
-                if (!string.IsNullOrEmpty(request.Attribute))
-                {
-                    var attribute = node.Attributes?[request.Attribute];
-                    if (attribute == null)
-                        throw new PluginMisconfigurationException($"Attribute '{request.Attribute}' not found on the node '{request.XPath}'.");
-
-                    return new GetXMLPropertyResponse { Value = attribute.Value };
-                }
-                else
-                {
+                if (string.IsNullOrEmpty(request.Attribute))
                     return new GetXMLPropertyResponse { Value = node.InnerText };
-                }
+
+                var attribute = node.Attributes?[request.Attribute];
+                return attribute == null
+                    ? EmptyResponse($"Attribute '{request.Attribute}' not found on the node '{request.XPath}'.")
+                    : new GetXMLPropertyResponse { Value = attribute.Value };
             }
             catch (XPathException ex)
             {
@@ -435,19 +429,23 @@ namespace Apps.Utilities.Actions
             var doc = await DocumentLoader.LoadXDocument(request.File, fileManagementClient);
             XNamespace ns = request.Namespace ?? string.Empty;
 
-            var targetElement = doc.Root?.Descendants(ns + request.Property!).FirstOrDefault() ??
-                                doc.Element(ns + request.Property!) ??
-                                throw new PluginMisconfigurationException(
-                                    $"The specified property '{request.Property}' is not present in the file.");
+            var targetElement = doc.Root?.Descendants(ns + request.Property!).FirstOrDefault() ?? doc.Element(ns + request.Property!);
+            if (targetElement == null)
+                return EmptyResponse($"The specified property '{request.Property}' is not present in the file.");
 
-            var text = string.IsNullOrEmpty(request.Attribute)
-                ? targetElement.Value
-                : targetElement.Attribute(request.Attribute)?.Value;
+            if (string.IsNullOrEmpty(request.Attribute))
+                return new GetXMLPropertyResponse { Value = targetElement.Value };
 
-            return text == null 
-                ? throw new PluginMisconfigurationException(
-                    $"The specified attribute '{request.Attribute}' is not present on the property '{request.Property}'.") 
-                : new GetXMLPropertyResponse { Value = text };
+            var attribute = targetElement.Attribute(request.Attribute);
+            return attribute == null
+                ? EmptyResponse($"The specified attribute '{request.Attribute}' is not present on the property '{request.Property}'.")
+                : new GetXMLPropertyResponse { Value = attribute.Value };
+        }
+        
+        private GetXMLPropertyResponse EmptyResponse(string reason)
+        {
+            invocationContext.Logger?.LogError(reason, []);
+            return new GetXMLPropertyResponse { Value = string.Empty };
         }
     }
 }
