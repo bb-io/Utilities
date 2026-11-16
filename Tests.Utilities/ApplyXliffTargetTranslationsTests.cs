@@ -251,6 +251,102 @@ public class ApplyXliffTargetTranslationsTests : TestBase
         StringAssert.Contains(exception.Message, "not a valid XLIFF file");
     }
 
+    [DataTestMethod]
+    [DataRow(null, true, true, true, true, DisplayName = "Omitted states copy all")]
+    [DataRow("", true, true, true, true, DisplayName = "Empty states copy all")]
+    [DataRow("final", false, false, false, true, DisplayName = "Single final state")]
+    [DataRow("translated,reviewed", false, true, true, false, DisplayName = "Multiple translated and reviewed states")]
+    [DataRow("initial", true, false, false, false, DisplayName = "Initial includes missing state")]
+    public async Task SegmentStatesFilterUsesTranslationsStatesAndPreservesTargetStates(
+        string? states, bool copyInitial, bool copyTranslated, bool copyReviewed, bool copyFinal)
+    {
+        var result = await Actions.ApplyXliffTargetTranslations(new ApplyXliffTargetTranslationsRequest
+        {
+            TargetFile = CreateFileReference("target-states-2.0.xlf"),
+            TranslationsFile = CreateFileReference("translations-states-2.0.xlf"),
+            SegmentStates = states?.Split(',', StringSplitOptions.RemoveEmptyEntries),
+        });
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.0";
+        var segments = output.Descendants(ns + "segment").ToList();
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                copyInitial ? "New initial" : "Old initial",
+                copyInitial ? "New implicit" : "Old implicit",
+                copyTranslated ? "New translated" : "Old translated",
+                copyReviewed ? "New reviewed" : "Old reviewed",
+                copyFinal ? "New final" : "Old final",
+            },
+            segments.Select(segment => segment.Element(ns + "target")?.Value).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "final", "final", "final", "final", "final" },
+            segments.Select(segment => segment.Attribute("state")?.Value).ToArray());
+        Assert.AreEqual(0, result.Warnings.Count);
+    }
+
+    [DataTestMethod]
+    [DataRow("final", "Cross-version target", DisplayName = "XLIFF 1.2 matching state")]
+    [DataRow("reviewed", "Old target", DisplayName = "XLIFF 1.2 unselected state")]
+    public async Task SegmentStatesFilterSupportsXliff12Translations(string state, string expectedTarget)
+    {
+        var result = await Actions.ApplyXliffTargetTranslations(new ApplyXliffTargetTranslationsRequest
+        {
+            TargetFile = CreateFileReference("target-cross-2.0.xlf"),
+            TranslationsFile = CreateFileReference("translations-cross-1.2.xlf"),
+            SegmentStates = [state],
+        });
+
+        var output = await LoadOutput(result.File);
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.0";
+        Assert.AreEqual(expectedTarget, output.Descendants(ns + "target").Single().Value);
+        Assert.AreEqual(0, result.Warnings.Count);
+    }
+
+    [TestMethod]
+    public async Task SegmentStatesFilterExcludesUnselectedDuplicateSegments()
+    {
+        XNamespace ns = "urn:oasis:names:tc:xliff:document:2.0";
+        var translations = XDocument.Load(Path.Combine(
+            GetTestFolderPath(), "Input", TestFilesFolder, "translations-states-2.0.xlf"));
+        var unit = translations.Descendants(ns + "unit").Single();
+        unit.Add(new XElement(ns + "segment", new XAttribute("id", "s-final"),
+            new XAttribute("state", "initial"),
+            new XElement(ns + "source", "Final"), new XElement(ns + "target", "Unselected duplicate")));
+        await using var stream = new MemoryStream();
+        translations.Save(stream);
+        stream.Position = 0;
+        var translationsFile = await FileManager.UploadAsync(stream, "application/xliff+xml", "duplicate-states.xlf");
+
+        var result = await Actions.ApplyXliffTargetTranslations(new ApplyXliffTargetTranslationsRequest
+        {
+            TargetFile = CreateFileReference("target-states-2.0.xlf"),
+            TranslationsFile = translationsFile,
+            SegmentStates = ["final"],
+        });
+
+        var output = await LoadOutput(result.File);
+        Assert.AreEqual("New final", output.Descendants(ns + "segment")
+            .Single(segment => segment.Attribute("id")?.Value == "s-final").Element(ns + "target")?.Value);
+        Assert.AreEqual(0, result.Warnings.Count);
+    }
+
+    [TestMethod]
+    public async Task SegmentStatesFilterRejectsInvalidStates()
+    {
+        var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+            Actions.ApplyXliffTargetTranslations(new ApplyXliffTargetTranslationsRequest
+            {
+                TargetFile = CreateFileReference("target-states-2.0.xlf"),
+                TranslationsFile = CreateFileReference("translations-states-2.0.xlf"),
+                SegmentStates = ["final", "unsupported-state"],
+            }));
+
+        StringAssert.Contains(exception.Message, "segment states are invalid");
+    }
+
     private static FileReference CreateFileReference(
         string fileName,
         string contentType = "application/xliff+xml")

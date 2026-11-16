@@ -1,0 +1,11 @@
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="f1">
+    <unit id="u1">
+      <segment id="s-initial" state="initial"><source>Initial</source><target>New initial</target></segment>
+      <segment><source>Implicit initial</source><target>New implicit</target></segment>
+      <segment id="s-translated" state="translated"><source>Translated</source><target>New translated</target></segment>
+      <segment id="s-reviewed" state="reviewed"><source>Reviewed</source><target>New reviewed</target></segment>
+      <segment id="s-final" state="final"><source>Final</source><target>New final</target></segment>
+    </unit>
+  </file>
+</xliff>

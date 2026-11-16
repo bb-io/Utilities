@@ -1387,10 +1387,23 @@ namespace Apps.Utilities.Actions
             };
         }
 
-        [Action("Apply XLIFF target translations", Description = "Applies target translations from one XLIFF file to another by matching unit and segment IDs. Segments without IDs, including target segments whose translation segment ID has no match, use exact source content. Optionally copies unit provenance and quality data.")]
+        [Action("Apply XLIFF target translations", Description = "Applies target translations from one XLIFF file to another by matching unit and segment IDs, optionally filtering by segment states in the translations file. Segments without IDs, including target segments whose translation segment ID has no match, use exact source content. Optionally copies unit provenance and quality data.")]
         public async Task<ApplyXliffTargetTranslationsResponse> ApplyXliffTargetTranslations(
             [ActionParameter] ApplyXliffTargetTranslationsRequest request)
         {
+            var selectedStates = (request.SegmentStates ?? [])
+                .Where(state => !string.IsNullOrWhiteSpace(state))
+                .Select(SegmentStateHelper.ToSegmentState)
+                .ToList();
+
+            if (selectedStates.Any(state => state is null))
+            {
+                throw new PluginMisconfigurationException(
+                    "One or more segment states are invalid. Please select supported segment states.");
+            }
+
+            var stateFilter = selectedStates.Select(state => state!.Value).ToHashSet();
+
             await using var targetStream = await fileManagementClient.DownloadAsync(request.TargetFile);
             var (targetTransformation, targetSerializer) = await SerializeXliffVersion(targetStream);
 
@@ -1499,9 +1512,13 @@ namespace Apps.Utilities.Actions
                     };
                 }
 
+                var translationsSegments = translationsUnit.Segments
+                    .Where(segment => stateFilter.Count == 0
+                                      || stateFilter.Contains(segment.State ?? SegmentState.Initial))
+                    .ToList();
                 var invalidTranslationsSegments = new HashSet<Segment>(ReferenceEqualityComparer.Instance);
 
-                foreach (var duplicateGroup in translationsUnit.Segments
+                foreach (var duplicateGroup in translationsSegments
                              .Where(segment => !string.IsNullOrWhiteSpace(segment.Id))
                              .GroupBy(segment => segment.Id!, StringComparer.Ordinal)
                              .Where(group => group.Count() > 1))
@@ -1512,7 +1529,7 @@ namespace Apps.Utilities.Actions
                     warnings.Add( $"Translations unit '{translationsUnit.Id}' contains duplicate segment ID '{duplicateGroup.Key}'; all matching segments were skipped.");
                 }
 
-                foreach (var duplicateGroup in translationsUnit.Segments
+                foreach (var duplicateGroup in translationsSegments
                              .Where(segment => string.IsNullOrWhiteSpace(segment.Id))
                              .GroupBy(segment => segment.GetSource(), StringComparer.Ordinal)
                              .Where(group => group.Count() > 1))
@@ -1533,7 +1550,7 @@ namespace Apps.Utilities.Actions
 
                 var proposedUpdates = new List<(Segment TranslationsSegment, Segment TargetSegment, string MatchKey)>();
 
-                foreach (var translationsSegment in translationsUnit.Segments)
+                foreach (var translationsSegment in translationsSegments)
                 {
                     string matchKey;
                     if (!string.IsNullOrWhiteSpace(translationsSegment.Id))
