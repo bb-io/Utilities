@@ -279,6 +279,99 @@ public class Excel(InvocationContext invocationContext, IFileManagementClient fi
         return await WriteExcel(workbook, File.File.Name);
     }
 
+
+    [Action("Replace multiple using Regex in spreadsheet columns",
+        Description = "Apply multiple regular expressions and their corresponding replacements to multiple spreadsheet columns")]
+    public async Task<FileReference> ApplyMultipleRegexToColumns(
+        [ActionParameter] ExcelFile File,
+        [ActionParameter][Display("Sheet number")] int worksheetIndex,
+        [ActionParameter][Display("Column indexes", Description = "The first column starts with 1")]
+    IEnumerable<int> columnIndices,
+        [ActionParameter][Display("Regular expressions")]
+    IEnumerable<string> patterns,
+        [ActionParameter][Display("Replacement patterns")]
+    IEnumerable<string> replacements)
+    {
+        var (workbook, worksheet) = await ReadExcel(File.File, worksheetIndex);
+
+        var columns = columnIndices?.Distinct().ToList() ?? new List<int>();
+        var patternList = patterns?.ToList() ?? new List<string>();
+        var replacementList = replacements?.ToList() ?? new List<string>();
+
+        if (columns.Count == 0)
+        {
+            throw new PluginMisconfigurationException(
+                "At least one column index must be provided");
+        }
+
+        var lastColumn = worksheet.LastColumnUsed()?.ColumnNumber() ?? 0;
+
+        foreach (var columnIndex in columns)
+        {
+            if (columnIndex < 1 || columnIndex > lastColumn)
+            {
+                throw new PluginMisconfigurationException(
+                    $"Invalid column index: {columnIndex}. Please check your input and try again");
+            }
+        }
+
+        if (patternList.Count == 0)
+        {
+            throw new PluginMisconfigurationException(
+                "At least one regular expression must be provided");
+        }
+
+        if (patternList.Count != replacementList.Count)
+        {
+            throw new PluginMisconfigurationException(
+                "The number of regular expressions must match the number of replacement patterns");
+        }
+
+        var regexReplacements = patternList
+            .Zip(replacementList, (pattern, replacement) => new
+            {
+                Regex = ErrorWrapperExecute.ExecuteSafely(
+                    () => new Regex(pattern),
+                    ex => throw new PluginMisconfigurationException(
+                        $"Invalid regular expression pattern '{pattern}': {ex.Message}")),
+                Replacement = replacement
+            })
+            .ToList();
+
+        foreach (var columnIndex in columns)
+        {
+            var column = worksheet.Column(columnIndex);
+
+            foreach (var cell in column.CellsUsed())
+            {
+                if (cell.DataType == XLDataType.Text ||
+                    cell.DataType == XLDataType.Number)
+                {
+                    var value = cell.GetString();
+
+                    foreach (var (regex, replacement) in regexReplacements
+                        .Select(x => (x.Regex, x.Replacement)))
+                    {
+                        try
+                        {
+                            value = regex.Replace(value, replacement);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            throw new PluginMisconfigurationException(
+                                $"Invalid replacement pattern: {ex.Message}");
+                        }
+                    }
+
+                    cell.Value = value;
+                }
+            }
+        }
+
+        return await WriteExcel(workbook, File.File.Name);
+    }
+
+
     [Action("Insert row to a spreadsheet", Description = "Inserts a new row at the given index in a spreadsheet")]
     public async Task<FileReference> InsertRowAtIndex(
     [ActionParameter] ExcelFile File,
