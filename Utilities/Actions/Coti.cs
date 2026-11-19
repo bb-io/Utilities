@@ -95,6 +95,11 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
         if (suppliedFiles.Count == 0)
             throw new PluginMisconfigurationException("Provide at least one translated file.");
 
+        var suppliedPaths = request.OriginalArchivePaths?.ToList() ?? [];
+        if (suppliedFiles.Count != suppliedPaths.Count)
+            throw new PluginMisconfigurationException(
+                "Provide one original archive path for every translated file, in the same order.");
+
         await using var originalStream = await DownloadToMemory(request.OriginalCotiFile);
 
         try
@@ -105,18 +110,20 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
                 .SelectMany(project => project.TranslationFiles.Select(file => new { Project = project, File = file }))
                 .ToDictionary(item => item.File.ArchivePath, item => item, StringComparer.OrdinalIgnoreCase);
 
-            var replacements = new Dictionary<string, CotiTranslatedFileInput>(StringComparer.OrdinalIgnoreCase);
+            var replacements = new Dictionary<string, FileReference>(StringComparer.OrdinalIgnoreCase);
             var selectedProjects = new HashSet<ProjectDescriptor>();
 
-            foreach (var suppliedFile in suppliedFiles)
+            for (var index = 0; index < suppliedFiles.Count; index++)
             {
-                if (suppliedFile?.File is null)
+                var suppliedFile = suppliedFiles[index];
+                if (suppliedFile is null)
                     throw new PluginMisconfigurationException("Every translated file must contain a valid file reference.");
 
-                var archivePath = NormalizeRelativePath(suppliedFile.OriginalArchivePath, "Original archive path");
+                var originalArchivePath = suppliedPaths[index];
+                var archivePath = NormalizeRelativePath(originalArchivePath, "Original archive path");
                 if (!declaredFiles.TryGetValue(archivePath, out var declaredFile))
                     throw new PluginMisconfigurationException(
-                        $"Translated file path '{suppliedFile.OriginalArchivePath}' is not declared by the original COTI package.");
+                        $"Translated file path '{originalArchivePath}' is not declared by the original COTI package.");
 
                 if (!replacements.TryAdd(archivePath, suppliedFile))
                     throw new PluginMisconfigurationException(
@@ -156,7 +163,7 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
                     await using var outputEntryStream = outputEntry.Open();
                     if (replacements.TryGetValue(entryPath, out var replacement))
                     {
-                        await using var replacementStream = await fileManagementClient.DownloadAsync(replacement.File);
+                        await using var replacementStream = await fileManagementClient.DownloadAsync(replacement);
                         await replacementStream.CopyToAsync(outputEntryStream);
                     }
                     else

@@ -67,14 +67,8 @@ public class CotiTests : TestBase
         var assembled = await _coti.AssembleCotiFile(new AssembleCotiRequest
         {
             OriginalCotiFile = package,
-            TranslatedFiles =
-            [
-                new CotiTranslatedFileInput
-                {
-                    File = spanishFile.File,
-                    OriginalArchivePath = spanishFile.OriginalArchivePath
-                }
-            ]
+            TranslatedFiles = [spanishFile.File],
+            OriginalArchivePaths = [spanishFile.OriginalArchivePath]
         });
 
         using var archive = ZipFile.OpenRead(Path.Combine(_outputDirectory, assembled.File.Name));
@@ -105,14 +99,8 @@ public class CotiTests : TestBase
             _coti.AssembleCotiFile(new AssembleCotiRequest
             {
                 OriginalCotiFile = package,
-                TranslatedFiles =
-                [
-                    new CotiTranslatedFileInput
-                    {
-                        File = parsed.TranslationFiles.First().File,
-                        OriginalArchivePath = parsed.TranslationFiles.First().OriginalArchivePath
-                    }
-                ]
+                TranslatedFiles = [parsed.TranslationFiles.First().File],
+                OriginalArchivePaths = [parsed.TranslationFiles.First().OriginalArchivePath]
             }));
 
         StringAssert.Contains(exception.Message, "is incomplete");
@@ -126,20 +114,33 @@ public class CotiTests : TestBase
             new ProjectFixture("project-en", "project-id-en", "en-GB", ["content.xml"], false));
         var parsed = await _coti.ParseCotiFile(new CotiFileRequest { File = package });
         var parsedFile = parsed.TranslationFiles.Single();
-        var translatedFile = new CotiTranslatedFileInput
-        {
-            File = parsedFile.File,
-            OriginalArchivePath = "another-project/translation files/content.xml"
-        };
+        var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
+            _coti.AssembleCotiFile(new AssembleCotiRequest
+            {
+                OriginalCotiFile = package,
+                TranslatedFiles = [parsedFile.File],
+                OriginalArchivePaths = ["another-project/translation files/content.xml"]
+            }));
+
+        StringAssert.Contains(exception.Message, "is not declared");
+    }
+
+    [TestMethod]
+    public async Task AssembleCotiFile_RejectsMismatchedFileAndPathCounts()
+    {
+        var package = CreatePackage(
+            new ProjectFixture("project-en", "project-id-en", "en-GB", ["content.xml"], false));
+        var parsed = await _coti.ParseCotiFile(new CotiFileRequest { File = package });
 
         var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
             _coti.AssembleCotiFile(new AssembleCotiRequest
             {
                 OriginalCotiFile = package,
-                TranslatedFiles = [translatedFile]
+                TranslatedFiles = [parsed.TranslationFiles.Single().File],
+                OriginalArchivePaths = []
             }));
 
-        StringAssert.Contains(exception.Message, "is not declared");
+        StringAssert.Contains(exception.Message, "one original archive path for every translated file");
     }
 
     private FileReference CreatePackage(params ProjectFixture[] projects)
