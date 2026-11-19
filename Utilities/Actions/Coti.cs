@@ -27,11 +27,12 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
         {
             using var archive = new ZipArchive(packageStream, ZipArchiveMode.Read, leaveOpen: true);
             var package = ReadPackage(archive);
-            var response = new ParseCotiResponse
-            {
-                SourceLanguages = DistinctLanguages(package.Projects.Select(project => project.SourceLanguage)),
-                TargetLanguages = DistinctLanguages(package.Projects.Select(project => project.TargetLanguage))
-            };
+            var translationFiles = new List<FileReference>();
+            var translationFileArchivePaths = new List<string>();
+            var translationFileDetails = new List<CotiTranslationFile>();
+            var referenceFiles = new List<FileReference>();
+            var referenceFileArchivePaths = new List<string>();
+            var referenceFileDetails = new List<CotiReferenceFile>();
 
             foreach (var project in package.Projects)
             {
@@ -39,10 +40,10 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
                 {
                     var entry = package.Entries[translationFile.ArchivePath];
                     var uploaded = await UploadEntry(entry, translationFile.MimeType);
-                    response.TranslationFiles.Add(new CotiTranslationFile
+                    translationFiles.Add(uploaded);
+                    translationFileArchivePaths.Add(translationFile.ArchivePath);
+                    translationFileDetails.Add(new CotiTranslationFile
                     {
-                        File = uploaded,
-                        OriginalArchivePath = translationFile.ArchivePath,
                         ProjectId = project.ProjectId,
                         SourceLanguage = project.SourceLanguage,
                         TargetLanguage = project.TargetLanguage
@@ -53,10 +54,10 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
                 {
                     var entry = package.Entries[referenceFile.ArchivePath];
                     var uploaded = await UploadEntry(entry, referenceFile.MimeType);
-                    response.ReferenceFiles.Add(new CotiReferenceFile
+                    referenceFiles.Add(uploaded);
+                    referenceFileArchivePaths.Add(referenceFile.ArchivePath);
+                    referenceFileDetails.Add(new CotiReferenceFile
                     {
-                        File = uploaded,
-                        OriginalArchivePath = referenceFile.ArchivePath,
                         ProjectId = project.ProjectId,
                         ManifestFileReference = referenceFile.FileReference,
                         External = referenceFile.External,
@@ -69,7 +70,17 @@ public class Coti(InvocationContext invocationContext, IFileManagementClient fil
                 }
             }
 
-            return response;
+            return new ParseCotiResponse
+            {
+                SourceLanguages = DistinctLanguages(package.Projects.Select(project => project.SourceLanguage)),
+                TargetLanguages = DistinctLanguages(package.Projects.Select(project => project.TargetLanguage)),
+                TranslationFiles = translationFiles,
+                TranslationFileArchivePaths = translationFileArchivePaths,
+                TranslationFileDetails = translationFileDetails,
+                ReferenceFiles = referenceFiles,
+                ReferenceFileArchivePaths = referenceFileArchivePaths,
+                ReferenceFileDetails = referenceFileDetails
+            };
         }
         catch (PluginMisconfigurationException)
         {

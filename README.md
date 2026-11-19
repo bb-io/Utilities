@@ -36,7 +36,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Extract using Regex from document** extract text from a document using Regex. This works only with text based files (txt, html, etc.) and is similar to 'Extract using Regex' but works with files.
 - **Extract many using Regex from document** Extract multiple text matches from a document using regular expressiosn. Works only with text-based files (txt, html, etc).
 - **Unzip files** takes a ZIP archive and extracts the files inside into multiple files in Blackbird.
-- **Parse COTI file** reads every project manifest in a COTI package and returns its source and target languages, translation files, and packaged reference files. Every returned file includes its original archive path so it can be mapped back into the package.
+- **Parse COTI file** reads every project manifest in a COTI package and returns its source and target languages, translation files, packaged reference files, and parallel archive-path lists. The flat file and path outputs can be mapped directly into Assemble COTI file; detailed project, language, and manifest metadata is returned separately.
 - **Assemble COTI file** replaces translation files in an original COTI package using a positionally matched list of original archive paths, and returns a partial-delivery package containing only the projects for which every declared translation file was supplied. Manifests, reference files, and other project content are preserved.
 - **Compare file contents** returns whether the content of the given files are equal or not.
 - **Concatenate text files** concatenates multiple text files into one file.

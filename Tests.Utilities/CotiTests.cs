@@ -34,17 +34,21 @@ public class CotiTests : TestBase
 
         var response = await _coti.ParseCotiFile(new CotiFileRequest { File = package });
 
-        CollectionAssert.AreEqual(new[] { "de-DE" }, response.SourceLanguages);
-        CollectionAssert.AreEqual(new[] { "en-GB", "es-ES" }, response.TargetLanguages);
-        Assert.AreEqual(2, response.TranslationFiles.Count);
-        Assert.AreEqual(1, response.ReferenceFiles.Count);
+        CollectionAssert.AreEqual(new[] { "de-DE" }, response.SourceLanguages.ToArray());
+        CollectionAssert.AreEqual(new[] { "en-GB", "es-ES" }, response.TargetLanguages.ToArray());
+        Assert.AreEqual(2, response.TranslationFiles.Count());
+        Assert.AreEqual(1, response.ReferenceFiles.Count());
+        Assert.AreEqual(2, response.TranslationFileArchivePaths.Count());
+        Assert.AreEqual(1, response.ReferenceFileArchivePaths.Count());
 
-        var englishFile = response.TranslationFiles.Single(file => file.TargetLanguage == "en-GB");
-        Assert.AreEqual("project-en/translation files/content.xml", englishFile.OriginalArchivePath);
+        var translationDetails = response.TranslationFileDetails.ToList();
+        var englishIndex = translationDetails.FindIndex(file => file.TargetLanguage == "en-GB");
+        var englishFile = translationDetails[englishIndex];
+        Assert.AreEqual("project-en/translation files/content.xml", response.TranslationFileArchivePaths.ElementAt(englishIndex));
         Assert.AreEqual("project-id-en", englishFile.ProjectId);
 
-        var reference = response.ReferenceFiles.Single();
-        Assert.AreEqual("project-en/reference files/instructions.pdf", reference.OriginalArchivePath);
+        var reference = response.ReferenceFileDetails.Single();
+        Assert.AreEqual("project-en/reference files/instructions.pdf", response.ReferenceFileArchivePaths.Single());
         Assert.AreEqual("reference files\\instructions.pdf", reference.ManifestFileReference);
         Assert.AreEqual("no", reference.External);
         Assert.AreEqual("application/pdf", reference.MimeType);
@@ -59,16 +63,18 @@ public class CotiTests : TestBase
             new ProjectFixture("project-en", "project-id-en", "en-GB", ["content.xml"], true),
             new ProjectFixture("project-es", "project-id-es", "es-ES", ["content.xml"], true));
         var parsed = await _coti.ParseCotiFile(new CotiFileRequest { File = package });
-        var spanishFile = parsed.TranslationFiles.Single(file => file.TargetLanguage == "es-ES");
+        var spanishIndex = parsed.TranslationFileDetails.ToList().FindIndex(file => file.TargetLanguage == "es-ES");
+        var spanishFile = parsed.TranslationFiles.ElementAt(spanishIndex);
+        var spanishPath = parsed.TranslationFileArchivePaths.ElementAt(spanishIndex);
         await File.WriteAllTextAsync(
-            Path.Combine(_outputDirectory, spanishFile.File.Name),
+            Path.Combine(_outputDirectory, spanishFile.Name),
             "<translated>Spanish translation</translated>");
 
         var assembled = await _coti.AssembleCotiFile(new AssembleCotiRequest
         {
             OriginalCotiFile = package,
-            TranslatedFiles = [spanishFile.File],
-            OriginalArchivePaths = [spanishFile.OriginalArchivePath]
+            TranslatedFiles = [spanishFile],
+            OriginalArchivePaths = [spanishPath]
         });
 
         using var archive = ZipFile.OpenRead(Path.Combine(_outputDirectory, assembled.File.Name));
@@ -89,6 +95,27 @@ public class CotiTests : TestBase
     }
 
     [TestMethod]
+    public async Task ParseOutputs_MapDirectlyToAssembleInputsForFullRoundTrip()
+    {
+        var package = CreatePackage(
+            new ProjectFixture("project-en", "project-id-en", "en-GB", ["content.xml"], true),
+            new ProjectFixture("project-es", "project-id-es", "es-ES", ["content.xml"], true));
+        var parsed = await _coti.ParseCotiFile(new CotiFileRequest { File = package });
+
+        var assembled = await _coti.AssembleCotiFile(new AssembleCotiRequest
+        {
+            OriginalCotiFile = package,
+            TranslatedFiles = parsed.TranslationFiles,
+            OriginalArchivePaths = parsed.TranslationFileArchivePaths
+        });
+
+        using var archive = ZipFile.OpenRead(Path.Combine(_outputDirectory, assembled.File.Name));
+        Assert.IsNotNull(archive.GetEntry("project-en/COTI.xml"));
+        Assert.IsNotNull(archive.GetEntry("project-es/COTI.xml"));
+        Assert.AreEqual(6, archive.Entries.Count);
+    }
+
+    [TestMethod]
     public async Task AssembleCotiFile_RejectsIncompleteProject()
     {
         var package = CreatePackage(
@@ -99,8 +126,8 @@ public class CotiTests : TestBase
             _coti.AssembleCotiFile(new AssembleCotiRequest
             {
                 OriginalCotiFile = package,
-                TranslatedFiles = [parsed.TranslationFiles.First().File],
-                OriginalArchivePaths = [parsed.TranslationFiles.First().OriginalArchivePath]
+                TranslatedFiles = [parsed.TranslationFiles.First()],
+                OriginalArchivePaths = [parsed.TranslationFileArchivePaths.First()]
             }));
 
         StringAssert.Contains(exception.Message, "is incomplete");
@@ -113,12 +140,11 @@ public class CotiTests : TestBase
         var package = CreatePackage(
             new ProjectFixture("project-en", "project-id-en", "en-GB", ["content.xml"], false));
         var parsed = await _coti.ParseCotiFile(new CotiFileRequest { File = package });
-        var parsedFile = parsed.TranslationFiles.Single();
         var exception = await Assert.ThrowsExceptionAsync<PluginMisconfigurationException>(() =>
             _coti.AssembleCotiFile(new AssembleCotiRequest
             {
                 OriginalCotiFile = package,
-                TranslatedFiles = [parsedFile.File],
+                TranslatedFiles = [parsed.TranslationFiles.Single()],
                 OriginalArchivePaths = ["another-project/translation files/content.xml"]
             }));
 
@@ -136,7 +162,7 @@ public class CotiTests : TestBase
             _coti.AssembleCotiFile(new AssembleCotiRequest
             {
                 OriginalCotiFile = package,
-                TranslatedFiles = [parsed.TranslationFiles.Single().File],
+                TranslatedFiles = [parsed.TranslationFiles.Single()],
                 OriginalArchivePaths = []
             }));
 
