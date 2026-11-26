@@ -12,7 +12,6 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Filters.Bilingual.Xliff1;
 using Blackbird.Filters.Bilingual.Xliff2;
-using Blackbird.Filters.Constants;
 using Blackbird.Filters.Enums;
 using Blackbird.Filters.Transformations;
 using DocumentFormat.OpenXml.Packaging;
@@ -514,24 +513,22 @@ public class Files(InvocationContext invocationContext, IFileManagementClient fi
         return extracted;
     }
 
-    [Action("Convert text to document", Description = "Write text to a .txt, .html, .json, .csv, .doc, .docx, .xlf, or .xliff file.")]
+    [Action("Convert text to document", Description = "Convert text to txt, html, json, csv, doc or docx document.")]
     public async Task<ConvertTextToDocumentResponse> ConvertTextToDocument(
         [ActionParameter] ConvertTextToDocumentRequest request)
     {
         var filename = $"{request.Filename}{request.FileExtension}";
         var (encoding, includeBom) = ErrorWrapperExecute.ExecuteSafely(() => ResolveEncoding(request.Encoding));
 
-        ConvertTextToDocumentResponse response = request.FileExtension.ToLowerInvariant() switch
+        ConvertTextToDocumentResponse response = request.FileExtension.ToLower() switch
         {
             ".txt" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Plain, encoding, includeBom)),
             ".csv" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, "text/csv", encoding, includeBom)),
             ".html" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Text.Html, encoding, includeBom)),
             ".json" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypeNames.Application.Json, encoding, includeBom)),
-            ".xlf" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypes.Xliff1, encoding, includeBom)),
-            ".xliff" => await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToTextFile(request.Text, filename, MediaTypes.Xliff2, encoding, includeBom)),
             ".doc" or ".docx" =>
                  await ErrorWrapperExecute.ExecuteSafelyAsync(() => ConvertToWordDocument(request.Text, filename, request.Font ?? "Arial", request.FontSize ?? 12)),
-            _ => throw new PluginMisconfigurationException("Choose one of the supported file extensions (.txt, .csv, .html, .json, .doc, .docx, .xlf, or .xliff).")
+            _ => throw new PluginMisconfigurationException("Can convert to txt, csv, html, json, doc, or docx file only.")
         };
 
         return response;
