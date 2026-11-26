@@ -127,7 +127,7 @@ You do not need to create a connection to use Utilities. Instead, you can find U
 - **Extract many using Regex** returns all matches from the provided text using a Regular Expression as input.
 - **Replace using Regex** use Regular Expressions to search and replace within text.
 - **Replace multiple Regex patterns** use Regular Expressions to search and replace multiple patterns within text.
-- **Convert text to document** Write text to a `.txt`, `.html`, `.json`, `.csv`, `.doc`, `.docx`, `.xlf`, or `.xliff` file. Supply XLIFF markup and choose `.xlf` for XLIFF 1.x or `.xliff` for XLIFF 2.x.
+- **Convert text to document** Convert text to txt, html, json, csv, doc or docx document.
 - **Convert document to text** Extracts document's text. Document must be in docx/doc, pdf or txt format.
 - **Calculate BLEU Score** Metric used to evaluate the quality of machine-translated text by comparing it to a referenced text.
 - **Split string into array** Splits a string into an array using the specified delimiter.
