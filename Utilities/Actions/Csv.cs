@@ -12,12 +12,16 @@ using Apps.Utilities.Models.Texts;
 using Apps.Utilities.DataSourceHandlers;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Apps.Utilities.Models.Csv;
+using System.Text;
+using System.Text.Unicode;
 
 namespace Apps.Utilities.Actions;
 
 [ActionList("CSV")]
 public class Csv(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : BaseInvocable(invocationContext)
 {
+    private const int WindowsWesternEuropeanCodePage = 1252;
+
     [Action("Remove CSV rows", Description = "Remove the selected rows from a CSV file.")]
     public async Task<CsvFile> RemoveRows(
         [ActionParameter] CsvFile csvFile,
@@ -442,8 +446,8 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
 
     private async Task<List<List<string>>> ReadCsv(CsvFile csvFile, CsvOptions csvOptions)
     {
-        await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
-        using var reader = new StreamReader(streamIn);
+        var csvBytes = await DownloadBytes(csvFile);
+        using var reader = new StreamReader(new MemoryStream(csvBytes), DetectEncodingWithoutBom(csvBytes), detectEncodingFromByteOrderMarks: true);
         using var csv = new CsvReader(reader, CreateConfiguration(csvOptions));
 
         var records = new List<List<string>>();
@@ -459,6 +463,23 @@ public class Csv(InvocationContext invocationContext, IFileManagementClient file
         }
 
         return records;
+    }
+
+    private async Task<byte[]> DownloadBytes(CsvFile csvFile)
+    {
+        await using var streamIn = await fileManagementClient.DownloadAsync(csvFile.File);
+        using var buffer = new MemoryStream();
+        await streamIn.CopyToAsync(buffer);
+        return buffer.ToArray();
+    }
+
+    private static Encoding DetectEncodingWithoutBom(byte[] bytes)
+    {
+        if (Utf8.IsValid(bytes))
+            return Encoding.UTF8;
+
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        return Encoding.GetEncoding(WindowsWesternEuropeanCodePage);
     }
 
     private async Task<CsvFile> WriteCsv(List<List<string>> records, CsvOptions csvOptions, string fileName, string mimeType = "text/csv")
